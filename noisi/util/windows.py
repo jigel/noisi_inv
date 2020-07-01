@@ -13,7 +13,7 @@ def my_centered(arr, newsize):
     # get the center portion of a 1-dimensional array correctly
     n = len(arr)
     i0 = (n - newsize) // 2
-    print(i0)
+    #print(i0)
     if i0 < 0:
         i0 = (newsize - n) // 2
         newarr[i0: i0 + n] += arr
@@ -74,10 +74,23 @@ def get_window(stats, g_speed, params):
     n = stats.npts
 
     # Find indices for window bounds
-    ind_lo = int((dist / g_speed - params['hw']) * Fs) + s_0
-    ind_hi = ind_lo + int(2 * params['hw'] * Fs) + 1
-    ind_lo_n = ind_hi + int(params['sep_noise'] * params['hw'] * Fs)
-    ind_hi_n = ind_lo_n + int(2 * params['hw'] * Fs) + 1
+    if 'hw_variable' in params and params['hw_variable'] is not None:
+        
+        g_speed_1 = g_speed - params['hw_variable']
+        g_speed_2 = g_speed + params['hw_variable']
+
+        ind_lo = int((dist / g_speed_2 - params['hw']) * Fs) + s_0
+        ind_hi = int((dist / g_speed_1 + params['hw']) * Fs) + s_0        
+
+        ind_lo_n = ind_hi + int(params['sep_noise'] * 20 * Fs)
+        ind_hi_n = ind_lo_n + (ind_hi-ind_lo)
+
+    else:    
+        ind_lo = int((dist / g_speed - params['hw']) * Fs) + s_0
+        ind_hi = ind_lo + int(2 * params['hw'] * Fs) + 1
+    
+        ind_lo_n = ind_hi + int(params['sep_noise'] * params['hw'] * Fs)
+        ind_hi_n = ind_lo_n + int(2 * params['hw'] * Fs) + 1
 
     # Checks..overlap, out of bounds
     scs = window_checks(ind_lo, ind_hi, ind_lo_n,

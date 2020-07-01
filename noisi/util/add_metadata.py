@@ -1,29 +1,48 @@
 import pandas as pd
 from obspy import read
 from obspy.geodetics import gps2dist_azimuth
-
+import numpy as np
 import sys
 import os
 from glob import glob
 
-indir = sys.argv[1]
-metafile = sys.argv[2]
+#indir = sys.argv[1]
+#metafile = sys.argv[2]
+
+import functools
+print = functools.partial(print, flush=True)
 
 
-def assign_geographic_metadata(indir, stationlistfile):
 
-    print(indir)
+def assign_geographic_metadata(indir, stationlistfile,comm,size,rank):
+
     traces = glob(os.path.join(indir, '*.SAC'))
     traces.extend(glob(os.path.join(indir, '*.sac')))
-    print('Found traces:\n')
-    print(traces[0])
-    print('...to...')
-    print(traces[-1])
-    print('Assign geographical information.\n')
+    
+    if rank == 0:
+        print(indir)
+        print('Found traces:\n')
+        print(traces[0])
+        print('...to...')
+        print(traces[-1])
+        print('Assign geographical information.\n')
 
     meta = pd.read_csv(stationlistfile)
+    count_tr = 0
+    
+    # split up traces
+    if rank == 0:
+        traces_split = np.array_split(traces,size)
+        traces_split = [k.tolist() for k in traces_split]
+    else:
+        traces_split = None
+        
+    traces_split = comm.scatter(traces_split,root=0) 
+    
+    for t in traces_split:
+        if count_tr%100 == 0:
+            print(f"At {count_tr} of {np.size(traces_split)} traces")
 
-    for t in traces:
         tr = read(t)
         sta1 = os.path.basename(t).split('.')[1]
         try:
@@ -62,6 +81,9 @@ def assign_geographic_metadata(indir, stationlistfile):
 
         tr.write(t, format='SAC')
 
+        count_tr += 1
+        
+    comm.barrier()
 
-if __name__ == '__main__':
-    assign_geographic_metadata(indir, metafile)
+#if __name__ == '__main__':
+#    assign_geographic_metadata(indir, metafile)

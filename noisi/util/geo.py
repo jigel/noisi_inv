@@ -1,5 +1,7 @@
 import numpy as np
 from math import pi, sin, cos, sqrt
+import pandas as pd
+import os 
 from obspy.geodetics import gps2dist_azimuth
 try:
     import cartopy.io.shapereader as shpreader
@@ -206,3 +208,101 @@ def points_on_ell(dx, xmin=-180., xmax=180., ymin=-89.999, ymax=89.999):
         d_lat = dx / len_deg_lat(lat)
         lat += d_lat
     return list((gridx, gridy))
+
+
+
+def get_voronoi_surface_area(grd,config,sigma,beta,phi_min,phi_max,lat_0,lon_0,gamma,output="project"):
+    """
+    Computes the voronoi cell surface area of a grid on a sphere.
+    If the grid is set to only be in the ocean it will be recomputed with all gridpoints. 
+    The gridpoints and corresponding voronoi cells are removed thereafter to avoid unrealistic cells along the coastline.
+    
+    :type grd: array of lat,lon
+    :type only_ocean: bool
+    
+    """
+    
+    print("Computing Voronoi cell surface areas..")
+    
+    # import borrowed functions
+    from noisi.borrowed_functions.voronoi_polygons import getVoronoiCollection
+    from noisi.borrowed_functions.voronoi_surface_area import calculate_surface_area_of_a_spherical_Voronoi_polygon
+    from noisi.borrowed_functions.voronoi_polygons import xyzToSpherical
+        
+    if config["svp_only_ocean"]:
+        
+        # compute full grid
+        from noisi.util.source_grid_svp import svp_grid
+        
+        grd = svp_grid(sigma=sigma,
+                          beta=beta,
+                          phi_min=phi_min,
+                          phi_max=phi_max,
+                          lat_0=lat_0,
+                          lon_0=lon_0,
+                          gamma=gamma,
+                          plot=config['svp_plot'],
+                          dense_antipole=config['svp_dense_antipole'],
+                          only_ocean=False)
+        
+        
+    # convert grid into panda dataframe
+    gridpd = {'lat': grd[1], 'lon': grd[0]}
+    grid_data = pd.DataFrame(data=gridpd)
+    
+    # Calculate the vertices for the voronoi cells
+    voronoi = getVoronoiCollection(data=grid_data,lat_name='lat',lon_name='lon',full_sphere=True)
+    
+    # Calculate the surface area for each voronoi cell
+    voronoi_lat = []
+    voronoi_lon = []
+    voronoi_area = []
+    
+    for i in range(0,np.size(voronoi.points,0)):
+        P_cart = xyzToSpherical(x=voronoi.points[i,0],y=voronoi.points[i,1],z=voronoi.points[i,2])
+        voronoi_lat.append(P_cart[0])
+        voronoi_lon.append(P_cart[1])
+        vert_points = voronoi.vertices[voronoi.regions[i]]
+        area = calculate_surface_area_of_a_spherical_Voronoi_polygon(vert_points,6371)
+        voronoi_area.append(area)
+        #if i%1000 == 0:
+        #    print('%g of %g voronoi cell surface areas calculated.' %(i,np.size(voronoi.points,0)),flush=True)
+        
+    # Reassign grd so that everything is in the right order
+    grd = np.asarray([voronoi_lon,voronoi_lat])
+    voronoi_area = np.asarray(voronoi_area)
+    print('All voronoi cell surface areas calculated.')
+    
+    
+    if config["svp_only_ocean"]:
+        print("Removing voronoi cells on land..")
+        
+        
+        grid_onlyocean_lon = []
+        grid_onlyocean_lat = []
+        voronoi_area_onlyocean = []
+        
+        is_ocean = np.abs(is_land(grd[0],grd[1]) - 1.)
+        
+        for i in range(np.size(grd[0])):
+            if is_ocean[i] == 1:
+                grid_onlyocean_lon.append(grd[0][i])
+                grid_onlyocean_lat.append(grd[1][i])
+                voronoi_area_onlyocean.append(voronoi_area[i])
+            else:
+                continue
+                
+        print('Gridpoints and voronoi cells on land removed.')
+            
+        grd = np.asarray([grid_onlyocean_lon,grid_onlyocean_lat])
+        surf_area = np.asarray(voronoi_area_onlyocean)        
+        
+    else:
+        surf_area = voronoi_area
+        
+        
+    return grd,surf_area
+
+
+
+

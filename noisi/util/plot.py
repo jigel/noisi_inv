@@ -23,7 +23,7 @@ def nice_map(ax, lat_min, lat_max, lon_min, lon_max,
     if proj not in [ccrs.Orthographic]:
         ax.set_extent([lon_min, lon_max, lat_min, lat_max], crs=proj())
 
-    try:
+    try:  
         gl = ax.gridlines(draw_labels=True)
         if not latitude_labels_east:
             gl.ylabels_right = False

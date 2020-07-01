@@ -90,7 +90,7 @@ def apply_rotation(fls, stationlistfile, output_directory):
 
     channel_basename = cha1[0: 2]
 
-    print(sta1, sta2)
+    #print(sta1, sta2)
     lat1 = float(meta[meta['sta'] == sta1].iloc[0]['lat'])
     lat2 = float(meta[meta['sta'] == sta2].iloc[0]['lat'])
     lon1 = float(meta[meta['sta'] == sta1].iloc[0]['lon'])
