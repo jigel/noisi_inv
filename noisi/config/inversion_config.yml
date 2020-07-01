@@ -1,0 +1,131 @@
+output_folder: ./noisi_output
+stationlist: ''
+add_metadata: true
+add_noise: false
+output_plot: true
+
+data_download:
+    download_data: false
+    download_data_date: 2017-02-28
+    download_data_channels: ['BHZ']
+    
+    min_station_dist: 0
+
+    domain_type: circular
+    
+    circ_lat_center: 46
+    circ_lon_center: 8
+    circ_radius_min: 0 
+    circ_radius_max: 2
+    
+    rect_lat_min: 30
+    rect_lat_max: 50
+    rect_lon_min: -10
+    rect_lon_max: 30
+    
+
+inversion_config:
+    observed_corr: '' 
+    opt_statpair: null 
+    snr_thresh: 0
+    corr_max_dist: null
+    nr_iterations: 1
+    nr_step_tests: 5
+    step_test_smoothing: false
+    frac_corr_slt: 0
+    step_length_min: 0.05
+    step_length_max: 3.0
+    step_smooth: [[2,6],[4,4.5],[6,3],[8,2]] 
+    
+project_config:
+    project_name: 0626_gradtest_bandpass_blob_2_ln_nosurf
+    synt_data: DIS
+    verbose: false
+
+grid_config:
+    grid_dx_in_m: 35000
+    grid_lat_max: 65
+    grid_lat_min: 30
+    grid_lon_max: 25
+    grid_lon_min: -15
+    
+svp_grid_config:
+    svp_grid: false
+    svp_dense_antipole: false
+    svp_only_ocean: true
+    svp_voronoi_area: true
+    svp_station_remove: 1
+    svp_plot: false
+    svp_beta:
+    - 7
+    svp_gamma:
+    - 0
+    svp_lat_0:
+    - 47
+    svp_lon_0:
+    - 8
+    svp_phi_min:
+    - 1
+    svp_phi_max:
+    - 10
+    svp_sigma:
+    - 15
+
+auto_data_grid_config:
+    auto_data_grid: false
+    auto_data_path: null
+    auto_data_thresh: 0.5
+    auto_station_remove: 1
+    auto_back_grid_centre: stations
+    auto_back_grid_phi_min: 2
+    auto_back_grid_phi_max: 4
+    auto_data_grid_phi: 1
+    auto_data_path: null
+    auto_extent:
+    - -90
+    - 0
+    - 0
+    - 90
+    auto_gamma_thresh: 5
+    
+wavefield_config:
+    wavefield_channel: Z
+    wavefield_domain: time
+    wavefield_duration: 800.0
+    wavefield_filter: 
+    - 0.01
+    - 0.2
+    wavefield_path: '' 
+    wavefield_point_force: 1.0e6
+    wavefield_sampling_rate: 0.5
+    wavefield_type: analytic
+    
+    
+source_config:
+    get_auto_corr: true
+    model_observed_only: false
+    max_lag: 400
+    diagonals: false
+    rotate_horizontal_components: false
+
+source_setup_config:
+    - distribution: homogeneous
+      mean_frequency_Hz: 0.05
+      standard_deviation_Hz: 0.01
+      weight: 1.0
+      taper_percent: 1.0
+      normalize_spectrum_to_unity: true
+
+measr_config:
+    mtype: "ln_energy_ratio"
+    taper_perc: 0.01
+    bandpass: [[0.01,0.1,5]] 
+    weights: [1.0]
+    g_speed: 2700
+    window_params_wtype: "hann"
+    window_params_hw: 25
+    window_params_hw_variable: null
+    window_params_win_overlap: false
+    window_params_sep_noise: 2.0
+    window_plot_measurements: false
+    ignore_network: false

@@ -1,20 +1,75 @@
-{
-    "date_created": " ",     
-    "project_name": " ",     
-    "project_path": "x",     
-    "verbose": true,
-    "grid_dx_in_m": 35000,            
-    "grid_lat_min": 30, 
-    "grid_lat_max": 65,  
-    "grid_lon_min": -15,    
-    "grid_lon_max": 25,     
-    "synt_data": "DIS",      
-    "wavefield_duration": 800.0, 
-    "wavefield_type": "analytic",
-    "wavefield_point_force": 1.0e6,
-    "wavefield_path": "x",
-    "wavefield_domain": "time",
-    "wavefield_sampling_rate": 0.5,
-    "wavefield_filter": [0.01, 0.2],
-    "wavefield_channel": "Z"
-}
+date_created: ""
+project_name: ""
+project_path: ""
+synt_data: DIS
+verbose: true
+
+# Normal Grid
+grid_dx_in_m: 35000
+grid_lat_max: 65
+grid_lat_min: 30
+grid_lon_max: 25
+grid_lon_min: -15
+
+# Spatially Variable Grid
+svp_grid: false
+svp_dense_antipole: false
+svp_only_ocean: true
+svp_voronoi_area: true
+svp_station_remove: 1
+svp_plot: false
+# Spatially variable grid parameters
+svp_beta:
+- 7
+svp_gamma:
+- 0
+svp_lat_0:
+- 47
+svp_lon_0:
+- 8
+svp_phi_min:
+- 1
+svp_phi_max:
+- 10
+svp_sigma:
+- 15
+
+
+# Automatic Grid
+auto_data_grid: false
+auto_data_path: null
+auto_data_thresh: 0.5
+auto_station_remove: 1
+# Auto grid parameters
+auto_back_grid_centre: stations
+auto_back_grid_phi_min: 2
+auto_back_grid_phi_max: 4
+auto_data_grid_phi: 1
+auto_data_path: null
+auto_extent:
+- -90
+- 0
+- 0
+- 90
+auto_gamma_thresh: 5
+
+
+# Wavefield
+wavefield_channel: Z
+wavefield_domain: time
+wavefield_duration: 800.0
+wavefield_filter:
+- 0.01
+- 0.2
+wavefield_path: ''
+wavefield_point_force: 1.0e6
+wavefield_sampling_rate: 0.5
+wavefield_type: analytic
+
+
+
+
+
+
+
+

@@ -14,6 +14,7 @@
 # "g_speed": # estimated Rayleigh wave group speed
 # "window_params_wtype": window type; choose between "hann" and "boxcar"
 # "window_params_hw": half width of window
+# "window_params_hw_variable": variable window size, set the deviation of g_speed (e.g. 100) or null
 # "window_params_win_overlap": for short distances, windows may overlap. 
 #    If this parameter is set to true, such measurements will still be taken.
 # "window_params_sep_noise": Separation of noise window from signal window 

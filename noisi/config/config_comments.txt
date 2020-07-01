@@ -17,6 +17,7 @@
 #    database as wavefield_path)
 # -- custom (you need to prepare your own wave field if this is set, and
 #    specify the path to the files as wavefield_path)
+# -- greens (already converted .h5 files from previous run, set the path in wavefield_path)
 # wavefield_point_force: Force in N applied by each noise source. Note that if 
 # setting this very low, the amplitude of the correlations will become very 
 # small, and problems with numerical precision can arise.
@@ -29,3 +30,38 @@
 # wavefield_filter: [freq_min, freq_max] of prepared green's functions in Hz.
 # wavefield_channel: Synthetics channel (of recording), Z, E, N or "all". This
 # also determines which correlation channels (ZZ, ZE, ZN...NN...) are computed.
+
+#### Spatially Variable Grid
+# svp_grid: set to true if svp grid is wanted
+# svp_dense_antipole: antipole of center is made dense too by 'flipping' the grid, i.e. grid is mirrored at the equator and then shifted
+# svp_only_ocean: set to true if all grid points on land are to be removed
+# svp_voronoi_area: set to true if voronoi cell surface areas should be calculated. Useful/necessary for strongly heterogenous grids
+# svp_station_remove: radius around stations where gridpoints are removed (in degrees)
+# svp_plot: set to false if output should not be plotted
+
+
+
+### Spatially Variable grid parameters, should be list with same lenghts. If more than one is given the first one is used as background grid and radius of additional grids is given in svp_gamma
+# svp_beta: steepness of the decrease in grid point density, (high value means rapid increase) 
+# svp_gamma: radius of additional dense areas (in degrees)
+# svp_lat_0: latitude of centre points, first one is background grid
+# svp_lon_0: longitude of centre points, first one is background grid
+# svp_phi_min: minimum grid point distance
+# svp_phi_max: maximum grid point distance
+# svp_sigma: radius of the area of high grid point density
+
+
+### Automatic Grid
+# auto_data_grid: set to true if grid should be adapted automatically
+# auto_data_path: path to input data, should be .npy file with lat,lon,data
+# auto_data_thresh: Data values above this (normalised) will have additional grids
+# auto_station_remove: removes gridpoints around stations in given radius (in degrees)
+
+### Automatic Grid parameters
+# auto_back_grid_centre: Either data or stations. Sets the centre of the background grid.
+# auto_back_grid_phi_min: minimum grid point distance of background grid
+# auto_back_grid_phi_max: maximum grid point distance of background grid
+# auto_data_grid_phi: additional grid point distance
+# auto_data_path: null
+# auto_extent: list of lon_min,lon_max,lat_min,lat_max. Set extent where additional grids should be added
+# auto_gamma_thresh: radius in which denser grids will be added

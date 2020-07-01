@@ -1,0 +1,52 @@
+# inversion_config.yml mostly contains the parameters from config.yml, source_config.yml, source_setup_parameters.yml, and measr_config.yml
+# It can be used to either automatically run the forward simulation for a given distribution
+# Or run a gradient-based iterative inversion. 
+
+### Additional parameters
+# output_folder: path to where the project should be saved
+# stationlist: Path to stationlist. If no stationlist is given and download_data is true, a stationlist will be created. 
+# add_metadata: If only forward simulation is run, this should be set to true
+# add_noise: adds 5% of the rms of all cross-correlations to simulate noise
+# output_plot: plots the output
+
+## data_download parameters
+# NOTE: If a stationlist is given only data for those stations will be downloaded (or attempted to)
+# download_data: set to true if data should be downloaded
+# download_data_date: can be either 'yesterday' or date in yyyy-mm-dd format
+# download_data_channels: Set list of channels that should be downloaded, wildcards accepted (e.g. ['*Z','*E'] or ['BHZ'])
+# min_station_dist: minimum distance between station pairs (in degrees)
+# domain_type: one of circular, rectangular, global
+## if domain_type is circular:
+# circ_lat_center: latitude of centre of circle
+# circ_lon_center: longitude of centre of circle
+# circ_radius_min: minimum radius of circle (in degrees)
+# circ_radius_max: maximum radius of circle (in degrees)
+## if domain_type is rectangular:
+# rect_lat_min: minimum latitude
+# rect_lat_max: maximum latitude
+# rect_lon_min: minimum longitude
+# rect_lon_max: maximum longitude
+
+## inversion parameters
+# observed_corr: path to observed cross-correlations. If no path is given only the forward simulation will be performed
+# opt_statpair: Optimum station pair file (.csv) can be given here, only those will be copied from observed_corr. Format: NET.STA.LOC.CHA--NET.STA.LOC.CHA with sta_pair as header
+# snr_thresh: Signal-to-noise ratio threshold for copying observed correlations. Computed using maximum in surface wave arrival window divided by standard deviation of the whole time series. (e.g. 4)
+# corr_max_dist: maximum distance between the station pairs (in degrees)
+# nr_iterations: Number of iterations for the inversion
+# nr_step_tests: Number of step tests for each iteration
+# step_test_smoothing: Tests if the misfit of the updated model is below the previous misfit. If not, smoothing is reduced in steps of 0.5 (degrees)
+# frac_corr_slt: fraction of correlations that is used for the step length test, e.g. 2 means 1/2 of the correlations are used
+# step_length_min: minimum step length that will be tested 
+# step_length_max: maximum step length that will be tested
+# step_smooth: list of iterations and smoothing (in degrees). [[iteration1,smoothing1],[iteration2,smoothing2],[iteration3,smoothing3],....]
+# Up to iteration1 (could be iteration number 2 or 3), smoothing1 will be used. Afterwards smoothing2 will be used up to iteration2 etc.
+
+
+## wavefield parameters
+# see config_comments.txt for details. If wavefield_type analytic, the following parameters have to be set:
+# v: analytic surface wave speed
+# q: analytic attenuation factor q
+# rho: analytic density
+
+
+    

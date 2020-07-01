@@ -2,6 +2,7 @@
 
 # define as many superimposing sources as you want below,
 # of types "gaussian_blob", "homogeneous", and "ocean"
+# Multiple gaussian blobs can be set by making lists for center_latlon and sigma_m
 
 # Remove those that are not needed
 
