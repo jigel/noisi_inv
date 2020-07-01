@@ -15,6 +15,7 @@ from noisi.scripts.run_wavefieldprep import precomp_wavefield
 from noisi.scripts.run_sourcesetup import source_setup
 from noisi.scripts.run_measurement import run_measurement
 from noisi.scripts.kernel import run_kern
+from noisi.scripts.assemble_gradient import assemble_grad
 
 # simple embarrassingly parallel run:
 comm = MPI.COMM_WORLD
@@ -152,6 +153,21 @@ parser_kernel.add_argument('step', type=int, help='Iteration step (start\
 parser_kernel.add_argument('--ignore_network',
                            default=True, required=False)
 parser_kernel.set_defaults(func=run_kern)
+
+
+# ###########################################################################
+# Get gradient
+# ###########################################################################
+parser_kernel = subparsers.add_parser('gradient', help='Calculate source \
+gradient.')
+parser_kernel.add_argument('source_model', type=str, help='Path to source\
+ model.')
+parser_kernel.add_argument('step', type=int, help='Iteration step (start\
+ at 0.)')
+parser_kernel.add_argument('--ignore_network',
+                           default=True, required=False)
+parser_kernel.set_defaults(func=assemble_grad)
+
 
 # ###########################################################################
 # ### Step length test forward model

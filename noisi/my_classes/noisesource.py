@@ -57,7 +57,17 @@ class NoiseSource(object):
         # return one spectrum in location with index iloc
         return np.dot(self.distr_basis[iloc, :],
                       self.spect_basis)
-
+    
+    def get_spect_all(self):
+        
+        # return all spectrums in array
+        distr_basis_var = self.distr_basis
+        spect_basis_var = self.spect_basis
+        ntraces = self.src_loc[0].shape[0]
+        
+        return np.asarray([np.dot(distr_basis_var[i,:],spect_basis_var) for i in range(ntraces)])
+    
+    
     def plot(self, **options):
 
         # plot the distribution

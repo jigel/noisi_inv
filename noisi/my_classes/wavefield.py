@@ -91,7 +91,7 @@ class WaveField(object):
         file.create_dataset('sourcegrid', data=self.sourcegrid[:].copy())
         file.create_dataset('data', shape, dtype=np.float32)
 
-        print('Copied setup of ' + self.file.filename)
+        #print('Copied setup of ' + self.file.filename)
         file.close()
 
         return(WaveField(newfile, w=w))
