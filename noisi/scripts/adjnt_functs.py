@@ -92,6 +92,31 @@ def energy(corr_o, corr_s, g_speed, window_params):
     return adjt_src, success
 
 
+def envelope_difference(corr_o, corr_s, g_speed, window_params):
+    """
+    From Korbinian
+    """
+    success = False
+
+    #assert u.shape == u_0.shape == win.shape
+    env_s = np.sqrt(corr_s.data ** 2 + np.imag(hilbert(corr_s.data)) ** 2)
+    env_o = np.sqrt(corr_o.data ** 2 + np.imag(hilbert(corr_o.data)) ** 2)
+    d_env_1 = corr_s.data
+    d_env_2 = np.imag(hilbert(corr_s.data))
+
+    # compute measurement
+    msr = env_s - env_o
+    
+    u1 = msr / env_s * d_env_1
+    u2 = np.imag(hilbert(msr / env_s * d_env_2))
+    
+    adjt_src = (u1 - u2)
+        
+    success = True
+    
+    return adjt_src, success
+
+
 def get_adj_func(mtype):
     if mtype == 'ln_energy_ratio':
         func = log_en_ratio_adj
@@ -106,6 +131,9 @@ def get_adj_func(mtype):
 
     elif mtype == 'square_envelope':
         func = square_envelope
+        
+    elif mtype == 'envelope':
+        func = envelope_difference
 
     else:
         msg = 'Measurement functional %s not currently implemented. \

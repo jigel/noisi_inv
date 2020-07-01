@@ -26,6 +26,17 @@ def square_envelope(correlation, g_speed, window_params):
     return square_envelope
 
 
+def envelope(correlation, g_speed, window_params):
+    
+    envelope = np.sqrt(correlation.data ** 2 + np.imag(hilbert(correlation.data)) ** 2)
+    
+    if window_params['plot']:
+        plot_window(correlation, envelope, 'N/A')
+        
+    return envelope
+
+
+
 def windowed_waveform(correlation, g_speed, window_params):
     window = get_window(correlation.stats, g_speed, window_params)
     win = window[0]
@@ -126,6 +137,8 @@ def get_measure_func(mtype):
         func = windowed_waveform
     elif mtype == 'full_waveform':
         func = full_waveform
+    elif mtype == 'envelope':
+        func = envelope   
     else:
         msg = 'Measurement functional %s not currently implemented.' % mtype
         raise ValueError(msg)

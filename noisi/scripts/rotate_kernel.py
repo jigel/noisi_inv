@@ -29,7 +29,7 @@ def assemble_rotated_kernel(temp_kern_files, output_files, adjt_srcs, stationlis
     lon1 = stationlist[stationlist.sta == sta1]["lon"].values[0]
     lat2 = stationlist[stationlist.sta == sta2]["lat"].values[0]
     lon2 = stationlist[stationlist.sta == sta2]["lon"].values[0]
-    print(lat1, lon1, lat2, lon2)
+    #print(lat1, lon1, lat2, lon2)
     baz_in_degrees = gps2dist_azimuth(lat1, lon1, lat2, lon2)[-1]
 
     # get rotation matrix
@@ -71,12 +71,12 @@ def assemble_rotated_kernel(temp_kern_files, output_files, adjt_srcs, stationlis
     kern_tz = np.zeros((speccnt, filtcnt, ntraces,
                         len(adjt_srcs[0][0])))
 
-    print(kern_tt.shape)
+    #print(kern_tt.shape)
     # loop over source locs
     for i in range(ntraces):
         # compile the correlation matrix
         for ix_spec in range(speccnt):
-            if i % 1000 == 1: print(i)
+            #if i % 1000 == 1: print(i)
             K = np.zeros((nt, 3, 3))
             ix_s = specs[ix_spec]
             K[:, 0, 0] = f_zz[ix_s][i, :]

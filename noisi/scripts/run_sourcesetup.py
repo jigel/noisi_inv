@@ -1,3 +1,12 @@
+"""
+Collection of correlation functions for noisi
+:copyright:
+    noisi development team
+:license:
+    GNU Lesser General Public License, Version 3 and later
+    (https://www.gnu.org/copyleft/lesser.html)
+"""
+
 import numpy as np
 from obspy.signal.invsim import cosine_taper
 import h5py
@@ -20,6 +29,9 @@ import matplotlib.pyplot as plt
 from math import pi, sqrt
 from warnings import warn
 import pprint
+
+import functools
+print = functools.partial(print, flush=True)
 
 
 class source_setup(object):
@@ -45,67 +57,74 @@ class source_setup(object):
                                     config_filename)
 
         # set up the directory structure:
-        os.mkdir(source_model)
-        os.mkdir(os.path.join(source_model, 'observed_correlations'))
-        for d in ['adjt', 'corr', 'kern']:
-            os.makedirs(os.path.join(source_model, 'iteration_0', d))
+        if not os.path.isdir(source_model):
+            os.mkdir(source_model)
+            os.mkdir(os.path.join(source_model, 'observed_correlations'))
+            os.mkdir(os.path.join(source_model, 'observed_correlations_slt'))
 
-        # set up the source model configuration file
-        with io.open(os.path.join(noisi_path,
-                                  'config', 'source_config.yml'), 'r') as fh:
-            conf = yaml.safe_load(fh)
-            conf['date_created'] = str(time.strftime("%Y.%m.%d"))
-            conf['project_name'] = os.path.basename(project_path)
-            conf['project_path'] = os.path.abspath(project_path)
-            conf['source_name'] = os.path.basename(source_model)
-            conf['source_path'] = os.path.abspath(source_model)
-            conf['source_setup_file'] = os.path.join(conf['source_path'],
-                                              'source_setup_parameters.yml')
+            for d in ['adjt', 'corr', 'kern','grad']:
+                os.makedirs(os.path.join(source_model, 'iteration_0', d))
 
-        with io.open(os.path.join(noisi_path,
-                                  'config',
-                                  'source_config_comments.txt'), 'r') as fh:
-            comments = fh.read()
+            # set up the source model configuration file
+            with io.open(os.path.join(noisi_path,
+                                      'config', 'source_config.yml'), 'r') as fh:
+                conf = yaml.safe_load(fh)
+                conf['date_created'] = str(time.strftime("%Y.%m.%d"))
+                conf['project_name'] = os.path.basename(project_path)
+                conf['project_path'] = os.path.abspath(project_path)
+                conf['source_name'] = os.path.basename(source_model)
+                conf['source_path'] = os.path.abspath(source_model)
+                conf['source_setup_file'] = os.path.join(conf['source_path'],
+                                                  'source_setup_parameters.yml')
 
-        with io.open(os.path.join(source_model,
-                                  'source_config.yml'), 'w') as fh:
-            cf = yaml.safe_dump(conf, sort_keys=False, indent=4)
-            fh.write(cf)
-            fh.write(comments)
+            with io.open(os.path.join(noisi_path,
+                                      'config',
+                                      'source_config_comments.txt'), 'r') as fh:
+                comments = fh.read()
 
-        # set up the measurements configuration file
-        with io.open(os.path.join(noisi_path,
-                                  'config', 'measr_config.yml'), 'r') as fh:
-            conf = yaml.safe_load(fh)
-            conf['date_created'] = str(time.strftime("%Y.%m.%d"))
-        with io.open(os.path.join(noisi_path,
-                                  'config',
-                                  'measr_config_comments.txt'), 'r') as fh:
-            comments = fh.read()
+            with io.open(os.path.join(source_model,
+                                      'source_config.yml'), 'w') as fh:
+                cf = yaml.safe_dump(conf, sort_keys=False, indent=4)
+                fh.write(cf)
+                fh.write(comments)
 
-        with io.open(os.path.join(source_model,
-                                  'measr_config.yml'), 'w') as fh:
-            cf = yaml.safe_dump(conf, sort_keys=False, indent=4)
-            fh.write(cf)
-            fh.write(comments)
+            # set up the measurements configuration file
+            with io.open(os.path.join(noisi_path,
+                                      'config', 'measr_config.yml'), 'r') as fh:
+                conf = yaml.safe_load(fh)
+                conf['date_created'] = str(time.strftime("%Y.%m.%d"))
+            with io.open(os.path.join(noisi_path,
+                                      'config',
+                                      'measr_config_comments.txt'), 'r') as fh:
+                comments = fh.read()
 
-        # set up the measurements configuration file
-        with io.open(os.path.join(noisi_path,
-                                  'config',
-                                  'source_setup_parameters.yml'), 'r') as fh:
-            setup = yaml.safe_load(fh)
+            with io.open(os.path.join(source_model,
+                                      'measr_config.yml'), 'w') as fh:
+                cf = yaml.safe_dump(conf, sort_keys=False, indent=4)
+                fh.write(cf)
+                fh.write(comments)
 
-        with io.open(os.path.join(source_model,
-                                  'source_setup_parameters.yml'), 'w') as fh:
-            stup = yaml.safe_dump(setup, sort_keys=False, indent=4)
-            fh.write(stup)
+            # set up the measurements configuration file
+            with io.open(os.path.join(noisi_path,
+                                      'config',
+                                      'source_setup_parameters.yml'), 'r') as fh:
+                setup = yaml.safe_load(fh)
 
-        os.system('cp ' +
-                  os.path.join(noisi_path, 'config', 'stationlist.csv ') +
-                  source_model)
+            with io.open(os.path.join(source_model,
+                                      'source_setup_parameters.yml'), 'w') as fh:
+                stup = yaml.safe_dump(setup, sort_keys=False, indent=4)
+                fh.write(stup)
 
-        print("Copied default source_config.yml, source_setup_parameters.yml \
-and measr_config.yml to source model directory, please edit and rerun.")
+            os.system('cp ' +
+                      os.path.join(noisi_path, 'config', 'stationlist.csv ') +
+                      source_model)
+
+            print("Copied default source_config.yml, source_setup_parameters.yml \
+    and measr_config.yml to source model directory, please edit and rerun.")
+            
+        else:
+            print(f"Source {source_model} already exists.")
+            
         return()
 
     def setup_source_startingmodel(self, args):
@@ -134,14 +153,30 @@ and measr_config.yml to source model directory, please edit and rerun.")
         grd = np.load(os.path.join(conf['project_path'],
                                    'sourcegrid.npy'))
 
-        # add the approximate spherical surface elements
-        if grd.shape[-1] < 50000:
-            surf_el = get_spherical_surface_elements(grd[0], grd[1])
+        # add the voronoi cell surface area or approximate spherical surface elements
+        
+        
+        if 'svp_voronoi_area' in conf and 'svp_grid' in conf or 'auto_data_grid' in conf:
+            if conf["svp_voronoi_area"] and conf["svp_grid"] or conf["auto_data_grid"]:
+                grd_voronoi = np.load(os.path.join(conf['project_path'],'sourcegrid_voronoi.npy'))
+                surf_el = grd_voronoi[2]
+                
+            else:
+                if grd.shape[-1] < 50000:
+                    surf_el = get_spherical_surface_elements(grd[0], grd[1])
+                else:
+                    warn('Large grid; surface element computation slow. Using \
+        approximate surface elements.')
+                    surf_el = np.ones(grd.shape[-1]) * conf['grid_dx'] ** 2
         else:
-            warn('Large grid; surface element computation slow. Using \
-approximate surface elements.')
-            surf_el = np.ones(grd.shape[-1]) * conf['grid_dx_in_m'] ** 2
+            if grd.shape[-1] < 50000:
+                surf_el = get_spherical_surface_elements(grd[0], grd[1])
+            else:
+                warn('Large grid; surface element computation slow. Using \
+    approximate surface elements.')
+                surf_el = np.ones(grd.shape[-1]) * conf['grid_dx'] ** 2
 
+                
         # get the relevant array sizes
         wfs = glob(os.path.join(conf['project_path'], 'greens', '*.h5'))
         if wfs != []:
@@ -162,9 +197,17 @@ precompute_wavefield first.')
 
         # fill in the distributions and the spectra
         for i in range(n_distr):
-            coeffs[:, i] = self.distribution_from_parameters(grd,
-                                                             parameter_sets[i],
-                                                             conf['verbose'])
+            
+            if parameter_sets[i]['distribution'].endswith('.npy'):                
+                coeffs[:, i] = self.distribution_from_data(grd,parameter_sets[i]['distribution'],conf["verbose"])
+                
+            elif parameter_sets[i]['distribution'].endswith('.h5'):
+                coeffs[:, i] = self.distribution_from_prev_model(grd,parameter_sets[i]['distribution'])
+
+            else:              
+                coeffs[:, i] = self.distribution_from_parameters(grd,
+                                                                 parameter_sets[i],
+                                                                 conf['verbose'])
 
             # plot
             outfile = os.path.join(args.source_model,
@@ -237,22 +280,51 @@ precompute_wavefield first.')
         elif parameters['distribution'] == 'gaussian_blob':
             if verbose:
                 print('Adding gaussian blob')
-            dist = geographical_distances(grd,
+                
+            
+            # implement more than one blob
+            if not isinstance(parameters['center_latlon'][0],list):
+                n_blobs = 1
+            else:
+                n_blobs = np.shape(parameters['center_latlon'])[0]
+                        
+            blob_dist = np.zeros(np.shape(grd)[-1])
+                        
+            for k in range(n_blobs):
+                                    
+                # try except in case blob parameters are not in list 
+                try: 
+                    dist = geographical_distances(grd,
+                                          parameters['center_latlon'][k]) / 1000.
+                except: 
+                    dist = geographical_distances(grd,
                                           parameters['center_latlon']) / 1000.
-            sigma_km = parameters['sigma_m'] / 1000.
-            blob = np.exp(-(dist ** 2) / (2 * sigma_km ** 2))
-            # normalize for a 2-D Gaussian function
-            # important: Use sigma in m because the surface elements are in m
-            norm_factor = 1. / ((sigma_km * 1000.) ** 2 * 2. * np.pi)
-            blob *= norm_factor
-            if parameters['normalize_blob_to_unity']:
-                blob /= blob.max()
+                    
+                try:
+                    sigma_km = parameters['sigma_m'][k] / 1000.
+                except:
+                    sigma_km = parameters['sigma_m'] / 1000.
 
-            if parameters['only_in_the_ocean']:
-                is_ocean = np.abs(is_land(grd[0], grd[1]) - 1.)
-                blob *= is_ocean
+                blob = np.exp(-(dist ** 2) / (2 * sigma_km ** 2))
+                # normalize for a 2-D Gaussian function
+                # important: Use sigma in m because the surface elements are in m
+                norm_factor = 1. / ((sigma_km * 1000.) ** 2 * 2. * np.pi)
+                blob *= norm_factor
+                if parameters['normalize_blob_to_unity']:
+                    blob /= blob.max()
 
-            return(float(parameters['weight']) * blob)
+                if parameters['only_in_the_ocean']:
+                    is_ocean = np.abs(is_land(grd[0], grd[1]) - 1.)
+                    blob *= is_ocean
+                    
+                
+                blob_dist += blob
+                
+            blob_dist *= parameters['weight']
+                
+
+            return(blob_dist)
+
 
     def spectrum_from_parameters(self, freq, parameters):
 
@@ -266,3 +338,83 @@ precompute_wavefield first.')
             spec = spec / (sig * sqrt(2. * pi))
 
         return(spec)
+    
+    
+    def distribution_from_data(self,grd,data,verbose=False):
+        """ 
+        Use .npy file to setup source distribution
+        Input file has to be: [lat,lon,data] where -90 < lat < 90 and -180 < lon < 180
+        """
+        
+        # need interpolation from data grid to actual grid
+        grd_data = np.asarray(np.load(data))
+        
+        # check if lat and lon are correct        
+        if not all(x <= 90 and x >= -90 for x in grd_data[0]):
+            raise ValueError("Latitudes for data not within range (-90,90). Exiting..")
+
+        if not all(x <= 180 and x >= -180 for x in grd_data[1]):
+            raise ValueError("Longitudes for data not within range (-180,180). Exiting..")
+            
+
+        lat_dist = []
+        lon_dist = []
+        data_dist = []
+        
+        print("Interpolating data..")
+        # nearest neighbour for interpolation
+        for k in range(np.size(grd[1])):
+            
+            dist_var = np.sqrt((grd_data[0]-grd[1][k])**2+(grd_data[1]-grd[0][k])**2)
+
+            # Append interpolated grid to new variables
+            lat_dist.append(grd[1][k])
+            lon_dist.append(grd[0][k])
+
+            dist_min_idx = np.nanargmin(dist_var)
+
+            # Append to new array
+            data_dist.append(grd_data[2][dist_min_idx])
+
+        print('Source distribution setup with data.')
+        
+        return data_dist
+    
+    def distribution_from_prev_model(self,grd,model):
+        """ 
+        Use .h5 file from previous model
+        """
+        model_var = h5py.File(model,'r')
+        
+        model_lat = np.asarray(model_var['coordinates'])[1]
+        model_lon = np.asarray(model_var['coordinates'])[0]
+        model_data = np.asarray(model_var['model']).T[0]
+
+        grd_data = np.asarray([model_lon,model_lat,model_data])
+        
+        lat_dist = []
+        lon_dist = []
+        model_dist = []
+        
+        print("Interpolating from previous model..")
+        # nearest neighbour for interpolation
+        for k in range(np.size(grd[1])):
+            
+            dist_var = np.sqrt((grd_data[0]-grd[0][k])**2+(grd_data[0]-grd[0][k])**2)
+
+            # Append interpolated grid to new variables
+            lat_dist.append(grd[1][k])
+            lon_dist.append(grd[0][k])
+
+            dist_min_idx = np.nanargmin(dist_var)
+
+            # Append to new array
+            model_dist.append(grd_data[2][dist_min_idx])
+
+        print('Source distribution setup with previous model.')
+        
+        return model_dist
+
+    
+    
+    

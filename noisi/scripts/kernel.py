@@ -28,6 +28,9 @@ try:
 except ImportError:
     pass
 
+import functools
+print = functools.partial(print, flush=True)
+
 
 def add_input_files(kp, all_conf, insta=False):
 
@@ -143,9 +146,11 @@ def compute_kernel(input_files, output_file, all_conf, nsrc, all_ns, taper,
 
     ntime, n, n_corr, Fs = all_ns
     wf1, wf2, adjt = input_files
-########################################################################
-# Prepare filenames and adjoint sources
-########################################################################
+    
+    ########################################################################
+    # Prepare filenames and adjoint sources
+    ########################################################################
+    
     adjt_srcs = open_adjoint_sources(all_conf, adjt, n_corr)
     if None in adjt_srcs:
         return(None)
@@ -198,13 +203,21 @@ def compute_kernel(input_files, output_file, all_conf, nsrc, all_ns, taper,
 
     # Loop over locations
     print_each_n = max(5, round(max(ntraces // 3, 1), -1))
+        
+    # preload wavefield and spectrum
+    S_all = nsrc.get_spect_all()
+    wf1_data = np.asarray(wf1.data)
+    wf2_data = np.asarray(wf2.data)
+    
+    
     for i in range(ntraces):
 
         # noise source spectrum at this location
         # For the kernel, this contains only the basis functions of the
         # spectrum without weights; might still be location-dependent,
         # for example when constraining sensivity to ocean
-        S = nsrc.get_spect(i)
+        S = S_all[i,:]
+        #S = nsrc.get_spect(i)
 
         if S.sum() == 0.:
             # The spectrum has 0 phase so only checking
@@ -262,7 +275,7 @@ def compute_kernel(input_files, output_file, all_conf, nsrc, all_ns, taper,
                 for j in range(len(f)):
                     delta = f[j].stats.delta
                     kern[ix_spec, ix_f, i, j] = np.dot(corr_temp,
-                                                       f[j].data) * delta * nsrc.surf_area[i]
+                                                       f[j].data) * delta 
 
             if i % print_each_n == 0 and all_conf.config['verbose']:
                 print("Finished {} of {} source locations.".format(i, ntraces))

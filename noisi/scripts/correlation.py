@@ -26,6 +26,9 @@ except ImportError:
     pass
 import re
 
+import functools
+print = functools.partial(print, flush=True)
+
 
 class config_params(object):
     """collection of input parameters"""
@@ -308,10 +311,19 @@ def compute_correlation(input_files, all_conf, nsrc, all_ns, taper,
 
     # Loop over source locations
     print_each_n = max(5, round(max(ntraces // 5, 1), -1))
+    
+    # preload wavefield and spectrum
+    S_all = nsrc.get_spect_all()
+    wf1_data = np.asarray(wf1.data)
+    wf2_data = np.asarray(wf2.data)
+    
+    
+    
     for i in range(ntraces):
 
         # noise source spectrum at this location
-        S = nsrc.get_spect(i)
+        # load into memory before loop 
+        S = S_all[i,:]
 
         if S.sum() == 0.:
             # If amplitude is 0, continue. (Spectrum has 0 phase anyway.)
@@ -443,7 +455,6 @@ def run_corr(args, comm, size, rank):
                                stationlistfile=os.path.join(all_conf.source_config['project_path'],
                                "stationlist.csv"), output_directory=os.path.join(it_dir, "corr"))
 
-    comm.barrier()
     if rank == 0:
         if all_conf.source_config["rotate_horizontal_components"]:
             fls_to_remove = glob(os.path.join(it_dir, "corr", "*MX[E,N]*MX[E,N]*.sac"))

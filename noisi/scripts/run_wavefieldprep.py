@@ -1,3 +1,12 @@
+"""
+Collection of correlation functions for noisi
+:copyright:
+    noisi development team
+:license:
+    GNU Lesser General Public License, Version 3 and later
+    (https://www.gnu.org/copyleft/lesser.html)
+"""
+
 import io
 import yaml
 import os
@@ -16,6 +25,9 @@ try:
     import instaseis
 except ImportError:
     pass
+
+import functools
+print = functools.partial(print, flush=True)
 
 
 class precomp_wavefield(object):
@@ -43,7 +55,8 @@ class precomp_wavefield(object):
         # create output folder
         self.wf_path = os.path.join(args.project_path, 'greens')
         if not os.path.exists(self.wf_path):
-            os.mkdir(self.wf_path)
+            if rank == 0: 
+                os.mkdir(self.wf_path)
 
         # sourcegrid
         self.sourcegrid = np.load(os.path.join(self.args.project_path,
@@ -116,8 +129,7 @@ class precomp_wavefield(object):
             freq_nyq = self.Fs / 2.0  # Nyquist
 
             if freq_nyq < self.config['wavefield_filter'][1]:
-                warn("Selected upper freq > Nyquist, \
-reset to 95\% of Nyquist freq.")
+                warn("Selected upper freq > Nyquist, reset to 95% of Nyquist freq.")
             freq_minres = 1. / self.config['wavefield_duration']
             # lowest resolved
             freq_max = min(0.999 * freq_nyq,
@@ -163,73 +175,78 @@ reset to 95\% of Nyquist freq.")
                              % channel)
 
         # initialize the file
-        f_out = os.path.join(self.wf_path, station_id + '.h5')
+        if not os.path.exists(os.path.join(self.wf_path, station_id + '.h5')):
+            f_out = os.path.join(self.wf_path, station_id + '.h5')
 
-        with h5py.File(f_out, "w") as f:
+            with h5py.File(f_out, "w") as f:
 
-            # DATASET NR 1: STATS
-            stats = f.create_dataset('stats', data=(0,))
-            stats.attrs['reference_station'] = station['sta']
-            stats.attrs['data_quantity'] = self.data_quantity
-            stats.attrs['ntraces'] = self.ntraces
-            stats.attrs['Fs'] = self.Fs
-            stats.attrs['nt'] = int(self.npts)
-            stats.attrs['npad'] = self.npad
-            if self.fdomain:
-                stats.attrs['fdomain'] = True
-            else:
-                stats.attrs['fdomain'] = False
-
-            # DATASET NR 2: Source grid
-            f.create_dataset('sourcegrid', data=self.sourcegrid)
-
-            # DATASET Nr 3: Seismograms itself
-            if self.fdomain:
-                traces = f.create_dataset('data', (self.ntraces,
-                                                   self.npts + 1),
-                                          dtype=np.complex64)
-            else:
-                traces = f.create_dataset('data', (self.ntraces, self.npts),
-                                          dtype=np.float32)
-
-            for i in range(self.ntraces):
-                if i % 1000 == 0 and i > 0 and self.config['verbose']:
-                    print('Converted %g of %g traces' % (i, self.ntraces))
-
-                lat_src = geograph_to_geocent(self.sourcegrid[1, i])
-                lon_src = self.sourcegrid[0, i]
-
-                fsrc = instaseis.ForceSource(latitude=lat_src,
-                                             longitude=lon_src, f_r=point_f)
-                if self.config['synt_data'] == 'DIS':
-                    values = self.db.get_seismograms(source=fsrc,
-                                                     receiver=rec,
-                                                     dt=1. / self.Fs)
-
-                elif self.config['synt_data'] == 'VEL':
-                    values = self.db.get_seismograms(source=fsrc,
-                                                     receiver=rec,
-                                                     dt=1. / self.Fs,
-                                                     kind='velocity')
-                elif self.config['synt_data'] == 'ACC':
-                    values = self.db.get_seismograms(source=fsrc,
-                                                     receiver=rec,
-                                                     dt=1. / self.Fs,
-                                                     kind='acceleration')
-                else:
-                    raise ValueError('Unknown data quantity. \
-Choose DIS, VEL or ACC in configuration.')
-
-                trace = values.select(component=channel)[0].data
-                if self.filter is not None:
-                    trace = lfilter(*self.filter, x=trace)
-
+                # DATASET NR 1: STATS
+                stats = f.create_dataset('stats', data=(0,))
+                stats.attrs['reference_station'] = station['sta']
+                stats.attrs['data_quantity'] = self.data_quantity
+                stats.attrs['ntraces'] = self.ntraces
+                stats.attrs['Fs'] = self.Fs
+                stats.attrs['nt'] = int(self.npts)
+                stats.attrs['npad'] = self.npad
                 if self.fdomain:
-                    trace_fd = np.fft.rfft(trace[0: self.npts],
-                                           n=self.npad)
-                    traces[i, :] = trace_fd
+                    stats.attrs['fdomain'] = True
                 else:
-                    traces[i, :] = trace[0: self.npts]
+                    stats.attrs['fdomain'] = False
+
+                # DATASET NR 2: Source grid
+                f.create_dataset('sourcegrid', data=self.sourcegrid)
+
+                # DATASET Nr 3: Seismograms itself
+                if self.fdomain:
+                    traces = f.create_dataset('data', (self.ntraces,
+                                                       self.npts + 1),
+                                              dtype=np.complex64)
+                else:
+                    traces = f.create_dataset('data', (self.ntraces, self.npts),
+                                              dtype=np.float32)
+
+                for i in range(self.ntraces):
+                    if i % 1000 == 0 and i > 0 and self.config['verbose']:
+                        print('Converted %g of %g traces' % (i, self.ntraces))
+
+                    lat_src = geograph_to_geocent(self.sourcegrid[1, i])
+                    lon_src = self.sourcegrid[0, i]
+
+                    fsrc = instaseis.ForceSource(latitude=lat_src,
+                                                 longitude=lon_src, f_r=point_f)
+                    if self.config['synt_data'] == 'DIS':
+                        values = self.db.get_seismograms(source=fsrc,
+                                                         receiver=rec,
+                                                         dt=1. / self.Fs)
+
+                    elif self.config['synt_data'] == 'VEL':
+                        values = self.db.get_seismograms(source=fsrc,
+                                                         receiver=rec,
+                                                         dt=1. / self.Fs,
+                                                         kind='velocity')
+                    elif self.config['synt_data'] == 'ACC':
+                        values = self.db.get_seismograms(source=fsrc,
+                                                         receiver=rec,
+                                                         dt=1. / self.Fs,
+                                                         kind='acceleration')
+                    else:
+                        raise ValueError('Unknown data quantity. \
+    Choose DIS, VEL or ACC in configuration.')
+
+                    trace = values.select(component=channel)[0].data
+                    if self.filter is not None:
+                        trace = lfilter(*self.filter, x=trace)
+
+                    if self.fdomain:
+                        trace_fd = np.fft.rfft(trace[0: self.npts],
+                                               n=self.npad)
+                        traces[i, :] = trace_fd
+                    else:
+                        traces[i, :] = trace[0: self.npts]
+                        
+        else:
+            print(f"{os.path.join(self.wf_path, station_id + '.h5')} already exists.")
+                                   
         return()
 
     def green_spec_analytic(self, distance_in_m):
@@ -271,56 +288,63 @@ invalid for horizontal components; set channel to \"Z\" or use instaseis.")
             print(station_id)
 
         # initialize the file
-        f_out = os.path.join(self.wf_path, station_id + '.h5')
+        if not os.path.exists(os.path.join(self.wf_path, station_id + '.h5')):
 
-        with h5py.File(f_out, "w", ) as f:
+            f_out = os.path.join(self.wf_path, station_id + '.h5')
 
-            # DATASET NR 1: STATS
-            stats = f.create_dataset('stats', data=(0,))
-            stats.attrs['reference_station'] = station['sta']
-            stats.attrs['data_quantity'] = self.data_quantity
-            stats.attrs['ntraces'] = self.ntraces
-            stats.attrs['Fs'] = self.Fs
-            stats.attrs['nt'] = int(self.npts)
-            stats.attrs['npad'] = self.npad
-            if self.fdomain:
-                stats.attrs['fdomain'] = True
-            else:
-                stats.attrs['fdomain'] = False
+            with h5py.File(f_out, "w", ) as f:
 
-            # DATASET NR 2: Source grid
-            f.create_dataset('sourcegrid', data=self.sourcegrid)
-
-            # DATASET Nr 3: Seismograms itself
-            if self.fdomain:
-                f.create_dataset('data', (self.ntraces, self.npts),
-                                 dtype=np.complex)
-            else:
-                f.create_dataset('data', (self.ntraces, self.npts),
-                                 dtype=np.float)
-
-            # loop over source locations
-            for i in range(self.ntraces):
-                lat = self.sourcegrid[1, i]
-                lon = self.sourcegrid[0, i]
-                r = gps2dist_azimuth(lat, lon, lat_sta, lon_sta)[0]
-
-                g_fd = self.green_spec_analytic(r)
-
-                # transform back to time
-                s = np.fft.irfft(g_fd, n=self.npad)[0: self.npts]
-
-                # apply a filter if asked for
-                if self.filter is not None:
-                        trace = lfilter(*self.filter, x=s)
-
+                # DATASET NR 1: STATS
+                stats = f.create_dataset('stats', data=(0,))
+                stats.attrs['reference_station'] = station['sta']
+                stats.attrs['data_quantity'] = self.data_quantity
+                stats.attrs['ntraces'] = self.ntraces
+                stats.attrs['Fs'] = self.Fs
+                stats.attrs['nt'] = int(self.npts)
+                stats.attrs['npad'] = self.npad
                 if self.fdomain:
-                    f['data'][i, :] = np.fft.rfft(trace, n=self.npad)
+                    stats.attrs['fdomain'] = True
                 else:
-                    f['data'][i, :] = trace
-                # flush
-                    f.flush()
+                    stats.attrs['fdomain'] = False
 
-            # close output file
-            f.close()
+                # DATASET NR 2: Source grid
+                f.create_dataset('sourcegrid', data=self.sourcegrid)
+
+                # DATASET Nr 3: Seismograms itself
+                if self.fdomain:
+                    f.create_dataset('data', (self.ntraces, self.npts),
+                                     dtype=np.complex)
+                else:
+                    f.create_dataset('data', (self.ntraces, self.npts),
+                                     dtype=np.float)
+
+                # loop over source locations
+                for i in range(self.ntraces):
+                    lat = self.sourcegrid[1, i]
+                    lon = self.sourcegrid[0, i]
+                    r = gps2dist_azimuth(lat, lon, lat_sta, lon_sta)[0]
+
+                    g_fd = self.green_spec_analytic(r)
+
+                    # transform back to time
+                    s = np.fft.irfft(g_fd, n=self.npad)[0: self.npts]
+
+                    # apply a filter if asked for
+                    if self.filter is not None:
+                            trace = lfilter(*self.filter, x=s)
+
+                    if self.fdomain:
+                        f['data'][i, :] = np.fft.rfft(trace, n=self.npad)
+                    else:
+                        f['data'][i, :] = trace
+                    # flush
+                        f.flush()
+
+                # close output file
+                f.close()
+                
+        else:
+            print(f"{os.path.join(self.wf_path, station_id + '.h5')} already exists.")
+             
+                
         return()

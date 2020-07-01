@@ -1,3 +1,12 @@
+"""
+Collection of correlation functions for noisi
+:copyright:
+    noisi development team
+:license:
+    GNU Lesser General Public License, Version 3 and later
+    (https://www.gnu.org/copyleft/lesser.html)
+"""
+
 import os
 import numpy as np
 import pandas as pd
@@ -10,6 +19,9 @@ from noisi.scripts import adjnt_functs as am
 from noisi.util.windows import my_centered, snratio
 from noisi.util.corr_pairs import get_synthetics_filename
 from warnings import warn
+
+import functools
+print = functools.partial(print, flush=True)
 
 
 def get_station_info(stats):
@@ -36,7 +48,7 @@ def get_station_info(stats):
     return([sta1, sta2, lat1, lon1, lat2, lon2, dist, az, baz])
 
 
-def measurement(source_config, mtype, step, ignore_net,
+def measurement(comm,size,rank,source_config, mtype, step, ignore_net,
                 ix_bandpass, bandpass, step_test, taper_perc, **options):
 
     """
@@ -50,7 +62,8 @@ def measurement(source_config, mtype, step, ignore_net,
     step_dir = os.path.join(source_config['source_path'], step_n)
 
     if step_test:
-        corr_dir = os.path.join(step_dir, 'obs_slt')
+        corr_dir = os.path.join(source_config['source_path'],
+                                'observed_correlations_slt')
     else:
         corr_dir = os.path.join(source_config['source_path'],
                                 'observed_correlations')
@@ -72,8 +85,20 @@ def measurement(source_config, mtype, step, ignore_net,
     if files == []:
         msg = 'No input found!'
         raise ValueError(msg)
+        
+        
+    #### split up files so that it can be scattered
+    if rank == 0:
+        files_split = np.array_split(files,size)
+        files_split = [k.tolist() for k in files_split]
+    else:
+        files_split = None
+        
+    files_split = comm.scatter(files_split,root=0) 
+        
+        
 
-    for i, f in enumerate(files):
+    for i, f in enumerate(files_split):
 
         # Read data
         try:
@@ -137,7 +162,7 @@ def measurement(source_config, mtype, step, ignore_net,
 
         # timeseries-like measurements:
         if mtype in ['square_envelope',
-                     'full_waveform', 'windowed_waveform']:
+                     'full_waveform', 'windowed_waveform','envelope']:
             l2_so = 0.5 * np.sum(np.power((msr_s - msr_o), 2))
             snr = snratio(tr_o, **options)
             snr_a = snratio(tr_o, **_options_ac)
@@ -191,6 +216,15 @@ def measurement(source_config, mtype, step, ignore_net,
                                                 format='SAC')
         else:
             raise ValueError("Some problem with adjoint sources.")
+            
+            
+    comm.barrier()
+            
+    measurements_all = comm.gather(measurements,root=0)
+    measurements_all = comm.bcast(measurements_all,root=0)
+    measurements = pd.concat(measurements_all,ignore_index=True) 
+        
+    comm.barrier()
 
     return measurements
 
@@ -222,6 +256,13 @@ def run_measurement(args, comm, size, rank):
     window_params['win_overlap'] = measr_config['window_params_win_overlap']
     window_params['wtype'] = measr_config['window_params_wtype']
     window_params['plot'] = measr_config['window_plot_measurements']
+    
+    # variable window
+    try:
+        window_params['hw_variable'] = measr_config['window_params_hw_variable']
+    except KeyError:
+        window_params['hw_variable'] = False
+    
 
     if bandpass is None:
         bandpass = [None]
@@ -247,7 +288,7 @@ def run_measurement(args, comm, size, rank):
         and len(measr_config['g_speed']) == len(bandpass):
         g_speeds = measr_config['g_speed']
 
-    if measr_config['mtype'] in ['square_envelope']:
+    if measr_config['mtype'] in ['square_envelope','envelope']:
         window_params['win_overlap'] = True
 
     hws = window_params['hw'][:]
@@ -256,7 +297,7 @@ def run_measurement(args, comm, size, rank):
 
         g_speed = g_speeds[i]
         window_params['hw'] = hws[i]
-        ms = measurement(source_config, mtype, step, ignore_network,
+        ms = measurement(comm,size,rank,source_config, mtype, step, ignore_network,
                          ix_bandpass=i, bandpass=bandpass[i],
                          step_test=step_test, taper_perc=taper_perc,
                          g_speed=g_speed, window_params=window_params)
