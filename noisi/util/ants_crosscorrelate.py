@@ -150,11 +150,11 @@ def ants_crosscorrelate(args,comm,size,rank):
                 corr_comp.append(c1+c2)
         corr_comp = list(set(corr_comp))
     elif args.wavefield_channel == 'Z':
-        corr_comp = 'ZZ'
+        corr_comp = ['ZZ']
     elif args.wavefield_channel == 'E':
-        corr_comp = 'EE'
+        corr_comp = ['EE']
     elif args.wavefield_channel == 'N':
-        corr_comp = 'NN'
+        corr_comp = ['NN']
     
     # cross-correlate
     config_correlation = {

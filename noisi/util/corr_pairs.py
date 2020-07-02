@@ -51,22 +51,41 @@ def rem_no_obs(stapairs, source_conf, directory, ignore_network=True):
 
     conf = yaml.safe_load(open(os.path.join(source_conf['project_path'],
                                             'config.yml')))
-    channel = conf['wavefield_channel']
-    channel = '??' + channel[-1]
-
+    
+    if conf['wavefield_channel'] == 'all':
+        channel = ['??Z','??E','??N']
+    else:
+        channel = conf['wavefield_channel']
+        channel = ['??' + channel[-1]]
+        
     stapairs_new = []
+
     for i in range(len(stapairs)):
-        # Check if an observation is actually available
-        if stapairs[i] == '':
-            break
+        for cha1 in channel:
+            for cha2 in channel:
+                #for cha2 in channel:
+                    # Check if an observation is actually available
+                if stapairs[i] == '':
+                    break
 
-        sta1 = '{}.{}.*.{}'.format(*(stapairs[i][0].split()[0: 2] + [channel]))
-        sta2 = '{}.{}.*.{}'.format(*(stapairs[i][1].split()[0: 2] + [channel]))
-        p_new = glob_obs_corr(sta1, sta2, directory, ignore_network)
+                sta1 = '{}.{}.*.{}'.format(*(stapairs[i][0].split()[0: 2] + [cha1]))
+                sta2 = '{}.{}.*.{}'.format(*(stapairs[i][1].split()[0: 2] + [cha2]))
 
-        if p_new == []:
-            continue
-        stapairs_new.append(stapairs[i])
+                #print(sta1,sta2)
+
+                p_new = glob_obs_corr(sta1, sta2, directory, ignore_network)
+                #print(p_new)
+
+                if p_new == []:
+                    continue
+
+                stapairs_new.append(stapairs[i])
+
+
+    # unique pairs
+    stapairs_unique = [list(x) for x in set(tuple(x) for x in stapairs_new)]
+    stapairs_new = stapairs_unique
+                
     return stapairs_new
 
 
@@ -82,32 +101,44 @@ def rem_fin_prs(stapairs, source_conf, step):
 
     conf = yaml.safe_load(open(os.path.join(source_conf['project_path'],
                                             'config.yml')))
-    channel = 'MX' + conf['wavefield_channel']
+    
+    if conf['wavefield_channel'] == 'all':
+        channel = ['MXZ','MXE','MXN']
+    else:
+        channel = ['MX' + conf['wavefield_channel'][-1]]
+        
+    #channel = 'MX' + conf['wavefield_channel']
 
     mod_dir = os.path.join(source_conf['source_path'],
                            'iteration_{}'.format(step), 'corr')
 
     stapairs_new = []
+
     for sp in stapairs:
-        id1 = sp[0].split()[0] + sp[0].split()[1]
-        id2 = sp[1].split()[0] + sp[1].split()[1]
+        for cha1 in channel:
+            for cha2 in channel:
+                id1 = sp[0].split()[0] + sp[0].split()[1]
+                id2 = sp[1].split()[0] + sp[1].split()[1]
 
-        if id1 < id2:
-            inf1 = sp[0].split()
-            inf2 = sp[1].split()
-        else:
-            inf2 = sp[0].split()
-            inf1 = sp[1].split()
+                if id1 < id2:
+                    inf1 = sp[0].split()
+                    inf2 = sp[1].split()
+                else:
+                    inf2 = sp[0].split()
+                    inf1 = sp[1].split()
 
-        sta1 = "{}.{}..{}".format(*(inf1[0: 2] + [channel]))
-        sta2 = "{}.{}..{}".format(*(inf2[0: 2] + [channel]))
+                sta1 = "{}.{}..{}".format(*(inf1[0: 2] + [cha1]))
+                sta2 = "{}.{}..{}".format(*(inf2[0: 2] + [cha2]))
 
-        corr_name = "{}--{}.sac".format(sta1, sta2)
-        corr_name = os.path.join(mod_dir, corr_name)
-        if not os.path.exists(corr_name):
+                corr_name = "{}--{}.sac".format(sta1, sta2)
+                corr_name = os.path.join(mod_dir, corr_name)
+                if not os.path.exists(corr_name):
+                    stapairs_new.append(sp)
 
-            stapairs_new.append(sp)
-
+    # unique pairs
+    stapairs_unique = [list(x) for x in set(tuple(x) for x in stapairs_new)]
+    stapairs_new = stapairs_unique
+                    
     return stapairs_new
 
 
