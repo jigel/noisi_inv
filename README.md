@@ -14,6 +14,7 @@ Install requirements (easiest done with anaconda)
 - h5py
 - jupyter
 - pytest
+- pyasdf
 
 Additionally, install [instaseis](http://instaseis.net/), if you plan to use it for Green's functions.
 Install jupyter notebook if you intend to run the tutorial (see below).
@@ -23,7 +24,7 @@ If you encounter problems with mpi4py, try removing it and reinstalling it using
 Clone the repository with git:
 `git clone https://github.com/lermert/noisi.git`
 
-Change into the `noisi_v1/` directory. Call `pip install .` here, or call `pip install -v -e .` if you intend to modify the code.
+Change into the `noisi/` directory. Call `pip install .` here, or call `pip install -v -e .` if you intend to modify the code.
 
 After installation, change to the `noisi/noisi` directory and run `pytest`. If you encounter any errors (warnings are o.k.), we'll be grateful if you let us know. 
 
