@@ -28,7 +28,13 @@ def ants_preprocess(args,comm,size,rank):
 
 
     data_raw_path = os.path.join(args.project_path,'data','raw')
-
+    
+    
+    if args.synt_data == 'DIS':
+        synt_data = 'DISP'
+    else:
+        synt_data = args.synt_data
+    
     # config file created here. Change parameters
     config_preprocess = {
         "project_path": args.project_path,
@@ -66,6 +72,7 @@ def ants_preprocess(args,comm,size,rank):
         "gcmt_begin": str(args.t_start).split('-')[0]+','+str(args.t_start).split('-')[1]+','+str(args.t_start).split('-')[2].split('T')[0],
         "gcmt_end": str(args.t_end).split('-')[0]+','+str(args.t_end).split('-')[1]+','+str(args.t_end).split('-')[2].split('T')[0],
         "gcmt_exclude": False,
+        "gcmt_minmag": 5.6,
         "input_dirs": [
             f"{data_raw_path}"
         ],
@@ -78,7 +85,7 @@ def ants_preprocess(args,comm,size,rank):
             5,
             5.2
         ],
-        "instr_correction_unit": args.synt_data,
+        "instr_correction_unit": synt_data,
         "instr_correction_waterlevel": 0.0,
         "locations": [
             "",
@@ -87,6 +94,7 @@ def ants_preprocess(args,comm,size,rank):
             "10",
             "11",
         ],
+        "phaseshift": True,
         "quality_maxgapsec": 120.0,
         "quality_minlengthsec": 0.0,
         "testrun": False,
@@ -135,13 +143,18 @@ def ants_crosscorrelate(args,comm,size,rank):
     
     # cross-correlation channels
     if args.wavefield_channel == 'all':
-        corr_comp = ['ZZ', 'RR', 'TT', 'ZR', 'RZ', 'ZT', 'TZ', 'RT', 'TR']
+        chans = ["Z", "T", "R", "1", "2", "E", "N", "X", "Y"]
+        corr_comp = []
+        for c1 in chans:
+            for c2 in chans:
+                corr_comp.append(c1+c2)
+        corr_comp = list(set(corr_comp))
     elif args.wavefield_channel == 'Z':
         corr_comp = 'ZZ'
     elif args.wavefield_channel == 'E':
-        corr_comp = 'RR'
+        corr_comp = 'EE'
     elif args.wavefield_channel == 'N':
-        corr_comp = 'TT'
+        corr_comp = 'NN'
     
     # cross-correlate
     config_correlation = {
@@ -151,6 +164,7 @@ def ants_crosscorrelate(args,comm,size,rank):
         "cap_glitch": False,
         "cap_thresh": 10.0,
         "corr_autocorr": False,
+        "corr_only_autocorr": False,
         "corr_maxlag": args.max_lag,
         "corr_normalize": False,
         "corr_tensorcomponents": corr_comp,
@@ -174,6 +188,7 @@ def ants_crosscorrelate(args,comm,size,rank):
         "ram_norm": False,
         "ram_prefilt": [],
         "ram_window": 0.0,
+        "rotate": False,
         "time_begin": str(args.t_start),
         "time_end": str(args.t_end),
         "time_min_window": 3600,
