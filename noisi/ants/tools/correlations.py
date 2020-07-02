@@ -1,3 +1,4 @@
+  
 import numpy as np
 from math import sqrt, isnan
 from obspy.signal.cross_correlation import xcorr
@@ -140,7 +141,3 @@ def pcc_2(data1, data2, max_lag_samples, params=False):
     pcc2 /= len(data1)
 
     return(my_centered(np.real(pcc2), 2 * max_lag_samples + 1), params)
-
-
-
-

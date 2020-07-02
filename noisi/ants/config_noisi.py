@@ -1,6 +1,7 @@
 import io
 import json
 import os
+#import click
 from obspy import UTCDateTime
 
 
@@ -15,6 +16,7 @@ DEFAULT_Preprocess = {
     "gcmt_exclude":False,
     "gcmt_begin":'1970,01,01',
     "gcmt_end":'1970,01,01',
+    "gcmt_minmag": 5.6,
     "event_exclude_local_cat":False,
     "event_exclude_local_cat_begin":'1970,01,01',
     "event_exclude_local_cat_end":'1970,01,01',
@@ -38,16 +40,17 @@ DEFAULT_Preprocess = {
     "wins_taper_type":'cosine',
     "Fs_old":[],
     "Fs_new":[],
+    "phaseshift": True,
     "Fs_antialias_factor":0.4,
     "instr_correction":True,
     "instr_correction_unit":'VEL',
     "instr_correction_input":'resp',
     "instr_correction_prefilt":[],
     "instr_correction_waterlevel":0.,
-    
 }
 
 #CONFIG_Preprocess = os.path.join('input','config_preprocess.json')
+
 
 class ConfigPreprocess(object):
     """Contains basic parameters for the job (paths, etc.)"""
@@ -62,13 +65,14 @@ class ConfigPreprocess(object):
         self.input_dirs = None
         self.input_format = None
         self.locations = None
-        
+
         self.quality_minlengthsec = None
         self.quality_maxgapsec = None
-        
+
         self.gcmt_exclude = None
         self.gcmt_begin = None
         self.gcmt_end = None
+        self.gcmt_minmag = None
         self.event_exclude_local_cat = None
         self.event_exclude_local_cat_begin = None
         self.event_exclude_local_cat_end = None
@@ -83,35 +87,34 @@ class ConfigPreprocess(object):
         self.event_exclude_freqmin = None
         self.event_exclude_freqmax = None
         self.event_exclude_level = None
-        
+
         self.wins = None
         self.wins_trim = None
         self.wins_detrend = None
         self.wins_demean = None
         self.wins_taper = None
         self.wins_taper_type = None
-        
+        self.wins_filter = None
+
+        self.phaseshift = None
         self.Fs_old = None
         self.Fs_new = None
         self.Fs_antialias_factor = None
-        
+
         self.instr_correction = None
         self.instr_correction_unit = None
         self.instr_correction_input = None
-        self.instr_correction_prefilt= None
+        self.instr_correction_prefilt = None
         self.instr_correction_waterlevel = None
-        
-        
+
         self.initialize()
-        
-        
-        
+
     def initialize(self):
         """Populates the class from ./config.json.
         If ./config.json does not exist, writes a default file and exits.
         """
         CONFIG_Preprocess = self.CONFIG_Preprocess
-        
+
         if not os.path.exists(CONFIG_Preprocess):
             with io.open(CONFIG_Preprocess, 'w') as fh:
                 json.dump(DEFAULT_Preprocess, fh, sort_keys=True, indent=4, separators=(",", ": "))
@@ -137,6 +140,7 @@ DEFAULT_Correlation = {
     "time_overlap":0.0,
     "time_min_window":3600,
     "corr_autocorr": False,
+    "corr_only_autocorr": False,
     "corr_type": "ccc",
     "corr_maxlag": 0,
     "corr_normalize": True,
@@ -155,6 +159,7 @@ DEFAULT_Correlation = {
     "white_freqmax": 0.0,
     "white_taper_samples":100,
     "onebit": False,
+    "rotate": False,
     "ram_norm": False,
     "ram_window": 0.,
     "ram_prefilt": [],
@@ -170,7 +175,7 @@ class ConfigCorrelation(object):
         
         self.CONFIG_Correlation = CONFIG_Correlation
         self.project_path = None
-
+        
         self.indirs = None
         self.bandpass = None
         self.cap_glitch = None
@@ -184,6 +189,7 @@ class ConfigCorrelation(object):
         self.corr_maxlag = None
         self.corr_tensorcomponents = None
         self.corr_autocorr = None
+        self.corr_only_autocorr = None
         self.corr_normalize = None
         self.format_output = None
         self.input_format = None
@@ -196,6 +202,7 @@ class ConfigCorrelation(object):
         self.white_freqmin = None
         self.white_freqmax = None
         self.white_taper_samples = None
+        self.rotate = None
         self.ram_norm = None
         self.ram_window = None
         self.ram_prefilt = None
@@ -228,11 +235,14 @@ class ConfigCorrelation(object):
 
 
     def check_params(self):
-        components = ['ZZ','RR','TT','ZR','RZ','ZT','TZ','RT','TR']
+        chans = ["Z", "T", "R", "1", "2", "E", "N", "X", "Y"]
+        components = []
+        for c1 in chans:
+            for c2 in chans:
+                components.append(c1+c2)
+        components = list(set(components))
 
-
-
-      # lists
+        # lists
 
         if not isinstance(self.locations,list):
             msg = '\'locations\' in config_correlation.json must be list'

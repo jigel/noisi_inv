@@ -1,51 +1,46 @@
 # A script to process ambient vibration records
 from __future__ import print_function
 # Use the print function to be able to switch easily between stdout and a file
-#from mpi4py import MPI
+from mpi4py import MPI
 import os
-import sys
 import time
-
-#from obspy import read, Stream,  Trace, UTCDateTime
-#from glob import glob
 from numpy.random import randint
 from obspy import UTCDateTime
 from obspy.clients.fdsn.client import Client
 from obspy.core.event.catalog import Catalog
 from noisi.ants.tools.bookkeep import find_files
 from noisi.ants.tools.prepare import get_event_filter
-#from ants_2.config import ConfigPreprocess
-#cfg = ConfigPreprocess()
+from noisi.ants.config_noisi import ConfigPreprocess
 from noisi.ants.classes.prepstream_noisi import PrepStream
+import sys
+#cfg = ConfigPreprocess()
+#
+#
+#comm = MPI.COMM_WORLD
+#rank = comm.Get_rank()
+#size = comm.Get_size()
+#print("Hello from rank %g" % rank)
+#print("Size is %g" % size)
 
 import functools
 print = functools.partial(print, flush=True)
 
-#comm = MPI.COMM_WORLD
-#rank = comm.Get_rank()
-#size = comm.Get_size()
-#print("Hello from rank %g" %rank)
-#print("Size is %g" %size)
 
 def preprocess(cfg,comm,size,rank):
     """
-    
-    This script preprocesses the MSEED files in the input directories 
+    This script preprocesses the MSEED files in the input directories
     specified in the input file.
- 
-    
     """
-
-
     # Create output directory, if necessary
 
-    #outdir = os.path.join('data','processed')
-    outdir = os.path.join(cfg.project_path,'data','processed') 
+    #outdir = os.path.join('data', 'processed')
+    outdir = os.path.join(cfg.project_path,'data','processed')
     
     if rank == 0 and not os.path.exists(outdir):
         os.mkdir(outdir)
-    if rank == 0 and cfg.verbose:
-        print(cfg.__dict__)
+    
+    #if rank == 0 and cfg.verbose:
+    #    print(cfg.__dict__)
 
     comm.Barrier()
 
@@ -96,8 +91,9 @@ def preprocess(cfg,comm,size,rank):
     #- Find input files
     content = find_files(cfg.input_dirs,
         cfg.input_format)
-    if rank==0:
-        print(len(content), "files found") 
+    
+    #if rank==0:
+    #    print(len(content), "files found") 
 
 
     # processing report file
@@ -128,44 +124,44 @@ def preprocess(cfg,comm,size,rank):
         print('Attempting to process:',file=ofid)
         print(os.path.basename(filepath),file=ofid)
         
-        try:
-            prstr = PrepStream(filepath,ofid)
-        except:
-            print('** Problem opening file, skipping: ',file=ofid)
-            print('** %s' %filepath,file=ofid)
-            continue
+        #try:
+        prstr = PrepStream(cfg,filepath,ofid)
+        #except:
+        #    print('** Problem opening file, skipping: ',file=ofid)
+        #    print('** %s' %filepath,file=ofid)
+        #    continue
 
         if len(prstr.stream) == 0:
             print('** No data in file, skipping: ',file=ofid)
             print('** %s' %filepath,file=ofid)
             continue
 
-        try:
-            prstr.prepare(cfg)
-        except:
-           print('** Problems preparing stream: ',file=ofid)
-           print('** %s' %filepath,file=ofid)
-           continue
+        #try:
+        prstr.prepare(cfg)
+        #except:
+        #    print('** Problems preparing stream: ',file=ofid)
+        #    print('** %s' %filepath,file=ofid)
+        #    continue
             
         #try:
         prstr.process(cfg,event_filter, local_cat)
         #except:
-            #print('** Problems processing stream: ',file=ofid)
-            #print('** %s' %filepath,file=ofid)
-            #continue
+        #    print('** Problems processing stream: ',file=ofid)
+        #    print('** %s' %filepath,file=ofid)
+        #    continue
 
-        try:
-            prstr.write(rankdir,cfg)
-        except:
-            print('** Problems writing stream: ',file=ofid)
-            print('** %s' %filepath,file=ofid)
+        #try:
+        prstr.write(rankdir,cfg)
+        #except:
+        #    print('** Problems writing stream: ',file=ofid)
+        #    print('** %s' %filepath,file=ofid)
 
         ofid.flush()
         
     ofid.close()
 
-    print("Rank %g has completed processing." 
-        %rank,file=None)
+    #print("Rank %g has completed processing." 
+    #    %rank,file=None)
     
     
     try:

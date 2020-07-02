@@ -1,5 +1,5 @@
 from noisi.ants.tools.util_noisi import get_geoinf
-#from noisi.ants.tools.bookkeep import name_correlation_file
+# from ants_2.tools.bookkeep import name_correlation_file
 from obspy import Trace
 try:
     import h5py
@@ -10,6 +10,7 @@ import pyasdf
 import os
 import numpy as np
 from math import ceil
+import pytest
 # from pympler import tracker
 
 
@@ -20,10 +21,10 @@ class CorrTrace(object):
     (station id, geographic location).
     """
 
-    def __init__(self, cha1, cha2, sampling_rate,
+    def __init__(self, cfg, cha1, cha2, sampling_rate,
                  corr_type, maxlag, t0, t1, window_length, overlap,
                  stck_int=0, prepstring=None,
-                 corr_params=None):
+                 corr_params=None, rotate=False):
 
         self.stack = Trace()  # These traces get 01,01,1970 as start date,
         # a completely random choice of start time...no better idea.
@@ -38,31 +39,32 @@ class CorrTrace(object):
         self.chooser = np.zeros(10)
         self.chooser[1] = 1
 
-        if self.id1[-1] == 'E':
+        if self.id1[-1] == 'E' and rotate:
             cha = self.id1.split('.')[-1]
             cha = cha[0] + cha [1] + 'T'
             inf = self.id1.split('.')
             self.id1 = '{}.{}.{}.{}'.format(*(inf[0:3]+[cha]))
 
-        if self.id1[-1] == 'N':
+        if self.id1[-1] == 'N' and rotate:
             cha = self.id1.split('.')[-1]
             cha = cha[0] + cha [1] + 'R'
             inf = self.id1.split('.')
             self.id1 = '{}.{}.{}.{}'.format(*(inf[0:3]+[cha]))
 
-        if self.id2[-1] == 'E':
+        if self.id2[-1] == 'E' and rotate:
             cha = self.id2.split('.')[-1]
             cha = cha[0] + cha [1] + 'T'
             inf = self.id2.split('.')
             self.id2 = '{}.{}.{}.{}'.format(*(inf[0:3]+[cha]))
 
-        if self.id2[-1] == 'N':
+        if self.id2[-1] == 'N' and rotate:
             cha = self.id2.split('.')[-1]
             cha = cha[0] + cha [1] + 'R'
             inf = self.id2.split('.')
             self.id2 = '{}.{}.{}.{}'.format(*(inf[0:3]+[cha]))
 
         self.id = self.id1 + '--' + self.id2
+        #print(self.id)
         self.corr_type = corr_type
 
         self.stack.stats.sampling_rate = sampling_rate
@@ -75,7 +77,7 @@ class CorrTrace(object):
         self.end = t1
 
         try:
-            geo_inf = get_geoinf(self.id1, self.id2)
+            geo_inf = get_geoinf(cfg.project_path,self.id1, self.id2)
             self.lat1 = geo_inf[0]
             self.lat2 = geo_inf[2]
             self.lon1 = geo_inf[1]
@@ -103,7 +105,7 @@ class CorrTrace(object):
         # open the file to dump intermediate stack results
         if self.stck_int > 0:
             int_file = '{}.{}.windows.h5'.format(self.id, self.corr_type)
-            int_file = os.path.join('data', 'correlations', int_file)
+            int_file = os.path.join(cfg.project_path,'data','correlations',int_file)
             int_file = h5py.File(int_file, 'a')
 
             # Save some basic information
@@ -158,24 +160,20 @@ class CorrTrace(object):
                 self.pstak = corr.copy()
                 self.cnt_int = 1
 
-            print(self.pstak.max())
             if self.cnt_int == self.stck_int:
                 # write intermediate result
-                self.write_int(t)
+                written = self.write_int(t)
                 self.cnt_int = 0
-                self.pstak = None
-                self.int_file.flush()
 
         # self.mytracker.print_diff()
         return()
 
-    def write_stack(self, output_format):
+    def write_stack(self, cfg, output_format):
 
         # SAC format
 
         if output_format.upper() == 'SAC':
-            filename = os.path.join('data', 'correlations',
-                                    '{}.SAC'.format(self.id))
+            filename = os.path.join(cfg.project_path,'data','correlations','{}.SAC'.format(self.id))
 
             #- open file and write correlation function
             if self.cnt_tot > 0:
@@ -188,7 +186,7 @@ class CorrTrace(object):
 
         # - ASDF format
         if output_format.upper() == 'ASDF':
-            filename = os.path.join('data','correlations','correlations.h5')
+            filename = os.path.join(cfg.project_path,'data','correlations','correlations.h5')
 
             if self.cnt_tot > 0:
                 with pyasdf.ASDFDataSet(filename) as ds:
@@ -205,13 +203,21 @@ class CorrTrace(object):
     def write_int(self, t):
 
         tstr = t.strftime("%Y.%j.%H.%M.%S")
-        print(tstr)
+        #print(tstr)
         #print(self.int_file)
         #print(tstr)
         #if tstr not in self.interm_data.keys():
         # try:
             #self.interm_data.create_dataset(tstr, shape=self.pstak.shape, dtype=self.pstak.dtype)
             #self.interm_data[tstr][:] = self.pstak
+        if self.id.split("--")[0][-1] == self.id.split("--")[1][-1] and self.corr_type == "pcc":
+            try:
+                assert self.pstak.max() == pytest.approx(1.0, 1.e-3)
+            except AssertionError:
+                print("No write for ", self.id, tstr, self.pstak.max(), end="\n")
+                self.pstak = None
+                return(False)
+            
         self.interm_data[self.ix_d, :] = self.pstak
         self.data_keys[self.ix_d] = tstr
         self.ix_d += 1
@@ -222,15 +228,16 @@ class CorrTrace(object):
         # flush was not effective.
         # self.int_file.flush()
 
-        close_and_reopen = np.random.choice(self.chooser)
-        if close_and_reopen:
-            self.int_file.close()
-            int_file = os.path.join('data', 'correlations',
-                                    '{}.{}.windows.h5'.format(self.id,
-                                                              self.corr_type))
-            self.int_file = h5py.File(int_file, "a")
-            self.interm_data = self.int_file["corr_windows"]["data"]
-            self.data_keys = self.int_file["corr_windows"]["timestamps"]
+        # therefore: close and reopen to avoid memory leak
+        self.int_file.close()
+        int_file = os.path.join('data', 'correlations',
+                                '{}.{}.windows.h5'.format(self.id,
+                                                          self.corr_type))
+        self.int_file = h5py.File(int_file, "a")
+        self.interm_data = self.int_file["corr_windows"]["data"]
+        self.data_keys = self.int_file["corr_windows"]["timestamps"]
+
+        return(True)
 
     def add_sacmeta(self):
 
@@ -312,7 +319,7 @@ class CorrTrace(object):
         except:
             pass
 
-        print(info)
+        #print(info)
 
         return info
 

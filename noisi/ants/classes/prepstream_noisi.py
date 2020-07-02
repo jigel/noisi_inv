@@ -12,14 +12,15 @@ from obspy import Stream, read, read_inventory, Inventory
 from obspy.taup import TauPyModel
 from obspy.geodetics import gps2dist_azimuth
 from scipy.signal import cheb2ord, cheby2, zpk2sos, sosfilt
-#from ants_2.config import ConfigPreprocess
-#cfg = ConfigPreprocess()
+#from noisi.ants.config import ConfigPreprocess
+from warnings import warn
 
+#cfg = ConfigPreprocess()
 
 
 class PrepStream(object):
 
-    def __init__(self, cfg, filename, ofid=None):
+    def __init__(self,cfg, filename, ofid=None):
 
         self.stream = read(filename)
 
@@ -46,7 +47,7 @@ class PrepStream(object):
 
             if cfg.verbose:
                 print('* renamed file: ' + fnew, file=self.ofid)
-                print(time.strftime("%H.%M.%S"))
+                #print(time.strftime("%H.%M.%S"))
         return()
 
     def prepare(self, cfg):
@@ -65,6 +66,14 @@ class PrepStream(object):
 
         if len(self.stream) == 0:
             return()
+        
+        if cfg.phaseshift:
+            if cfg.verbose:
+                print('* Shifting to millisecond', file=self.ofid)
+            self.stream = pp.pshift(self.stream, cfg.verbose, self.ofid)
+            if len(self.stream) == 0:
+                return()
+        
 
         if cfg.wins_trim:
             if cfg.verbose:
@@ -98,7 +107,7 @@ class PrepStream(object):
                 cfg.Fs_antialias_factor)
         
         if cfg.instr_correction or cfg.event_exclude_local_cat:
-            self.add_inv(cfg.instr_correction_input,
+            self.add_inv(cfg,cfg.instr_correction_input,
                 cfg.instr_correction_unit)
         
         self.check_nan_inf(cfg.verbose)
@@ -212,12 +221,13 @@ class PrepStream(object):
         plt.tight_layout()
         plt.savefig(os.path.join('test', fig_name), format='png')
 
-    def add_inv(self, input, unit):
+    def add_inv(self,cfg, input, unit):
 
         if input == 'staxml':
             inf = self.ids[0].split('.')[0: 2]
             file = '{}.{}.xml'.format(*inf)
-            file = os.path.join('meta', 'stationxml', file)
+            #file = os.path.join('meta', 'stationxml', file)
+            file = os.path.join(cfg.project_path,'data','inv',file)
 
             self.inv = read_inventory(file)
 
@@ -403,8 +413,8 @@ class PrepStream(object):
         Fs0 = self.stream[0].stats.sampling_rate
         npts = self.stream[0].stats.npts
         taper_perc = 100. * Fs0 / cfg.Fs_new[-1] / npts
-        print(npts)
-        print(taper_perc)
+        #print(npts)
+        #print(taper_perc)
 
         # Apply antialias filter
         for trace in self.stream:
@@ -444,15 +454,15 @@ class PrepStream(object):
             for trace in self.stream:
                 inv = self.inv[trace.id]
                 inv['date'] = trace.stats.starttime
-                print(trace.data.max())
+                #print(trace.data.max())
                 trace.simulate(paz_remove=None,
                                pre_filt=pre_filt,
                                seedresp=inv,
                                sacsim=True,
                                pitsasim=False,
                                water_level=waterlevel)
-                print(trace.data.max())
-                print('*' * 20)
+                #print(trace.data.max())
+                #print('*' * 20)
             if verbose:
                 print('* removed instrument response using seedresp',
                       file=self.ofid)
@@ -469,7 +479,3 @@ class PrepStream(object):
         else:
             msg = 'No inventory or seedresp found.'
             raise ValueError(msg)
-        
-
-    
-

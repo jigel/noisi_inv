@@ -13,7 +13,7 @@ def find_files(indirs, format):
         content.extend(glob(os.path.join(indir, '*' + format.lower())))
 
         if format not in ['*', '???']:
-            print(os.path.join(indir, '*' + format.upper()))
+            #print(os.path.join(indir, '*' + format.upper()))
             content.extend(glob(os.path.join(indir, '*' + format.upper())))
     content.sort()
     return content

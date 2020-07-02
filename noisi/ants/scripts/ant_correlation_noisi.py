@@ -1,20 +1,18 @@
 # Re-vamped correlation script
 from __future__ import print_function
+from mpi4py import MPI
 
 import os
 import time
-#from ants_2.config import ConfigCorrelation
+#from noisi.ants.config import ConfigCorrelation
 #cfg = ConfigCorrelation()
-from noisi.ants.classes.corrblock_noisi import CorrBlock
 
+from noisi.ants.classes.corrblock_noisi import CorrBlock
 from noisi.ants.tools.bookkeep import correlation_inventory
 from obspy import UTCDateTime
 from glob import glob
 import pyasdf
 from copy import deepcopy
-
-import functools
-print = functools.partial(print, flush=True)
 # 'main':
 
 # - import modules
@@ -99,6 +97,5 @@ def correlate(cfg,comm,size,rank):
 
 if __name__ == "__main__":
     correlate()
-
 
 

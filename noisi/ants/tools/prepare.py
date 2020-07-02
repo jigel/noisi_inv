@@ -95,6 +95,7 @@ def trim_next_sec(data,verbose,ofid):
     
     """ 
     Trim data to the full second. Ensures that recordings start and end with the closest sample possible to full second.
+
     data: Is an obspy stream or trace. The returned stream/trace may be shorter
     ofid: Output file 
     
@@ -118,6 +119,46 @@ def trim_next_sec(data,verbose,ofid):
                 nearest_sample=True)
             
     return data
+
+
+def pshift(data, verbose, ofid):
+    """ If data has a sub-millisecond misalignment, phase shift it
+    and correct the starttime
+    data: obspy stream or trace
+    ofid: string, output file
+    verbose: print output or not 
+    Algorithm is from seisnoise.jl by Tim Clements et al. """
+
+    if isinstance(data, Trace):
+        data = Stream(data)
+
+    offset0 =  data[0].stats.starttime.timestamp % data[0].stats.delta
+    eps = np.finfo(type(offset0)).eps
+
+    for tr in data:
+        # determine the shift
+        #msec_off = tr.stats.starttime.timestamp % 1.e-6
+        #print(tr.stats.starttime.timestamp, tr.stats.delta)
+        offset =  tr.stats.starttime.timestamp % tr.stats.delta
+
+        if tr.stats.delta - offset <= eps:
+            continue
+        else:
+            if offset <= tr.stats.delta / 2.:
+                offset = -offset
+            else:
+                offset = tr.stats.delta - offset
+            #print("offset is ", offset, " s")
+
+            freq = np.fft.rfftfreq(tr.stats.npts, tr.stats.sampling_rate)
+            spec = np.fft.rfft(tr.data)
+            spec *= np.exp(1j * 2. * np.pi * freq * offset)
+            tr.data = np.fft.irfft(spec)
+            tr.stats.starttime = tr.stats.starttime + offset
+            #print("New starttime ", tr.stats.starttime)
+    return data
+
+
 
 def slice_traces(data, len_sec, min_len_sec, verbose, ofid):
 
@@ -274,6 +315,7 @@ def get_event_filter(catalogue, Fs, t0, t1):
     according to GCMT catalogue and
     the empirical rule of Ekstroem (2001):
     T = 2.5 + 40*(Mw-5.6) [hours]
+
     catalogue: obspy catalogue object
   """
     event_filter_list = []
@@ -339,6 +381,7 @@ def get_event_filter(catalogue, Fs, t0, t1):
 
 
     return event_filter_list
+
 
 
 

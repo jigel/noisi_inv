@@ -8,11 +8,14 @@ from noisi.ants.tools.windows import my_centered
 def bandpass(freqmin, freqmax, df, corners=4):
     """
     From obspy with modification.
+
     Butterworth-Bandpass Filter.
+
     Filter data from ``freqmin`` to ``freqmax`` using ``corners``
     corners.
     The filter uses :func:`scipy.signal.iirfilter` (for design)
     and :func:`scipy.signal.sosfilt` (for applying the filter).
+
     :type data: numpy.ndarray
     :param data: Data to filter.
     :param freqmin: Pass band low corner frequency.
@@ -165,11 +168,10 @@ def ram_norm_trace(tr,winlen,prefilt=None):
     weighttrace[-hlen:] = weighttrace[-hlen-1]
     
     tr.data = trace_orig.data / weighttrace
-
+   
 def ram_norm(tr,winlen,prefilt=None):
     try:
         ram_norm_trace(tr, winlen,prefilt=None)
     except AttributeError:
         for t in tr:
             ram_norm_trace(t,winlen,prefilt=None)
-   

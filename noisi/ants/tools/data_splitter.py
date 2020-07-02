@@ -16,9 +16,9 @@ output_directory = '/Volumes/Japan_sea/temp_out/'#'/mnt/lnec/lermert/hum_reproce
 
 # get a list of the files
 files = glob(os.path.join(input_directory,'*.mseed'))
-print(start)
-print(endtime-step)
-print(files)
+#print(start)
+#print(endtime-step)
+#print(files)
 
 # loop over files
 for f in files:
@@ -30,14 +30,14 @@ for f in files:
 	tr.merge(method=1,interpolation_samples=0)
 	
 
-	print(tr)
+	#print(tr)
 	t = start
 	# loop over time windows
 	while t < (endtime-step):
 		
 		# split it
 		trtemp = tr.slice(starttime=t,endtime=t+step)
-		print(trtemp)
+		#print(trtemp)
 		s1 = t.strftime("%Y.%j.%H.%M.%S")
 		s2 = (t+step).strftime("%Y.%j.%H.%M.%S")
 
@@ -47,7 +47,7 @@ for f in files:
 			newstr = trc.split()
 			
 			for tc in newstr:
-				print(tc)
+				#print(tc)
 				filename = '{}.{}.{}.mseed'.format(tc.id,s1,s2)
 				filename = os.path.join(output_directory,filename)
 				if tc.stats.npts > 0:

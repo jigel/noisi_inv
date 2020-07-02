@@ -19,7 +19,7 @@ import numpy as np
 
 from obspy import read_inventory, read, Stream
 from obspy.signal.invsim import cosine_taper
-from noisi.ants.tools.treatment import bandpass as get_bandpass
+from ants_2.tools.treatment import bandpass as get_bandpass
 
 
 class stainfo(object):

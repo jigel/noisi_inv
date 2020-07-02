@@ -1,8 +1,8 @@
 import numpy as np
 from scipy.signal import hilbert
 from math import pi, log
-from noisi_v1.ants.tools.windows import get_window
-from noisi_v1.ants.tools.plot import plot_window     
+from ants_2.tools.windows import get_window
+from ants_2.tools.plot import plot_window     
      
 
 def envelope(correlation,plot=False):
