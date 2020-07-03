@@ -222,9 +222,6 @@ def define_correlation_tasks(all_conf, comm, size, rank):
             sta1 = "{}.{}..MX{}".format(*(inf1[0: 2] + [sp[0].split()[2][-1]]))
             sta2 = "{}.{}..MX{}".format(*(inf2[0: 2] + [sp[1].split()[2][-1]]))
 
-            corr_name = "{}--{}.sac".format(sta1, sta2)
-            corr_name = os.path.join(mod_dir, corr_name)
-
             stapairs_new.append([sp[0][:-4]+' MX'+sp[0].split()[2][-1],sp[1][:-4]+' MX'+sp[1].split()[2][-1]])      
         
         # unique pairs
