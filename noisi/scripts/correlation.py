@@ -95,39 +95,39 @@ def add_input_files(cp, all_conf, insta=False):
     inf2 = cp[1].split()
 
     input_file_list = []
-
+    
     # station names
-    for chas in all_conf.output_channels:
-        if all_conf.ignore_network:
-            sta1 = "*.{}..MX{}".format(*(inf1[1:2] + [chas[0]]))
-            sta2 = "*.{}..MX{}".format(*(inf2[1:2] + [chas[1]]))
-        else:
-            sta1 = "{}.{}..MX{}".format(*(inf1[0:2] + [chas[0]]))
-            sta2 = "{}.{}..MX{}".format(*(inf2[0:2] + [chas[1]]))
+    #for chas in all_conf.output_channels:
+    if all_conf.ignore_network:
+        sta1 = "*.{}..{}".format(*(inf1[1:2] + [inf1[2]]))
+        sta2 = "*.{}..{}".format(*(inf2[1:2] + [inf2[2]]))
+    else:
+        sta1 = "{}.{}..{}".format(*(inf1[0:2] + [inf1[2]]))
+        sta2 = "{}.{}..{}".format(*(inf2[0:2] + [inf2[2]]))
 
-        # basic wave fields are not rotated to Z, R, T
-        # so correct the input file name
-        # if all_conf.source_config["rotate_horizontal_components"]:
-        #     sta1 = re.sub("MXT", "MXE", sta1)
-        #     sta2 = re.sub("MXT", "MXE", sta2)
-        #     sta1 = re.sub("MXR", "MXN", sta1)
-        #     sta2 = re.sub("MXR", "MXN", sta2)
-        # Wavefield files
-        if not insta:
+    # basic wave fields are not rotated to Z, R, T
+    # so correct the input file name
+    # if all_conf.source_config["rotate_horizontal_components"]:
+    #     sta1 = re.sub("MXT", "MXE", sta1)
+    #     sta2 = re.sub("MXT", "MXE", sta2)
+    #     sta1 = re.sub("MXR", "MXN", sta1)
+    #     sta2 = re.sub("MXR", "MXN", sta2)
+    # Wavefield files
+    if not insta:
 
-            dir = os.path.join(all_conf.config['project_path'], 'greens')
-            wf1 = glob(os.path.join(dir, sta1 + '.h5'))[0]
-            wf2 = glob(os.path.join(dir, sta2 + '.h5'))[0]
+        dir = os.path.join(all_conf.config['project_path'], 'greens')
+        wf1 = glob(os.path.join(dir, sta1 + '.h5'))[0]
+        wf2 = glob(os.path.join(dir, sta2 + '.h5'))[0]
 
-        else:
-            # need to return two receiver coordinate pairs. For buried sensors,
-            # depth could be used but no elevation is possible.
-            # so maybe keep everything at 0 m?
-            # lists of information directly from the stations.txt file.
-            wf1 = inf1
-            wf2 = inf2
-        input_file_list.append([wf1, wf2])
-
+    else:
+        # need to return two receiver coordinate pairs. For buried sensors,
+        # depth could be used but no elevation is possible.
+        # so maybe keep everything at 0 m?
+        # lists of information directly from the stations.txt file.
+        wf1 = inf1
+        wf2 = inf2
+    input_file_list.append([wf1, wf2])
+    
     return(input_file_list)
 
 
@@ -145,17 +145,17 @@ def add_output_files(cp, all_conf):
         inf2 = cp[0].split()
         inf1 = cp[1].split()
 
-    for chas in all_conf.output_channels:
-        channel1 = "MX" + chas[0]
-        channel2 = "MX" + chas[1]
-        sta1 = "{}.{}..{}".format(*(inf1[0:2] + [channel1]))
-        sta2 = "{}.{}..{}".format(*(inf2[0:2] + [channel2]))
+    #for chas in all_conf.output_channels:
+    channel1 = cp[0].split()[2]
+    channel2 = cp[1].split()[2]
+    sta1 = "{}.{}..{}".format(*(inf1[0:2] + [channel1]))
+    sta2 = "{}.{}..{}".format(*(inf2[0:2] + [channel2]))
 
-        corr_trace_name = "{}--{}.sac".format(sta1, sta2)
-        corr_trace_name = os.path.join(all_conf.source_config['source_path'],
-                                       'iteration_' + str(all_conf.step),
-                                       'corr', corr_trace_name)
-        corr_traces.append(corr_trace_name)
+    corr_trace_name = "{}--{}.sac".format(sta1, sta2)
+    corr_trace_name = os.path.join(all_conf.source_config['source_path'],
+                                   'iteration_' + str(all_conf.step),
+                                   'corr', corr_trace_name)
+    corr_traces.append(corr_trace_name)
     return corr_traces
 
 
@@ -164,6 +164,7 @@ def define_correlation_tasks(all_conf, comm, size, rank):
     p = define_correlationpairs(all_conf.source_config
                                 ['project_path'],
                                 all_conf.auto_corr)
+    
     if rank == 0 and all_conf.config['verbose']:
         print('Nr of station pairs %g ' % len(p))
 
@@ -195,27 +196,64 @@ def define_correlation_tasks(all_conf, comm, size, rank):
         if rank == 0:
             p = [i for j in p_new for i in j]
 
+        comm.barrier()
         # broadcast p to all ranks
         p = comm.bcast(p, root=0)
         if rank == 0 and all_conf.config['verbose']:
             print('Nr station pairs after checking available observ. %g '
                   % len(p))
+            
+    else:
+        
+        stapairs_new = []
 
+        for sp in p:
+
+            id1 = sp[0].split()[0] + sp[0].split()[1]
+            id2 = sp[1].split()[0] + sp[1].split()[1]
+
+            if id1 < id2:
+                inf1 = sp[0].split()
+                inf2 = sp[1].split()
+            else:
+                inf2 = sp[0].split()
+                inf1 = sp[1].split()
+
+            sta1 = "{}.{}..MX{}".format(*(inf1[0: 2] + [sp[0].split()[2][-1]]))
+            sta2 = "{}.{}..MX{}".format(*(inf2[0: 2] + [sp[1].split()[2][-1]]))
+
+            corr_name = "{}--{}.sac".format(sta1, sta2)
+            corr_name = os.path.join(mod_dir, corr_name)
+
+            stapairs_new.append([sp[0][:-4]+' MX'+sp[0].split()[2][-1],sp[1][:-4]+' MX'+sp[1].split()[2][-1]])      
+        
+        # unique pairs
+        stapairs_unique = [list(x) for x in set(tuple(x) for x in stapairs_new)]
+        stapairs_new = stapairs_unique
+                                         
+        p = stapairs_new
+
+
+    comm.barrier()
     # Remove pairs that have already been calculated
     p = rem_fin_prs(p, all_conf.source_config, all_conf.step)
+    # need to sort because of set
+    p = sorted(p)
+    
     if rank == 0 and all_conf.config['verbose']:
         print('Nr station pairs after checking already calculated ones %g'
               % len(p))
         print(16 * '*')
+        
 
     # The assignment of station pairs should be such that one core has as
     # many occurrences of the same station as possible;
     # this will prevent that many processes try to read from the same hdf5
     # file all at once.
     num_pairs = int(ceil(float(len(p)) / float(size)))
-
+    
     p_p = p[rank * num_pairs: rank * num_pairs + num_pairs]
-
+    
     return(p_p, num_pairs, len(p))
 
 
@@ -403,6 +441,8 @@ def run_corr(args, comm, size, rank):
     # Distributing the tasks
     correlation_tasks, n_p_p, n_p = define_correlation_tasks(all_conf,
                                                              comm, size, rank)
+    
+    
     if len(correlation_tasks) == 0:
         return()
     if all_conf.config['verbose']:
@@ -424,6 +464,7 @@ def run_corr(args, comm, size, rank):
     # being cut off wherever the solver stopped running.
     taper = cosine_taper(all_ns[0], p=0.01)
     taper[0: all_ns[0] // 2] = 1.0
+    
 
     with NoiseSource(nsrc) as nsrc:
         for cp in correlation_tasks:
@@ -431,12 +472,15 @@ def run_corr(args, comm, size, rank):
                 input_files_list = add_input_files(cp, all_conf)
 
                 output_files = add_output_files(cp, all_conf)
+            
             except (IndexError, FileNotFoundError):
                 if all_conf.config['verbose']:
                     print('Could not determine correlation for: %s\
     \nCheck if wavefield .h5 file is available.' % cp)
                 continue
 
+
+            
             if type(input_files_list[0]) != list:
                 input_files_list = [input_files_list]
 

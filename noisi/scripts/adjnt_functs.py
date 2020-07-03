@@ -31,6 +31,7 @@ def log_en_ratio_adj(corr_o, corr_s, g_speed, window_params):
         adjt_src = 2. * (u_plus / E_plus - u_minus / E_minus)
         success = True
     else:
+        
         adjt_src = win - win + np.nan
     return adjt_src, success
 

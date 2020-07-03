@@ -93,7 +93,7 @@ def correlate(cfg,comm,size,rank):
             stations = set(stations)
 
             for sta in stations:
-                ds.add_stationxml(os.path.join('meta','stationxml','%s.xml' %sta))
+                ds.add_stationxml(os.path.join('data','inv','%s.xml' %sta))
 
 if __name__ == "__main__":
     correlate()

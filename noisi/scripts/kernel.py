@@ -38,55 +38,54 @@ def add_input_files(kp, all_conf, insta=False):
     inf2 = kp[1].split()
     input_file_list = []
     # station names
-    for chas in all_conf.output_channels:
-        if all_conf.ignore_network:
-            sta1 = "*.{}..MX{}".format(*(inf1[1:2] + [chas[0]]))
-            sta2 = "*.{}..MX{}".format(*(inf2[1:2] + [chas[1]]))
-        else:
-            sta1 = "{}.{}..MX{}".format(*(inf1[0:2] + [chas[0]]))
-            sta2 = "{}.{}..MX{}".format(*(inf2[0:2] + [chas[1]]))
+    #for chas in all_conf.output_channels:
+    if all_conf.ignore_network:
+        sta1 = "*.{}..{}".format(*(inf1[1:2] + [inf1[2]]))
+        sta2 = "*.{}..{}".format(*(inf2[1:2] + [inf2[2]]))
+    else:
+        sta1 = "{}.{}..{}".format(*(inf1[0:2] + [inf1[2]]))
+        sta2 = "{}.{}..{}".format(*(inf2[0:2] + [inf2[2]]))
+
+    # basic wave fields are not rotated to Z, R, T
+    # so correct the input file name
+    if all_conf.source_config["rotate_horizontal_components"]:
+        sta1 = re.sub("MXT", "MXE", sta1)
+        sta2 = re.sub("MXT", "MXE", sta2)
+        sta1 = re.sub("MXR", "MXN", sta1)
+        sta2 = re.sub("MXR", "MXN", sta2)
+
+    # Wavefield files
+    if not insta:
+        dir = os.path.join(all_conf.config['project_path'], 'greens')
+        wf1 = glob(os.path.join(dir, sta1 + '.h5'))[0]
+        wf2 = glob(os.path.join(dir, sta2 + '.h5'))[0]
+    else:
+        # need to return two receiver coordinate pairs.
+        # lists of information directly from the stations.txt file.
+        wf1 = inf1
+        wf2 = inf2
+
+    iteration_dir = os.path.join(all_conf.source_config['source_path'],
+                                 'iteration_' + str(all_conf.step))
+
+    # go back for adjt source
+    if all_conf.source_config["rotate_horizontal_components"]:
+        sta1 = re.sub("MXE", "MXT", sta1)
+        sta2 = re.sub("MXE", "MXT", sta2)
+        sta1 = re.sub("MXN", "MXR", sta1)
+        sta2 = re.sub("MXN", "MXR", sta2)
+    # Adjoint source
+    if all_conf.measr_config['mtype'] in ['energy_diff']:
+        adj_src_basicnames = [os.path.join(iteration_dir, 'adjt',
+                                           "{}--{}.c".format(sta1, sta2)),
+                              os.path.join(iteration_dir, 'adjt',
+                                           "{}--{}.a".format(sta1, sta2))]
+    else:
+        adj_src_basicnames = [os.path.join(iteration_dir, 'adjt',
+                                           "{}--{}".format(sta1, sta2))]
 
 
-        # basic wave fields are not rotated to Z, R, T
-        # so correct the input file name
-        if all_conf.source_config["rotate_horizontal_components"]:
-            sta1 = re.sub("MXT", "MXE", sta1)
-            sta2 = re.sub("MXT", "MXE", sta2)
-            sta1 = re.sub("MXR", "MXN", sta1)
-            sta2 = re.sub("MXR", "MXN", sta2)
-
-        # Wavefield files
-        if not insta:
-            dir = os.path.join(all_conf.config['project_path'], 'greens')
-            wf1 = glob(os.path.join(dir, sta1 + '.h5'))[0]
-            wf2 = glob(os.path.join(dir, sta2 + '.h5'))[0]
-        else:
-            # need to return two receiver coordinate pairs.
-            # lists of information directly from the stations.txt file.
-            wf1 = inf1
-            wf2 = inf2
-
-        iteration_dir = os.path.join(all_conf.source_config['source_path'],
-                                     'iteration_' + str(all_conf.step))
-
-        # go back for adjt source
-        if all_conf.source_config["rotate_horizontal_components"]:
-            sta1 = re.sub("MXE", "MXT", sta1)
-            sta2 = re.sub("MXE", "MXT", sta2)
-            sta1 = re.sub("MXN", "MXR", sta1)
-            sta2 = re.sub("MXN", "MXR", sta2)
-        # Adjoint source
-        if all_conf.measr_config['mtype'] in ['energy_diff']:
-            adj_src_basicnames = [os.path.join(iteration_dir, 'adjt',
-                                               "{}--{}.c".format(sta1, sta2)),
-                                  os.path.join(iteration_dir, 'adjt',
-                                               "{}--{}.a".format(sta1, sta2))]
-        else:
-            adj_src_basicnames = [os.path.join(iteration_dir, 'adjt',
-                                               "{}--{}".format(sta1, sta2))]
-
-
-        input_file_list.append([wf1, wf2, adj_src_basicnames])
+    input_file_list.append([wf1, wf2, adj_src_basicnames])
     return(input_file_list)
 
 
@@ -127,17 +126,19 @@ def add_output_files(kp, all_conf, insta=False):
         inf2 = kp[0].split()
         inf1 = kp[1].split()
 
-    for chas in all_conf.output_channels:
-        channel1 = "MX" + chas[0]
-        channel2 = "MX" + chas[1]
-        sta1 = "{}.{}..{}".format(*(inf1[0:2] + [channel1]))
-        sta2 = "{}.{}..{}".format(*(inf2[0:2] + [channel2]))
+    #for chas in all_conf.output_channels:
 
-        kern_basicname = "{}--{}".format(sta1, sta2)
-        kern_basicname = os.path.join(all_conf.source_config['source_path'],
-                                      'iteration_' + str(all_conf.step),
-                                      'kern', kern_basicname)
-        kern_files.append(kern_basicname)
+    channel1 = kp[0].split()[2]
+    channel2 = kp[1].split()[2]
+    sta1 = "{}.{}..{}".format(*(inf1[0:2] + [channel1]))
+    sta2 = "{}.{}..{}".format(*(inf2[0:2] + [channel2]))
+
+    kern_basicname = "{}--{}".format(sta1, sta2)
+    kern_basicname = os.path.join(all_conf.source_config['source_path'],
+                                  'iteration_' + str(all_conf.step),
+                                  'kern', kern_basicname)
+    kern_files.append(kern_basicname)
+    
     return (kern_files)
 
 
@@ -153,6 +154,7 @@ def compute_kernel(input_files, output_file, all_conf, nsrc, all_ns, taper,
     
     adjt_srcs = open_adjoint_sources(all_conf, adjt, n_corr)
     if None in adjt_srcs:
+        print("NONE IN ADJT SRCS")
         return(None)
     else:
         if all_conf.config["verbose"]:
@@ -319,10 +321,39 @@ def define_kernel_tasks(all_conf, comm, size, rank):
         if rank == 0:
             p = [i for j in p_new for i in j]
 
+        comm.barrier()
         # broadcast p to all ranks
         p = comm.bcast(p, root=0)
         if rank == 0 and all_conf.config['verbose']:
             print('Nr kernels after checking available observ. %g ' % len(p))
+            
+            
+    comm.barrier()
+    # Change ??Z to ??Z (and other channels)
+    p_new = []
+
+    for sp in p:
+        id1 = sp[0].split()[0] + sp[0].split()[1]
+        id2 = sp[1].split()[0] + sp[1].split()[1]
+
+        if id1 < id2:
+            inf1 = sp[0].split()
+            inf2 = sp[1].split()
+        else:
+            inf2 = sp[0].split()
+            inf1 = sp[1].split()
+
+        sta1 = "{}.{}..MX{}".format(*(inf1[0: 2] + [sp[0].split()[2][-1]]))
+        sta2 = "{}.{}..MX{}".format(*(inf2[0: 2] + [sp[1].split()[2][-1]]))
+
+        corr_name = "{}--{}.sac".format(sta1, sta2)
+        
+        p_new.append([sp[0][:-4]+' MX'+sp[0].split()[2][-1],sp[1][:-4]+' MX'+sp[1].split()[2][-1]])
+
+    # unique pairs
+    p_unique = [list(x) for x in set(tuple(x) for x in p_new)]
+    # need to sort because of set
+    p = sorted(p_unique)
 
     # The assignment of station pairs should be such that one core
     # has as many occurrences of the same station as possible;
@@ -340,6 +371,7 @@ def run_kern(args, comm, size, rank):
     all_conf = config_params(args, comm, size, rank)
 
     kernel_tasks, n_p_p, n_p = define_kernel_tasks(all_conf, comm, size, rank)
+    
     if len(kernel_tasks) == 0:
         return()
     if all_conf.config['verbose']:
@@ -363,14 +395,14 @@ def run_kern(args, comm, size, rank):
 
     with NoiseSource(nsrc) as nsrc:
         for kp in kernel_tasks:
-            try:
-                input_file_list = add_input_files(kp, all_conf)
-                output_files = add_output_files(kp, all_conf)
-            except (IOError, IndexError):
-               if all_conf.config['verbose']:
-                   print('Could not find input for: %s\
-\nCheck if wavefield .h5 file and base_model file are available.' % kp)
-               continue
+            #try:
+            input_file_list = add_input_files(kp, all_conf)
+            output_files = add_output_files(kp, all_conf)
+            #except (IOError, IndexError):
+            #   if all_conf.config['verbose']:
+            #       print('Could not find input for: %s\
+#\nCheck if wavefield .h5 file and base_model file are available.' % kp)
+            #   continue
 
             for i, input_files in enumerate(input_file_list):
                 kern = compute_kernel(input_files, output_files[i], all_conf,
@@ -379,12 +411,16 @@ def run_kern(args, comm, size, rank):
                 if kern is None:
                     continue
 
+
                 for ix_f in range(all_conf.filtcnt):
                     if not all_conf.source_config["rotate_horizontal_components"]:
                         if kern[:, ix_f, :, :].sum() != 0:
                             filename = output_files[i] + '.{}.npy'.format(ix_f)
                             np.save(filename, kern[:, ix_f, :, :])
                         else:
+                            print("Kern sum is 0")
+                            print(input_files)
+                            print(output_files)
                             continue
 
             # Rotation

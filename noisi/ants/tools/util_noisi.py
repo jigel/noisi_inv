@@ -9,8 +9,9 @@ def get_geoinf(project_path,id1,id2):
 		inv1 = '{}.{}.xml'.format(*id1.split('.')[0:2])
 		inv2 = '{}.{}.xml'.format(*id2.split('.')[0:2])
 
-		inv1 = read_inventory(os.path.join(project_path,'inventory',inv1))
-		inv2 = read_inventory(os.path.join(project_path,'inventory',inv2))
+		inv1 = read_inventory(os.path.join(project_path,'data','inv',inv1))
+		inv2 = read_inventory(os.path.join(project_path,'data','inv',inv2))
+
 
 		# Replace 'radial' and 'transverse' by 'N' and 'E'
 		id1 = re.sub('\.??R$','N',id1)

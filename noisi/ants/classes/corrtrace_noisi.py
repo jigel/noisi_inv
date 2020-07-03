@@ -18,7 +18,6 @@ class CorrTrace(object):
 
     """
     Object holds correlation data along with metainformation
-    (station id, geographic location).
     """
 
     def __init__(self, cfg, cha1, cha2, sampling_rate,
@@ -76,23 +75,23 @@ class CorrTrace(object):
         self.begin = t0
         self.end = t1
 
-        try:
-            geo_inf = get_geoinf(cfg.project_path,self.id1, self.id2)
-            self.lat1 = geo_inf[0]
-            self.lat2 = geo_inf[2]
-            self.lon1 = geo_inf[1]
-            self.lon2 = geo_inf[3]
-            self.az = geo_inf[5]
-            self.baz = geo_inf[6]
-            self.dist = geo_inf[4]
-        except FileNotFoundError:
-            self.lat1 = 0.
-            self.lat2 = 0.
-            self.lon1 = 0.
-            self.lon2 = 0.
-            self.az = 0.
-            self.baz = 0.
-            self.dist = 0.
+        #try:
+        geo_inf = get_geoinf(cfg.project_path,self.id1, self.id2)
+        self.lat1 = geo_inf[0]
+        self.lat2 = geo_inf[2]
+        self.lon1 = geo_inf[1]
+        self.lon2 = geo_inf[3]
+        self.az = geo_inf[5]
+        self.baz = geo_inf[6]
+        self.dist = geo_inf[4]
+        #except FileNotFoundError:
+        #    self.lat1 = 0.
+        #    self.lat2 = 0.
+        #    self.lon1 = 0.
+        #    self.lon2 = 0.
+        #    self.az = 0.
+        #    self.baz = 0.
+        #    self.dist = 0.
 
         # Parameters that are optional and will be ignored if they are None
         self.stck_int = stck_int
