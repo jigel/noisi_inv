@@ -63,6 +63,7 @@ def test_adjoint_functions():
 
     window_params = {}
     window_params['hw'] = 2.0
+    window_params['hw_variable'] = None
     window_params['sep_noise'] = 1.0
     window_params['win_overlap'] = False
     window_params['wtype'] = "hann"
@@ -99,6 +100,7 @@ def test_measurements():
 
     window_params = {}
     window_params['hw'] = 2.0
+    window_params['hw_variable'] = None
     window_params['sep_noise'] = 1.0
     window_params['win_overlap'] = False
     window_params['wtype'] = "hann"
@@ -207,8 +209,10 @@ def test_forward_model():
     p = define_correlationpairs(all_config.source_config
                                 ['project_path'],
                                 all_config.auto_corr)
+
+    print('p', p)
     assert len(p) == 3
-    assert p[0][0].split()[-1] == 'STA1'
+    assert p[0][0].split()[-2] == 'STA1'
 
     input_files = add_input_files(p[1], all_config)[0]
     assert os.path.basename(input_files[0]) == 'NET.STA1..MXZ.h5'
@@ -241,8 +245,11 @@ def test_sensitivity_kernel():
     all_config = config_params(args, comm, size, rank)
     ns = get_ns(all_config)
     p = define_kernel_tasks(all_config, comm, size, rank)
+    
+    print(p)
+    
     assert len(p[0]) == 3
-    assert p[0][2][1].split()[-1] == 'STA2'
+    assert p[0][2][1].split()[-2] == 'STA2'
 
     input_files = input_files_kernel(p[0][1], all_config)
 
