@@ -29,16 +29,16 @@ class NoiseSource(object):
 
         try:
             self.model = h5py.File(model, w)
-            self.src_loc = self.model['coordinates']
-            self.freq = self.model['frequencies']
+            self.src_loc = np.asarray(self.model['coordinates'])
+            self.freq = np.asarray(self.model['frequencies'])
 
             # Presumably, these arrays are small and will be used very often
             # --> good to have in memory.
-            self.distr_basis = self.model['model'][:]
-            self.spect_basis = self.model['spectral_basis'][:]
+            self.distr_basis = np.asarray(self.model['model'][:])
+            self.spect_basis = np.asarray(self.model['spectral_basis'][:])
 
             # The surface area of each grid element
-            self.surf_area = self.model['surface_areas'][:]
+            self.surf_area = np.asarray(self.model['surface_areas'][:])
 
         except IOError:
             msg = 'Unable to open model file %r.' % model

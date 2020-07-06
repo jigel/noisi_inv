@@ -5,6 +5,12 @@ main:
     add_noise: false
     output_plot: true
 
+project_config:
+    project_name: 0706_inv_global_blob_fw
+    synt_data: DIS
+    verbose: false
+    load_to_memory: true
+
 data_download:
     download_data: false
     download_data_date: 2017-02-28
@@ -26,25 +32,21 @@ data_download:
     
 
 inversion_config:
-    observed_corr: /Users/jigel/noisi/noisi_v3/noisi_output/0130_data_local_swiss6_mfp/source_1/iteration_0/corr 
+    observed_corr: /Users/jigel/noisi/noisi_inv/noisi_output/0706_fwd_global_blob/source_1/iteration_0/corr
     opt_statpair: null 
     snr_thresh: 0
     corr_max_dist: null
-    nr_iterations: 2
+    nr_iterations: 5
     nr_step_tests: 5
     step_test_smoothing: false
-    frac_corr_slt: 2
+    frac_corr_slt: 1
     step_length_min: 0.05
     step_length_max: 3.0
-    step_smooth: [[1,2],[3,1.5],[5,1],[8,0.5]] 
+    step_smooth: [[2,3],[4,2],[6,1.5],[8,1]] 
     
-project_config:
-    project_name: 0630_inv_full_waveform_svp_less_smooth_nosurfarea_1
-    synt_data: DIS
-    verbose: false
 
 grid_config:
-    grid_dx_in_m: 35000 
+    grid_dx_in_m: 35000
     grid_lat_max: 65
     grid_lat_min: 30
     grid_lon_max: 25
@@ -53,7 +55,7 @@ grid_config:
 svp_grid_config:
     svp_grid: true
     svp_dense_antipole: false
-    svp_only_ocean: true
+    svp_only_ocean: false
     svp_voronoi_area: true
     svp_station_remove: 1
     svp_plot: false
@@ -68,9 +70,9 @@ svp_grid_config:
     svp_phi_min:
     - 1
     svp_phi_max:
-    - 5
+    - 10
     svp_sigma:
-    - 15
+    - 10
 
 auto_data_grid_config:
     auto_data_grid: false
@@ -93,19 +95,18 @@ wavefield_config:
     wavefield_channel: Z
     wavefield_domain: time
     wavefield_duration: 800.0
-    wavefield_filter: [0.01,0.2]
-    wavefield_path: null 
+    wavefield_filter: null
+    wavefield_path: /Users/jigel/noisi/noisi_inv/noisi_output/0706_fwd_global_blob/greens
     wavefield_point_force: 1.0e9
     wavefield_sampling_rate: 1.0
-    wavefield_type: analytic
+    wavefield_type: greens
     v: 3000.0
     q: 100.0
-    rho: 3000.0
-    
+    rho: 3000.0 
     
 source_config:
     get_auto_corr: false
-    model_observed_only: false
+    model_observed_only: true
     max_lag: 400
     diagonals: false
     rotate_horizontal_components: false
@@ -113,7 +114,7 @@ source_config:
 source_setup_config:
     - distribution: homogeneous
       mean_frequency_Hz: 0.05
-      standard_deviation_Hz: 0.04
+      standard_deviation_Hz: 0.03
       weight: 1.0
       taper_percent: 1.0
       normalize_spectrum_to_unity: true
@@ -121,11 +122,11 @@ source_setup_config:
 measr_config:
     mtype: "full_waveform"
     taper_perc: 0.01
-    bandpass: [[0.01,0.1,5]] 
+    bandpass: [[0.01,0.2,5]]
     weights: [1.0]
     g_speed: 2700
-    window_params_wtype: "boxcar"
-    window_params_hw: 20
+    window_params_wtype: "hann"
+    window_params_hw: 30
     window_params_hw_variable: null
     window_params_win_overlap: false
     window_params_sep_noise: 0.0

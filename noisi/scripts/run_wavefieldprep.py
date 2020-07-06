@@ -331,7 +331,9 @@ invalid for horizontal components; set channel to \"Z\" or use instaseis.")
 
                     # apply a filter if asked for
                     if self.filter is not None:
-                            trace = lfilter(*self.filter, x=s)
+                        trace = lfilter(*self.filter, x=s)
+                    else:
+                        trace = s
 
                     if self.fdomain:
                         f['data'][i, :] = np.fft.rfft(trace, n=self.npad)

@@ -21,7 +21,7 @@ def square_envelope(correlation, g_speed, window_params):
     square_envelope = correlation.data**2 + \
         np.imag(hilbert(correlation.data))**2
     if window_params['plot']:
-        plot_window(correlation, square_envelope, 'N/A')
+        plot_window(correlation, square_envelope, np.nan)
 
     return square_envelope
 
@@ -31,7 +31,7 @@ def envelope(correlation, g_speed, window_params):
     envelope = np.sqrt(correlation.data ** 2 + np.imag(hilbert(correlation.data)) ** 2)
     
     if window_params['plot']:
-        plot_window(correlation, envelope, 'N/A')
+        plot_window(correlation, envelope, np.nan)
         
     return envelope
 

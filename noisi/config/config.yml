@@ -3,6 +3,7 @@ project_name: ""
 project_path: ""
 synt_data: DIS
 verbose: true
+load_to_memory: true
 
 # Normal Grid
 grid_dx_in_m: 35000

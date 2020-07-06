@@ -1,13 +1,20 @@
-output_folder: ./noisi_output
-stationlist: ''
-add_metadata: true
-add_noise: false
-output_plot: true
+main:
+    output_folder: ./noisi_output
+    stationlist: /Users/jigel/noisi/mirmex_stations/stationlist_swiss_6.csv 
+    add_metadata: false
+    add_noise: false
+    output_plot: true
+
+project_config:
+    project_name: 0703_noisi_inv_test_inv_time
+    synt_data: DIS
+    verbose: false
+    load_to_memory: true
 
 data_download:
     download_data: false
     download_data_date: 2017-02-28
-    download_data_channels: ['BHZ']
+    download_data_channels: ['BHZ','BHN','BHE']
     
     min_station_dist: 0
 
@@ -25,22 +32,18 @@ data_download:
     
 
 inversion_config:
-    observed_corr: '' 
+    observed_corr: /Users/jigel/noisi/noisi_inv/noisi_output/0703_noisi_inv_test_fwd/source_1/iteration_0/corr
     opt_statpair: null 
     snr_thresh: 0
     corr_max_dist: null
     nr_iterations: 1
     nr_step_tests: 5
     step_test_smoothing: false
-    frac_corr_slt: 0
+    frac_corr_slt: 2
     step_length_min: 0.05
     step_length_max: 3.0
     step_smooth: [[2,6],[4,4.5],[6,3],[8,2]] 
     
-project_config:
-    project_name: 0626_gradtest_bandpass_blob_2_ln_nosurf
-    synt_data: DIS
-    verbose: false
 
 grid_config:
     grid_dx_in_m: 35000
@@ -50,7 +53,7 @@ grid_config:
     grid_lon_min: -15
     
 svp_grid_config:
-    svp_grid: false
+    svp_grid: true
     svp_dense_antipole: false
     svp_only_ocean: true
     svp_voronoi_area: true
@@ -92,18 +95,19 @@ wavefield_config:
     wavefield_channel: Z
     wavefield_domain: time
     wavefield_duration: 800.0
-    wavefield_filter: 
-    - 0.01
-    - 0.2
-    wavefield_path: '' 
-    wavefield_point_force: 1.0e6
-    wavefield_sampling_rate: 0.5
-    wavefield_type: analytic
+    wavefield_filter: null
+    wavefield_path: /Users/jigel/noisi/noisi_inv/noisi_output/0703_noisi_inv_test/greens
+    wavefield_point_force: 1.0e9
+    wavefield_sampling_rate: 1.0
+    wavefield_type: greens
+    v: 3000.0
+    q: 100.0
+    rho: 3000.0
     
     
 source_config:
-    get_auto_corr: true
-    model_observed_only: false
+    get_auto_corr: false
+    model_observed_only: true
     max_lag: 400
     diagonals: false
     rotate_horizontal_components: false
@@ -123,9 +127,9 @@ measr_config:
     weights: [1.0]
     g_speed: 2700
     window_params_wtype: "hann"
-    window_params_hw: 25
+    window_params_hw: 30
     window_params_hw_variable: null
-    window_params_win_overlap: false
-    window_params_sep_noise: 2.0
+    window_params_win_overlap: true
+    window_params_sep_noise: 0.0
     window_plot_measurements: false
     ignore_network: false
