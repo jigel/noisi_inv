@@ -216,7 +216,7 @@ def output_plot(output_path,only_ocean=False,triangulation=False):
     for file in grad_paths:
         try:
             grad = np.load(file,allow_pickle=True)[0]
-            v = np.abs(np.max(grad))
+            v = np.max(np.abs(grad))
 
             step = file.split('/')[-2].split('_')[1]
 
@@ -257,7 +257,7 @@ def output_plot(output_path,only_ocean=False,triangulation=False):
             continue
         else:
             grad = np.load(file[0],allow_pickle=True)[0]
-            v = np.abs(np.max(grad))
+            v = np.max(np.abs(grad))
 
             step = file[0].split('/')[-2].split('_')[1]
 
