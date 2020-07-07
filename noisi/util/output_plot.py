@@ -156,7 +156,7 @@ def output_plot(output_path,only_ocean=False,triangulation=False):
     for file in grad_smoothing_paths:
         try:
             step = file[0].split('/')[-2].split('_')[1]
-            smooth_var = float(np.load(file[0]),allow_pickle=True)
+            smooth_var = float(np.load(file[0],allow_pickle=True))
             grad_smoothing_dict.update({step:smooth_var})
         except:
             #print('fail')
