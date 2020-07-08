@@ -165,7 +165,7 @@ class precomp_wavefield(object):
         lon_sta = float(lon_sta)
         rec = instaseis.Receiver(latitude=lat_sta, longitude=lon_sta)
         point_f = float(self.config['wavefield_point_force'])
-        station_id = station['net'] + '.' + station['sta'] + '..MX' + channel
+        station_id = str(station['net']) + '.' + str(station['sta']) + '..MX' + str(channel)
 
         if self.config['verbose']:
             print(station_id)
@@ -282,7 +282,7 @@ invalid for horizontal components; set channel to \"Z\" or use instaseis.")
         # set some parameters
         lat_sta = station['lat']
         lon_sta = station['lon']
-        station_id = station['net'] + '.' + station['sta'] + '..MX' + \
+        station_id = str(station['net']) + '.' + str(station['sta']) + '..MX' + \
             self.config['wavefield_channel']
         if self.config['verbose']:
             print(station_id)

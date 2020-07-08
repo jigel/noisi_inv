@@ -19,7 +19,7 @@ def define_correlationpairs(proj_dir, auto_corr=False,
         stations = read_csv(os.path.join(proj_dir, 'stationlist.csv'))
         nets = list(stations.net.values)
         stations = list(stations.sta.values)
-        stations = [nets[i] + '  ' + stations[i]
+        stations = [str(nets[i]) + '  ' + str(stations[i])
                     for i in range(len(stations))]
 
     except IOError:
@@ -56,7 +56,7 @@ def define_correlationpairs(proj_dir, auto_corr=False,
 
                     if '' in [sta_0, sta]:
                         continue
-                    corr_pairs.append([sta_0+' '+cha1, sta+ ' '+cha2])
+                    corr_pairs.append([str(sta_0)+' '+str(cha1), str(sta)+ ' '+str(cha2)])
                     
         i += 1
                     
