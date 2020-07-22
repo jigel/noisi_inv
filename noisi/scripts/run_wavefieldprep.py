@@ -64,7 +64,7 @@ class precomp_wavefield(object):
 
         # add stations
         self.stations = read_csv(os.path.join(args.project_path,
-                                              'stationlist.csv'))
+                                              'stationlist.csv'),keep_default_na=False)
         self.prepare()
 
         # run: instaseis or analytic

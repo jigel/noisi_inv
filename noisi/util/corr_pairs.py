@@ -16,7 +16,7 @@ def define_correlationpairs(proj_dir, auto_corr=False,
     """
 
     try:
-        stations = read_csv(os.path.join(proj_dir, 'stationlist.csv'))
+        stations = read_csv(os.path.join(proj_dir, 'stationlist.csv'),keep_default_na=False)
         nets = list(stations.net.values)
         stations = list(stations.sta.values)
         stations = [str(nets[i]) + '  ' + str(stations[i])

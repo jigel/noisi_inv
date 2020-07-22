@@ -27,7 +27,7 @@ def assign_geographic_metadata(indir, stationlistfile,comm,size,rank):
         print(traces[-1])
         print('Assign geographical information.\n')
 
-    meta = pd.read_csv(stationlistfile)
+    meta = pd.read_csv(stationlistfile,keep_default_na=False)
     count_tr = 0
     
     # split up traces
