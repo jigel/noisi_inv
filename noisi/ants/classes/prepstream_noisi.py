@@ -439,13 +439,13 @@ class PrepStream(object):
                     print('* decimated traces to %g Hz' % Fs,
                           file=self.ofid)
             else:
-                try:
-                    self.stream.interpolate(sampling_rate=Fs, method='lanczos')
-                    print('* interpolated traces to %g Hz' % Fs,
-                          file=self.ofid)
-                except ValueError:
-                    self.stream.interpolate(sampling_rate=Fs)
-                    print('* interpolated trace to %g Hz' % Fs,
+                #try:
+                #    self.stream.interpolate(sampling_rate=Fs, method='lanczos')
+                #    print('* interpolated traces to %g Hz' % Fs,
+                #          file=self.ofid)
+                #except ValueError:
+                self.stream.interpolate(sampling_rate=Fs)
+                print('* interpolated trace to %g Hz' % Fs,
                           file=self.ofid)
 
     def remove_response(self, pre_filt, waterlevel, unit, verbose):

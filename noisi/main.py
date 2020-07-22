@@ -25,7 +25,7 @@ rank = comm.Get_rank()
 
 def hello(args, comm, size, rank):
     if rank == 0:
-        print('Noisi Version 1. Type noisi -h for more information.\n')
+        print('Noisi (in-)Version 1. Type noisi -h for more information.\n')
 
 
 parser = argparse.ArgumentParser(description='Noise cross-correlation tool.')

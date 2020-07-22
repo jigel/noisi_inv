@@ -124,37 +124,37 @@ def preprocess(cfg,comm,size,rank):
         print('Attempting to process:',file=ofid)
         print(os.path.basename(filepath),file=ofid)
         
-        #try:
-        prstr = PrepStream(cfg,filepath,ofid)
-        #except:
-        #    print('** Problem opening file, skipping: ',file=ofid)
-        #    print('** %s' %filepath,file=ofid)
-        #    continue
+        try:
+            prstr = PrepStream(cfg,filepath,ofid)
+        except:
+            print('** Problem opening file, skipping: ',file=ofid)
+            print('** %s' %filepath,file=ofid)
+            continue
 
         if len(prstr.stream) == 0:
             print('** No data in file, skipping: ',file=ofid)
             print('** %s' %filepath,file=ofid)
             continue
 
-        #try:
-        prstr.prepare(cfg)
-        #except:
-        #    print('** Problems preparing stream: ',file=ofid)
-        #    print('** %s' %filepath,file=ofid)
-        #    continue
+        try:
+            prstr.prepare(cfg)
+        except:
+            print('** Problems preparing stream: ',file=ofid)
+            print('** %s' %filepath,file=ofid)
+            continue
             
-        #try:
-        prstr.process(cfg,event_filter, local_cat)
-        #except:
-        #    print('** Problems processing stream: ',file=ofid)
-        #    print('** %s' %filepath,file=ofid)
-        #    continue
+        try:
+            prstr.process(cfg,event_filter, local_cat)
+        except:
+            print('** Problems processing stream: ',file=ofid)
+            print('** %s' %filepath,file=ofid)
+            continue
 
-        #try:
-        prstr.write(rankdir,cfg)
-        #except:
-        #    print('** Problems writing stream: ',file=ofid)
-        #    print('** %s' %filepath,file=ofid)
+        try:
+            prstr.write(rankdir,cfg)
+        except:
+            print('** Problems writing stream: ',file=ofid)
+            print('** %s' %filepath,file=ofid)
 
         ofid.flush()
         
