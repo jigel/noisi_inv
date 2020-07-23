@@ -42,7 +42,7 @@ def preprocess(cfg,comm,size,rank):
     #if rank == 0 and cfg.verbose:
     #    print(cfg.__dict__)
 
-    comm.Barrier()
+    comm.barrier()
 
     event_filter = None
 

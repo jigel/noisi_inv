@@ -336,11 +336,12 @@ must be above lower corner frequency."
                     break
                 try:
                     self.data += read(f)
-                    print("read trace to ", self.data[-1].stats.endtime)
+                    #print("read trace to ", self.data[-1].stats.endtime)
                     # success
                     break
                 except IOError:
-                    print("** Could not read trace: %s" % f)
+                    #print("** Could not read trace: %s" % f)
+                    pass
                     # try the next file
         self.data._cleanup()
         self.data.sort(keys=["starttime"])
