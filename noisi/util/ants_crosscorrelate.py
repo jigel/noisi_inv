@@ -94,7 +94,7 @@ def ants_preprocess(args,comm,size,rank):
             "10",
             "11",
         ],
-        "phaseshift": True,
+        "phaseshift": False,
         "quality_maxgapsec": 120.0,
         "quality_minlengthsec": 0.0,
         "testrun": False,
