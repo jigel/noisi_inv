@@ -214,7 +214,7 @@ must be above lower corner frequency."
 
             # check if there is a gap
             while t < self.data[0].stats.starttime - self.cfg.time_overlap:
-                t += self.cfg.time_overlap
+                t += win_len_seconds - self.cfg.time_overlap
                 #print("jumping to t ", t)
             t_old = t
             
