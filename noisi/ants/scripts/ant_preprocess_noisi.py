@@ -13,6 +13,8 @@ from noisi.ants.tools.prepare import get_event_filter
 from noisi.ants.config_noisi import ConfigPreprocess
 from noisi.ants.classes.prepstream_noisi import PrepStream
 import sys
+import psutil
+process = psutil.Process(os.getpid())
 #cfg = ConfigPreprocess()
 #
 #
@@ -124,12 +126,18 @@ def preprocess(cfg,comm,size,rank):
         print('Attempting to process:',file=ofid)
         print(os.path.basename(filepath),file=ofid)
         
+        
+        print("Memory usage in Gb before PrepStream ", process.memory_info().rss / 1.e9,file=ofid, end="\n")
+        
+        
         try:
             prstr = PrepStream(cfg,filepath,ofid)
         except:
             print('** Problem opening file, skipping: ',file=ofid)
             print('** %s' %filepath,file=ofid)
             continue
+
+        print("Memory usage in Gb after PrepStream ", process.memory_info().rss / 1.e9,file=ofid, end="\n")
 
         if len(prstr.stream) == 0:
             print('** No data in file, skipping: ',file=ofid)
@@ -142,13 +150,17 @@ def preprocess(cfg,comm,size,rank):
             print('** Problems preparing stream: ',file=ofid)
             print('** %s' %filepath,file=ofid)
             continue
-            
+        
+        print("Memory usage in Gb after prepare ", process.memory_info().rss / 1.e9,file=ofid, end="\n")
+
         try:
             prstr.process(cfg,event_filter, local_cat)
         except:
             print('** Problems processing stream: ',file=ofid)
             print('** %s' %filepath,file=ofid)
             continue
+        
+        print("Memory usage in Gb after process ", process.memory_info().rss / 1.e9,file=ofid, end="\n")
 
         try:
             prstr.write(rankdir,cfg)
