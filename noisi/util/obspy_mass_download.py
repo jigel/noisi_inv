@@ -62,7 +62,7 @@ def obspy_mass_downloader(args):
         net = '*'
         sta = '*'
         
-        domain_type = args.down_domain_type # 'rectangular','global'
+        domain_type = args.domain_type # 'rectangular','global'
 
         
     # check if domain_type is one of circular, rectangular, global  
@@ -77,10 +77,10 @@ def obspy_mass_downloader(args):
 
     # parameters for rectangular
     if domain_type.lower() == 'rectangular':
-        lat_min = args.down_lat_min
-        lat_max = args.down_lat_max
-        lon_min = args.down_lon_min
-        lon_max = args.down_lon_max
+        lat_min = args.rect_lat_min
+        lat_max = args.rect_lat_max
+        lon_min = args.rect_lon_min
+        lon_max = args.rect_lon_max
 
         domain = RectangularDomain(minlatitude=lat_min,
                                    maxlatitude=lat_max,
@@ -90,10 +90,10 @@ def obspy_mass_downloader(args):
 
     if domain_type.lower() == 'circular':
         # useful tool: https://www.mapdevelopers.com/draw-circle-tool.php
-        lat = args.down_lat_center
-        lon = args.down_lon_center
-        r_min = args.down_radius_min
-        r_max = args.down_radius_max
+        lat = args.circ_lat_center
+        lon = args.circ_lon_center
+        r_min = args.circ_radius_min
+        r_max = args.circ_radius_max
 
         domain = CircularDomain(latitude=lat,
                                 longitude=lon,
