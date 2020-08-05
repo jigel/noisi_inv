@@ -357,13 +357,17 @@ must be above lower corner frequency."
         for channel in self.channels:
             ttemp = 0
             while ttemp < t_min:
-                f = self.inv[channel].pop(0)
+                # try, except in case of empty list
                 try:
-                    self.data += read(f)
-                    ttemp = self.data[-1].stats.endtime
-                except IOError:
-                    print('** problems reading file %s'
-                          % self.inv.data[channel])
+                    f = self.inv[channel].pop(0)
+                    try:
+                        self.data += read(f)
+                        ttemp = self.data[-1].stats.endtime
+                    except IOError:
+                        print('** problems reading file %s'
+                              % self.inv.data[channel])
+                except:
+                    break
 
         earliest_start_date = min([tr.stats.starttime for tr in self.data])
         self.data.trim(max(t0, earliest_start_date))
