@@ -608,7 +608,11 @@ for iter_nr in range(start_iter, inv_args.nr_iterations):
 
     source_distr_data = np.asarray(source_distr['model'])
     source_distr_max = np.max(source_distr_data)
-    source_distr_data_norm = source_distr_data/np.max(abs(source_distr_data))
+    
+    if np.all(source_distr_data==0):
+        source_distr_data_norm = source_distr_data
+    else:
+        source_distr_data_norm = source_distr_data/np.max(abs(source_distr_data))
 
     gradient_path = os.path.join(inv_args.source_model,f'iteration_{iter_nr}','grad','grad_all.npy')
     grad_data = np.load(gradient_path)
@@ -702,8 +706,11 @@ for iter_nr in range(start_iter, inv_args.nr_iterations):
         distr_update_norm[distr_update_norm < 0] = 0
         
         # scale back up again 
-        distr_update = np.asarray([distr_update_norm*source_distr_max][0])
-        
+        if source_distr_max == 0:
+            distr_update = np.asarray([distr_update_norm][0])
+        else:
+            distr_update = np.asarray([distr_update_norm*source_distr_max][0])
+            
         # square the distribution then normalise and rescale
         #distr_update_2 = np.power(distr_update,2)
         #distr_update_2_norm = distr_update_2/np.max(np.abs(distr_update_2))

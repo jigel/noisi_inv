@@ -267,10 +267,16 @@ precompute_wavefield first.')
 
         if parameters['distribution'] == 'homogeneous':
             if verbose:
-                print('Adding homogeneous distribution')
+                print('Adding homogeneous distribution with 1 everywhere')
             distribution = np.ones(grd.shape[-1])
             return(float(parameters['weight']) * distribution)
-
+        
+        elif parameters['distribution'] in ['zero','homogeneous_0']:
+            if verbose:
+                print('Adding homogeneous distribution with 0 everywhere')
+            distribution = np.zeros(grd.shape[-1])
+            return(float(parameters['weight']) * distribution)
+        
         elif parameters['distribution'] == 'ocean':
             if verbose:
                 print('Adding ocean-only distribution')

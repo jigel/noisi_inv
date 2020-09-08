@@ -31,7 +31,11 @@ def steplengthtest(args,comm,size,rank,mf_dict,gradient_path,grad_smooth_path,so
 
     source_distr_data = np.asarray(source_distr['model'])
     source_distr_max = np.max(source_distr_data)
-    source_distr_data_norm = source_distr_data/np.max(abs(source_distr_data))
+    
+    if np.all(source_distr_data==0):
+        source_distr_data_norm = source_distr_data
+    else:
+        source_distr_data_norm = source_distr_data/np.max(abs(source_distr_data))
 
     grid_full = source_grid
     
@@ -75,11 +79,15 @@ def steplengthtest(args,comm,size,rank,mf_dict,gradient_path,grad_smooth_path,so
         # set all negative values to 0
         distr_update_norm[distr_update_norm < 0] = 0
         # scale back up again 
-        distr_update = np.asarray([distr_update_norm*source_distr_max][0])
+        
+        if source_distr_max == 0:
+            distr_update = np.asarray([distr_update_norm][0])
+        else:
+            distr_update = np.asarray([distr_update_norm*source_distr_max][0])
             
         if not any(distr_update):
             if rank == 0 :
-                print("Distribution is 0 everywhere.")
+                print("Distribution is 0 everywhere after update. Check gradient.")
             break
             #raise ValueError("Distribution is 0 everywhere.")
             
