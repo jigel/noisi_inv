@@ -1,15 +1,16 @@
 main:
     output_folder: ./noisi_output
-    stationlist: /Users/jigel/noisi/mirmex_stations/stationlist_swiss_6.csv 
+    stationlist: /Users/jigel/noisi/stationlists/stationlist_swiss_6.csv 
     add_metadata: false
     add_noise: false
     output_plot: true
 
 project_config:
-    project_name: 0706_inv_global_blob_fw
+    project_name: 0924_inv_combine_file_test_1
     synt_data: DIS
     verbose: false
     load_to_memory: true
+    compress_output_files: true
 
 data_download:
     download_data: false
@@ -36,7 +37,7 @@ inversion_config:
     opt_statpair: null 
     snr_thresh: 0
     corr_max_dist: null
-    nr_iterations: 5
+    nr_iterations: 1
     nr_step_tests: 5
     step_test_smoothing: false
     frac_corr_slt: 1
