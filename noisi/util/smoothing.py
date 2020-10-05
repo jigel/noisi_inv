@@ -10,35 +10,45 @@ import numpy as np
 from math import sqrt, pi
 import sys
 
-def get_distance(gridx, gridy, gridz, x, y, z):
-    xd = gridx - x
-    yd = gridy - y
-    zd = gridz - z
-    return np.sqrt(np.power(xd, 2) + np.power(yd, 2) + np.power(zd, 2))
+def get_distance(lat1, lon1, lat2, lon2):
+    """
+    Calculate the great circle distance between two points
+    on the earth (specified in decimal degrees)
+    """
+    # convert decimal degrees to radians
+    lon1 = np.deg2rad(lon1)
+    lat1 = np.deg2rad(lat1)
+    lon2 = np.deg2rad(lon2)
+    lat2 = np.deg2rad(lat2)
 
+    # haversine formula
+    dlon = lon2 - lon1
+    dlat = lat2 - lat1
+    a = np.sin(dlat / 2) ** 2 + np.cos(lat1) * np.cos(lat2) * np.sin(dlon / 2) ** 2
+    c = 2 * np.arcsin(np.sqrt(a))
+    km = 6371 * c
+    return km*1000
 
 def smooth_gaussian(values, coords, rank, size, sigma, r=6371000.,
                     threshold=1e-16):
     # coords format: (lon,lat)
 
-    # step 1: Cartesian coordinates of map
-    theta = np.deg2rad(-coords[1] + 90.)
-    phi = np.deg2rad(coords[0] + 180.)
-
-    x = r * np.sin(theta) * np.cos(phi)
-    y = r * np.sin(theta) * np.sin(phi)
-    z = r * np.cos(theta)
-
     v_smooth = np.zeros(values.shape)
 
     a = 1. / (sigma * sqrt(2. * pi))
     for i in range(rank, len(values), size):
-        xp, yp, zp = (x[i], y[i], z[i])
-        dist = get_distance(x, y, z, xp, yp, zp)
+
+        lat1 = coords[1][i]
+        lon1 = coords[0][i]
+        lat2 = coords[1]
+        lon2 = coords[0]
+        
+        dist = get_distance(lat1,lon1,lat2,lon2)
+        
         weight = a * np.exp(-(dist) ** 2 / (2 * sigma ** 2))
         idx = weight >= threshold
         v_smooth[i] = np.sum(np.multiply(weight[idx], values[idx])) / idx.sum()
-
+    
     return v_smooth
 
 
