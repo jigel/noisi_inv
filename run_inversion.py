@@ -165,10 +165,11 @@ if rank == 0:
 comm.barrier()
 
 # time for project
-run_time = open(os.path.join(inv_args.project_path,'runtime.txt'),'w+')
-run_time.write(f"Number of cores: {size} \n")
-t_1 = time.time()
-run_time.write(f"Project setup: {np.around((t_1-t_0)/60,4)} \n")
+if rank==0:
+    run_time = open(os.path.join(inv_args.project_path,'runtime.txt'),'w+')
+    run_time.write(f"Number of cores: {size} \n")
+    t_1 = time.time()
+    run_time.write(f"Project setup: {np.around((t_1-t_0)/60,4)} \n")
 
 ########################################################################
 # download (on only one rank) and process data 
@@ -207,8 +208,10 @@ if inv_args.download_data:
     comm.barrier()
 
     # time for data download
-    t_100 = time.time()
-    run_time.write(f"Data Download: {np.around((t_100-t_1)/60,4)} \n")
+    if rank==0:
+
+        t_100 = time.time()
+        run_time.write(f"Data Download: {np.around((t_100-t_1)/60,4)} \n")
 
     comm.barrier()
     
@@ -216,18 +219,22 @@ if inv_args.download_data:
     
     comm.barrier()
 
-    # time for data preprocessing
-    t_101 = time.time()
-    run_time.write(f"Data Pre-processing: {np.around((t_101-t_100)/60,4)} \n")
-    
+    if rank==0:
+
+        # time for data preprocessing
+        t_101 = time.time()
+        run_time.write(f"Data Pre-processing: {np.around((t_101-t_100)/60,4)} \n")
+
     ants_crosscorrelate(inv_args,comm,size,rank)
     
     comm.barrier()
     
-    # time for data cross-correlating
-    t_102 = time.time()
-    run_time.write(f"Data Cross-correlating: {np.around((t_102-t_101)/60,4)} \n")
-    
+    if rank==0:
+
+        # time for data cross-correlating
+        t_102 = time.time()
+        run_time.write(f"Data Cross-correlating: {np.around((t_102-t_101)/60,4)} \n")
+
     # change path to observed cross-correlations
     inv_args.observed_corr = os.path.join(inv_args.project_path,'data','correlations')
     inv_config['inversion_config']['observed_corr'] = inv_args.observed_corr
@@ -266,9 +273,12 @@ if rank == 0:
     setup_sourcegrid(inv_args, comm, size, rank)
 
 comm.barrier()
-# time for sourcegrid
-t_2 = time.time()
-run_time.write(f"Sourcegrid: {np.around((t_2-t_1)/60,4)} \n")
+
+if rank==0:
+
+    # time for sourcegrid
+    t_2 = time.time()
+    run_time.write(f"Sourcegrid: {np.around((t_2-t_1)/60,4)} \n")
 
 ########################################################################
 # Convert wavefield
@@ -296,9 +306,11 @@ else:
     #pass
     
 comm.barrier()
-# time for wavefield
-t_3 = time.time()
-run_time.write(f"Wavefield: {np.around((t_3-t_2)/60,4)} \n")
+
+if rank==0:
+    # time for wavefield
+    t_3 = time.time()
+    run_time.write(f"Wavefield: {np.around((t_3-t_2)/60,4)} \n")
 
 
 ########################################################################
@@ -374,13 +386,14 @@ if rank == 0:
     
 comm.barrier()
 
-# time for source setup
-t_4 = time.time()
-run_time.write(f"Source setup: {np.around((t_4-t_3)/60,4)} \n")
+if rank==0:
+    # time for source setup
+    t_4 = time.time()
+    run_time.write(f"Source setup: {np.around((t_4-t_3)/60,4)} \n")
 
 
 
-########################################################################
+    ########################################################################
 # Copy observed cross-correlations
 ########################################################################
 
@@ -402,9 +415,10 @@ if not inv_args.observed_corr == None:
 
 comm.barrier()
 
-# time for corr copy
-t_5 = time.time()
-run_time.write(f"Copy correlations: {np.around((t_5-t_4)/60,4)} \n")
+if rank==0:
+    # time for corr copy
+    t_5 = time.time()
+    run_time.write(f"Copy correlations: {np.around((t_5-t_4)/60,4)} \n")
 
 ########################################################################
 # Begin inversion, first check for already computed iterations
@@ -468,9 +482,11 @@ else:
     run_corr(inv_args,comm,size,rank)
     
     comm.barrier()
-    #time for corr
-    t_6 = time.time()
-    run_time.write(f"Correlations iteration_0: {np.around((t_6-t_5)/60,4)} \n")
+    
+    if rank==0:
+        #time for corr
+        t_6 = time.time()
+        run_time.write(f"Correlations iteration_0: {np.around((t_6-t_5)/60,4)} \n")
 
     if inv_args.add_metadata:
         if rank == 0:
@@ -532,10 +548,12 @@ else:
     run_measurement(inv_args,comm,size,rank)
 
     comm.barrier()
-    # time for measurement
-    t_7 = time.time()
-    run_time.write(f"Measurement iteration_0: {np.around((t_7-t_6)/60,4)} \n")
     
+    if rank==0:
+        # time for measurement
+        t_7 = time.time()
+        run_time.write(f"Measurement iteration_0: {np.around((t_7-t_6)/60,4)} \n")
+
     # check if there are adjoint sources. If not exit since kernels no kernels will be computed
     adjt_path = os.path.join(inv_args.source_model,'iteration_0/adjt')
     if os.listdir(adjt_path) == []:
@@ -576,9 +594,11 @@ else:
     run_kern(inv_args,comm,size,rank)
 
     comm.barrier()
-    # time for kern
-    t_8 = time.time()
-    run_time.write(f"Kernels iteration_0: {np.around((t_8-t_7)/60,4)} \n")
+    
+    if rank==0:
+        # time for kern
+        t_8 = time.time()
+        run_time.write(f"Kernels iteration_0: {np.around((t_8-t_7)/60,4)} \n")
 
     
     ########################################################################
@@ -593,9 +613,10 @@ else:
 
     comm.barrier()
 
-    # time for gradient
-    t_9 = time.time()
-    run_time.write(f"Gradient iteration_0: {np.around((t_9-t_8)/60,4)} \n")
+    if rank==0:
+        # time for gradient
+        t_9 = time.time()
+        run_time.write(f"Gradient iteration_0: {np.around((t_9-t_8)/60,4)} \n")
 
     if rank == 0:
         print("Gradient assembled.")
@@ -769,9 +790,11 @@ for iter_nr in range(start_iter, inv_args.nr_iterations):
     
     comm.barrier()
 
-    t_9901 = time.time()
-    run_time.write(f"Smoothing iteration_{inv_args.step}: {np.around((t_9901-t_9900)/60,4)} \n")
-    
+    if rank==0:
+
+        t_9901 = time.time()
+        run_time.write(f"Smoothing iteration_{inv_args.step}: {np.around((t_9901-t_9900)/60,4)} \n")
+
     if rank == 0:
         print(f'Smoothing iteration {iter_nr} done.')
         print("Performing step length test..")
@@ -796,10 +819,11 @@ for iter_nr in range(start_iter, inv_args.nr_iterations):
     ########################################################################
     # Update model
     ########################################################################
+    if rank==0:
 
-    t_9902 = time.time()
-    run_time.write(f"Steplengthtest iteration_{inv_args.step}: {np.around((t_9902-t_9901)/60,4)} \n")
- 
+        t_9902 = time.time()
+        run_time.write(f"Steplengthtest iteration_{inv_args.step}: {np.around((t_9902-t_9901)/60,4)} \n")
+
     inv_args.step += 1
     setattr(inv_args,'steplengthrun',False)
 
@@ -858,10 +882,12 @@ for iter_nr in range(start_iter, inv_args.nr_iterations):
         print(f'Made iteration_{inv_args.step} folder.')
         
     comm.barrier()
-
-    t_9903 = time.time()
-    run_time.write(f"Noisesource Update iteration_{inv_args.step}: {np.around((t_9903-t_9902)/60,4)} \n")
     
+    if rank==0:
+
+        t_9903 = time.time()
+        run_time.write(f"Noisesource Update iteration_{inv_args.step}: {np.around((t_9903-t_9902)/60,4)} \n")
+
     ########################################################################
     # Correlations
     ########################################################################
@@ -873,8 +899,10 @@ for iter_nr in range(start_iter, inv_args.nr_iterations):
     
     comm.barrier()
    
-    t_9904 = time.time()
-    run_time.write(f"Correlations iteration_{inv_args.step}: {np.around((t_9904-t_9903)/60,4)} \n")
+    if rank==0:
+
+        t_9904 = time.time()
+        run_time.write(f"Correlations iteration_{inv_args.step}: {np.around((t_9904-t_9903)/60,4)} \n")
 
     if inv_args.add_noise:
         if rank == 0:
@@ -897,8 +925,9 @@ for iter_nr in range(start_iter, inv_args.nr_iterations):
 
     comm.barrier()
    
-    t_9905 = time.time()
-    run_time.write(f"Measurement iteration_{inv_args.step}: {np.around((t_9905-t_9904)/60,4)} \n")
+    if rank==0:
+        t_9905 = time.time()
+        run_time.write(f"Measurement iteration_{inv_args.step}: {np.around((t_9905-t_9904)/60,4)} \n")
 
     ########################################################################
     # Kernel
@@ -911,10 +940,11 @@ for iter_nr in range(start_iter, inv_args.nr_iterations):
     run_kern(inv_args,comm,size,rank)
     
     comm.barrier()
+    
+    if rank==0:
+        t_9906 = time.time()
+        run_time.write(f"Kernels iteration_{inv_args.step}: {np.around((t_9906-t_9905)/60,4)} \n")   
 
-    t_9906 = time.time()
-    run_time.write(f"Kernels iteration_{inv_args.step}: {np.around((t_9906-t_9905)/60,4)} \n")   
- 
     ########################################################################
     # Gradient 
     ########################################################################.
@@ -927,8 +957,9 @@ for iter_nr in range(start_iter, inv_args.nr_iterations):
     
     comm.barrier()
 
-    t_9907 = time.time()
-    run_time.write(f"Gradient iteration_{inv_args.step}: {np.around((t_9907-t_9906)/60,4)} \n")
+    if rank==0:
+        t_9907 = time.time()
+        run_time.write(f"Gradient iteration_{inv_args.step}: {np.around((t_9907-t_9906)/60,4)} \n")
 
     
     # Compute misfit
@@ -985,11 +1016,13 @@ for iter_nr in range(start_iter, inv_args.nr_iterations):
 if rank == 0:
     print(f"Inversion done. Misfit reduced from {np.around(list(mf_dict.values())[0],2)} to {np.around(list(mf_dict.values())[-1],2)}")
 
-# inversion time
-t_10 = time.time()
-run_time.write(f"Inversion: {np.around((t_10-t_9)/60,4)} \n")
-run_time.write(f"Total runtime: {np.around((t_10-t_0)/60,4)} \n")
-run_time.close()
+    
+if rank==0:
+    # inversion time
+    t_10 = time.time()
+    run_time.write(f"Inversion: {np.around((t_10-t_9)/60,4)} \n")
+    run_time.write(f"Total runtime: {np.around((t_10-t_0)/60,4)} \n")
+    run_time.close()
 
 if rank == 0:
     output_copy(inv_args.project_path)

@@ -129,7 +129,22 @@ def obspy_mass_downloader(args):
     
     # check how many files
     print(f"Found {np.size(os.listdir(inv_path))} stations with data.")
+    
+    # remove all but one location for each station
+    station_found = []
 
+    for file in os.listdir(data_path):
+        net_1 = file.split('.')[0]
+        sta_1 = file.split('.')[1]
+        cha_1 = file.split('.')[3]
+
+        sta_name = f"{net_1}.{sta_1}..{cha_1}"
+
+        if sta_name not in station_found:
+            station_found.append(sta_name)
+        else:
+            os.remove(os.path.join(data_path,file))
+    
     if np.size(os.listdir(inv_path)) == []:
         raise Exception("Could not find any data")
    
