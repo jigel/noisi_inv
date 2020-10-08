@@ -1014,26 +1014,24 @@ for iter_nr in range(start_iter, inv_args.nr_iterations):
         
         
 if rank == 0:
+    print("\n")
+    print(f"---------- ITERATIONS DONE ----------")
+    print("\n")
+    
     print(f"Inversion done. Misfit reduced from {np.around(list(mf_dict.values())[0],2)} to {np.around(list(mf_dict.values())[-1],2)}")
 
-    
-if rank==0:
-    # inversion time
+        # inversion time
     t_10 = time.time()
     run_time.write(f"Inversion: {np.around((t_10-t_9)/60,4)} \n")
     run_time.write(f"Total runtime: {np.around((t_10-t_0)/60,4)} \n")
     run_time.close()
 
-if rank == 0:
+    print("Copying files..")
     output_copy(inv_args.project_path)
     print("Files copied to output folder.")
 
-    
-comm.barrier()
-
-if rank == 0:
     if inv_args.output_plot:
-        output_plot(os.path.join(inv_args.project_path,"output"),only_ocean=only_ocean,triangulation=True)
+        output_plot(inv_args,os.path.join(inv_args.project_path,"output"),only_ocean=only_ocean,triangulation=True)
 
         
 comm.barrier()

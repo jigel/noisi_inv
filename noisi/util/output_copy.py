@@ -12,33 +12,32 @@ print = functools.partial(print, flush=True)
 def output_copy(project_path):
 
     # project path
-    print(project_path)
+    #print(project_path)
     
     # create
-    if not os.path.exists(os.path.join(project_path,'output')):
-        os.makedirs(os.path.join(project_path,'output'))
-    
     output_path = os.path.join(project_path,'output')
-    
+
+    if not os.path.exists(output_path):
+        os.makedirs(output_path)
     
     # copy stationlist and inversion config file
     copy2(glob(os.path.join(project_path,'stationlist*'))[0],output_path)
-    print(f'Copied {glob(os.path.join(project_path,"stationlist*"))[0]}')
+    #print(f'Copied {glob(os.path.join(project_path,"stationlist*"))[0]}')
     
     copy2(glob(os.path.join(project_path,'inversion_config*'))[0],output_path)
-    print(f'Copied {glob(os.path.join(project_path,"inversion_config*"))[0]}')
+    #print(f'Copied {glob(os.path.join(project_path,"inversion_config*"))[0]}')
     
     copy2(os.path.join(project_path,'sourcegrid.npy'),output_path)
-    print(f'Copied {os.path.join(project_path,"sourcegrid.npy")}')
+    #print(f'Copied {os.path.join(project_path,"sourcegrid.npy")}')
     
     try:
         copy2(os.path.join(project_path,'sourcegrid_voronoi.npy'),output_path)
-        print(f'Copied {os.path.join(project_path,"sourcegrid_voronoi.npy")}')
+        #print(f'Copied {os.path.join(project_path,"sourcegrid_voronoi.npy")}')
     except:
         pass
     
     copy2(os.path.join(project_path,'runtime.txt'),output_path)
-    print(f'Copied {os.path.join(project_path,"runtime.txt")}') 
+    #print(f'Copied {os.path.join(project_path,"runtime.txt")}') 
           
     # copy sourcemodel steps
     if not os.path.exists(os.path.join(output_path,'models')):
@@ -81,25 +80,25 @@ def output_copy(project_path):
         
     	    # copy step test files
             mf_step_files = glob(os.path.join(step,'misfit_step_*'))
-            print(f'Copying {mf_step_files} to {step_path}')
+            #print(f'Copying {mf_step_files} to {step_path}')
             for mf_file in mf_step_files:
                     copy2(mf_file,step_path)
     	        
             # copy measurement file
             measr_file = glob(os.path.join(step,'*measurement*'))
-            print(f'Copying {measr_file} to {step_path}')
+            #print(f'Copying {measr_file} to {step_path}')
             for m_file in measr_file:
                 copy2(m_file,step_path)
     
             # copy smoothing file
             smooth_file = glob(os.path.join(step,'grad','smoothing*'))
-            print(f'Copying {smooth_file} to {step_path}')
+            #print(f'Copying {smooth_file} to {step_path}')
             for m_file in smooth_file:
                 copy2(m_file,step_path)
     
             # copy gradient 
             grad_file = glob(os.path.join(step,'grad','*grad*'))
-            print(f'Copying {grad_file} to {step_path}')
+            #print(f'Copying {grad_file} to {step_path}')
     
             for g_file in grad_file:
                 copy2(g_file,step_path)
@@ -111,7 +110,7 @@ def output_copy(project_path):
     print('Computing station sensitivity..')
     kern_path = os.path.join(source_path,'iteration_0','kern')
     measr_0_file = glob(os.path.join(source_path,'iteration_0','*measurement*'))[0]
-    print('..loading files and summing..')
+    #print('..loading files and summing..')
     
     measr_data = read_csv(measr_0_file)
 
@@ -145,9 +144,9 @@ def output_copy(project_path):
             stat_sense += np.abs(kern_var/measr_var)
 
     try: 
-        print('..saving..')
+        #print('..saving..')
         np.save(os.path.join(project_path,'station_sensitivity.npy'),stat_sense)
-        print('..copying..')
+        #print('..copying..')
         copy2(os.path.join(project_path,'station_sensitivity.npy'),output_path)
         print('Station sensitivity computed.')
     except: 
