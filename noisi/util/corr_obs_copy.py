@@ -188,7 +188,10 @@ def copy_corr(args,comm,size,rank):
                         
                         corr_data = data_var
                         corr_data_norm = corr_data/np.max(np.abs(corr_data))
-
+                        
+                        # make sure it's boxcar window
+                        win_signal[win_signal>0] = 1
+                        
                         # compute signal to noise ratio
                         corr_data_win = data_var*win_signal + data_var*np.flip(win_signal)
                         corr_data_win_norm = corr_data_win/np.max(np.abs(corr_data))
