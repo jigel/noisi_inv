@@ -786,7 +786,7 @@ for iter_nr in range(start_iter, inv_args.nr_iterations):
 
     comm.barrier()
 
-    smooth(gradient_path,grad_smooth_path,sourcegrid_path,sigma=sigma,cap=95,thresh=1e-10,comm=comm,size=size,rank=rank)
+    smooth(gradient_path,grad_smooth_path,sourcegrid_path,sigma=sigma,cap=inv_args.smoothing_cap,thresh=1e-10,comm=comm,size=size,rank=rank)
     
     comm.barrier()
 
@@ -801,7 +801,7 @@ for iter_nr in range(start_iter, inv_args.nr_iterations):
         
 
     # step length test
-    step_length,slt_success = steplengthtest(inv_args,comm,size,rank,mf_dict,gradient_path,grad_smooth_path,sourcegrid_path,sigma=sigma,cap=95,thresh=1e-10)
+    step_length,slt_success = steplengthtest(inv_args,comm,size,rank,mf_dict,gradient_path,grad_smooth_path,sourcegrid_path,sigma=sigma,cap=inv_args.smoothing_cap,thresh=1e-10)
 
     
     comm.barrier()
