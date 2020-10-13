@@ -262,7 +262,12 @@ def run_measurement(args, comm, size, rank):
         window_params['hw_variable'] = measr_config['window_params_hw_variable']
     except KeyError:
         window_params['hw_variable'] = False
-    
+        
+    # waterlevel
+    try:
+        window_params['waterlevel_perc'] = measr_config['waterlevel_perc']
+    except:
+        window_params['waterlevel_perc'] = 0
 
     if bandpass is None:
         bandpass = [None]
