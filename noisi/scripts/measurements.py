@@ -92,12 +92,12 @@ def log_en_ratio(correlation, g_speed, window_params):
         #msr = log(E_plus / (E_minus + np.finfo(E_minus).tiny))
 
         #msr = log((E_plus/(E_minus+wl)))
-        #msr = log((E_plus/(E_minus+(wl*E_plus))))
+        msr = log((E_plus/(E_minus+(wl*E_plus))))
 
-        if E_plus > E_minus:
-            msr = log(E_plus/(E_minus + (wl*E_plus)))
-        else:
-            msr = log((E_plus+(wl*E_minus))/(E_minus))
+        #if E_plus > E_minus:
+        #    msr = log(E_plus/(E_minus + (wl*E_plus)))
+        #else:
+        #    msr = log((E_plus+(wl*E_minus))/(E_minus))
         
         if window_params['plot']:
             plot_window(correlation, win, msr)
