@@ -161,7 +161,7 @@ def ram_norm_trace(tr,winlen,prefilt=None):
         
     envlp = envelope(tr.data)
 
-    for n in xrange(hlen,tr.stats.npts-hlen):
+    for n in range(hlen,tr.stats.npts-hlen):
         weighttrace[n] = np.sum(envlp[n-hlen:n+hlen+1]/(2.*hlen+1))
         
     weighttrace[0:hlen] = weighttrace[hlen]

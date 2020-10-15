@@ -35,8 +35,8 @@ def log_en_ratio_adj(corr_o, corr_s, g_speed, window_params):
         # to win**2
         u_plus = sig_c * win
         u_minus = sig_a * win[::-1]
-        #adjt_src = 2. * (u_plus / E_plus - u_minus / (E_minus+wl))
-        adjt_src = 2. * (u_plus/E_plus - (u_minus+wl*u_plus)/(E_minus+wl*E_plus))
+        adjt_src = 2. * (u_plus / E_plus - u_minus / (E_minus+wl))
+        #adjt_src = 2. * (u_plus/E_plus - (u_minus+wl*u_plus)/(E_minus+wl*E_plus))
         
         #if E_plus >= E_minus:
         #    adjt_src = 2. * (u_plus/E_plus - (u_minus+wl*u_plus)/(E_minus+wl*E_plus))

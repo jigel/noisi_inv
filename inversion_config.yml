@@ -6,17 +6,23 @@ main:
     output_plot: true
 
 project_config:
-    project_name: 0924_inv_combine_file_test_1
+    project_name: 1015_realinv_0917_ocean_10days
     synt_data: DIS
     verbose: false
     load_to_memory: true
-    compress_output_files: true
+    compress_output_files: false
 
 data_download:
-    download_data: false
-    download_data_date: 2017-02-28
-    download_data_channels: ['BHZ','BHN','BHE']
+    download_data: true
+    download_data_date: 2020-09-17
+    download_data_days: 10
+    download_data_channels: ['BHZ']
     
+    process_data_win_len: 3600
+    process_data_overlap: 100
+    
+    gcmt_exclude: True
+
     min_station_dist: 0
 
     domain_type: circular
@@ -33,17 +39,18 @@ data_download:
     
 
 inversion_config:
-    observed_corr: /Users/jigel/noisi/noisi_inv/noisi_output/0706_fwd_global_blob/source_1/iteration_0/corr
+    observed_corr: null 
     opt_statpair: null 
     snr_thresh: 0
     corr_max_dist: null
-    nr_iterations: 1
+    nr_iterations: 2
     nr_step_tests: 5
     step_test_smoothing: false
     frac_corr_slt: 1
     step_length_min: 0.05
     step_length_max: 3.0
     step_smooth: [[2,3],[4,2],[6,1.5],[8,1]] 
+    smoothing_cap: 95
     
 
 grid_config:
@@ -56,7 +63,7 @@ grid_config:
 svp_grid_config:
     svp_grid: true
     svp_dense_antipole: false
-    svp_only_ocean: false
+    svp_only_ocean: true
     svp_voronoi_area: true
     svp_station_remove: 1
     svp_plot: false
@@ -97,7 +104,7 @@ wavefield_config:
     wavefield_domain: time
     wavefield_duration: 800.0
     wavefield_filter: null
-    wavefield_path: /Users/jigel/noisi/noisi_inv/noisi_output/0706_fwd_global_blob/greens
+    wavefield_path: /Users/jigel/noisi/noisi_inv/noisi_output/1015_realinv_0917_ocean_wl_perc_0/greens 
     wavefield_point_force: 1.0e9
     wavefield_sampling_rate: 1.0
     wavefield_type: greens
@@ -121,14 +128,15 @@ source_setup_config:
       normalize_spectrum_to_unity: true
 
 measr_config:
-    mtype: "full_waveform"
+    mtype: "ln_energy_ratio"
     taper_perc: 0.01
     bandpass: [[0.01,0.2,5]]
     weights: [1.0]
     g_speed: 2700
+    waterlevel_perc: 0
     window_params_wtype: "hann"
     window_params_hw: 30
-    window_params_hw_variable: null
+    window_params_hw_variable: 100
     window_params_win_overlap: false
     window_params_sep_noise: 0.0
     window_plot_measurements: false

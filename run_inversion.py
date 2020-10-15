@@ -181,11 +181,11 @@ if inv_args.download_data:
     
     # choose date for which data should be downloaded
     if inv_args.download_data_date == "yesterday":
-        t_start = UTCDateTime(date.today())-60*60*24
+        t_start = UTCDateTime(date.today())-60*60*24*inv_args.download_data_days
         t_end = UTCDateTime(date.today())
     else:
         t_start = UTCDateTime(inv_args.download_data_date)
-        t_end = t_start + 60*60*24
+        t_end = t_start + 60*60*24*inv_args.download_data_days
     
     inv_args.t_start = t_start
     inv_args.t_end = t_end

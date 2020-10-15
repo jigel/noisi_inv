@@ -296,7 +296,7 @@ factor_enrg=1.,taper_perc=0.05,thresh_stdv=1.,ofid=None,verbose=False):
         enrg=np.array(enrg)
         
 
-    trace.data *= weight
+    trace.data = trace.data * weight
     # percentage of data that was cut:
     pctg_cut=float(np.sum(weight==0.))/float(trace.stats.npts)*100
     # display a summary of how much was kept 
