@@ -400,58 +400,58 @@ def output_plot(args,output_path,only_ocean=False,triangulation=False):
         
     print("Plotting ray coverage for kernels..")
     
-    try:
-        kern_path = os.path.join(args.project_path,'source_1/iteration_0/kern')
-        kern_files = glob(os.path.join(kern_path,'*.npy'))
+    #try:
+    kern_path = os.path.join(args.project_path,'source_1/iteration_0/kern')
+    kern_files = glob(os.path.join(kern_path,'*.npy'))
 
-        station_dict = dict()
-        station_anti_dict = dict()
+    station_dict = dict()
+    station_anti_dict = dict()
 
-        for sta_i in stationlist.iterrows():
-            sta = sta_i[1]
-            station_dict.update({f"{sta['net']}.{sta['sta']}":[sta['lat'],sta['lon']]})
+    for sta_i in stationlist.iterrows():
+        sta = sta_i[1]
+        station_dict.update({f"{sta['net']}.{sta['sta']}":[sta['lat'],sta['lon']]})
 
-            if sta['lon'] < 0:
-                station_anti_dict.update({f"{sta['net']}.{sta['sta']}":[-sta['lat'],sta['lon']+180]})
-            elif sta['lon'] >= 0:
-                station_anti_dict.update({f"{sta['net']}.{sta['sta']}":[-sta['lat'],sta['lon']-180]})
-                
-                
-        kern_pairs = [f"{os.path.basename(i).split('--')[0].split('.')[0]}.{os.path.basename(i).split('--')[0].split('.')[1]}--{os.path.basename(i).split('--')[1].split('.')[0]}.{os.path.basename(i).split('--')[1].split('.')[1]}" for i in kern_files]
+        if sta['lon'] < 0:
+            station_anti_dict.update({f"{sta['net']}.{sta['sta']}":[-sta['lat'],sta['lon']+180]})
+        elif sta['lon'] >= 0:
+            station_anti_dict.update({f"{sta['net']}.{sta['sta']}":[-sta['lat'],sta['lon']-180]})
+
+
+    kern_pairs = [f"{os.path.basename(i).split('--')[0].split('.')[0]}.{os.path.basename(i).split('--')[0].split('.')[1]}--{os.path.basename(i).split('--')[1].split('.')[0]}.{os.path.basename(i).split('--')[1].split('.')[1]}" for i in kern_files]
+
+    kern_stat_dict = {}
+    n_rays = 0
+
+    plt.figure(figsize=(50,20))
+    ax = plt.axes(projection=ccrs.Robinson())
+    ax.add_feature(cfeature.NaturalEarthFeature('cultural', 'admin_0_countries', '50m', edgecolor='black', facecolor=cfeature.COLORS['land']),zorder=1)
+    #ax.coastlines()
+    ax.set_global()
+
+    for stat_pair in kern_pairs:
+        i = stat_pair.split('--')[0]
+        j = stat_pair.split('--')[1]
+
+        kern_stat_dict.update({i:[station_dict[i][0],station_dict[i][1]]})
+        kern_stat_dict.update({j:[station_dict[j][0],station_dict[j][1]]})
+
+        plt.plot([station_dict[i][1],station_anti_dict[j][1]],[station_dict[i][0],station_anti_dict[j][0]], color='k',zorder=2, transform=ccrs.Geodetic(),alpha=2.5/np.size(list(station_dict.keys())))
+        plt.plot([station_anti_dict[i][1],station_dict[j][1]],[station_anti_dict[i][0],station_dict[j][0]], color='k',zorder=2, transform=ccrs.Geodetic(),alpha=2.5/np.size(list(station_dict.keys())))
+
+        n_rays += 1
+
+    stat_lat = np.asarray(list(kern_stat_dict.values())).T[0]
+    stat_lon = np.asarray(list(kern_stat_dict.values())).T[1]
+
+    plt.scatter(stat_lon,stat_lat,marker='^',s=250,c='k',edgecolors='w',linewidths=2,transform=ccrs.PlateCarree(),zorder=3)
+
+    plt.title(f"Ray coverage for {kern_path} with {n_rays} rays",pad=10,fontsize=30)
+    plt.savefig(os.path.join(output_plots,f'kernel_ray_coverage.png'),bbox_inches='tight')
+
+    plt.close()
         
-        kern_stat_dict = {}
-        n_rays = 0
-
-        plt.figure(figsize=(50,20))
-        ax = plt.axes(projection=ccrs.Robinson())
-        ax.add_feature(cfeature.NaturalEarthFeature('cultural', 'admin_0_countries', '50m', edgecolor='black', facecolor=cfeature.COLORS['land']),zorder=1)
-        #ax.coastlines()
-        ax.set_global()
-
-        for stat_pair in kern_pairs:
-            i = stat_pair.split('--')[0]
-            j = stat_pair.split('--')[1]
-
-            kern_stat_dict.update({i:[station_dict[i][0],station_dict[i][1]]})
-            kern_stat_dict.update({j:[station_dict[j][0],station_dict[j][1]]})
-
-            plt.plot([station_dict[i][1],station_anti_dict[j][1]],[station_dict[i][0],station_anti_dict[j][0]], color='k',zorder=2, transform=ccrs.Geodetic(),alpha=2.5/np.size(list(station_dict.keys())))
-            plt.plot([station_anti_dict[i][1],station_dict[j][1]],[station_anti_dict[i][0],station_dict[j][0]], color='k',zorder=2, transform=ccrs.Geodetic(),alpha=2.5/np.size(list(station_dict.keys())))
-
-            n_rays += 1
-
-        stat_lat = np.asarray(list(kern_stat_dict.values())).T[0]
-        stat_lon = np.asarray(list(kern_stat_dict.values())).T[1]
-
-        plt.scatter(stat_lon,stat_lat,marker='^',s=250,c='k',edgecolors='w',linewidths=2,transform=ccrs.PlateCarree(),zorder=3)
-
-        plt.title(f"Ray coverage for {kern_path} with {n_rays} rays",pad=10,fontsize=30)
-        plt.savefig(os.path.join(output_plots,f'kernel_ray_coverage.png'),bbox_inches='tight')
-
-        plt.close()
-        
-    except:
-        print("Could not plot ray coverage.")
+    #except:
+    #    print("Could not plot ray coverage.")
 
 
     print(f"Plots can be found in {output_plots}")
