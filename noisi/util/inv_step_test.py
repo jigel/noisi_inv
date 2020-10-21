@@ -129,12 +129,12 @@ def steplengthtest(args,comm,size,rank,mf_dict,gradient_path,grad_smooth_path,so
         
         comm.barrier()
         
-        if args.add_noise:
+        if not inv_args.add_noise == None:
             if rank == 0:
                 print("Adding noise to cross-correlations..")
             
             corr_path = os.path.join(args.source_model,"iteration_0","corr")
-            corr_add_noise(args,comm,size,rank,corr_path)
+            corr_add_noise(args,comm,size,rank,corr_path,perc=args.add_noise,method="amp")
 
         comm.barrier()
 

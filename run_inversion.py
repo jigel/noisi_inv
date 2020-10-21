@@ -498,12 +498,12 @@ else:
 
     comm.barrier()
     
-    if inv_args.add_noise:
+    if not inv_args.add_noise == None:
         if rank == 0:
             print("Adding noise to cross-correlations..")
         
         corr_path = os.path.join(inv_args.source_model,"iteration_0","corr")
-        corr_add_noise(inv_args,comm,size,rank,corr_path)
+        corr_add_noise(inv_args,comm,size,rank,corr_path, perc=inv_args.add_noise,method="amp")
             
     comm.barrier()
     
@@ -904,12 +904,12 @@ for iter_nr in range(start_iter, inv_args.nr_iterations):
         t_9904 = time.time()
         run_time.write(f"Correlations iteration_{inv_args.step}: {np.around((t_9904-t_9903)/60,4)} \n")
 
-    if inv_args.add_noise:
+    if not inv_args.add_noise == None:
         if rank == 0:
             print("Adding noise to cross-correlations..")
             
         corr_path = os.path.join(inv_args.source_model,"iteration_0","corr")
-        corr_add_noise(inv_args,comm,size,rank,corr_path)
+        corr_add_noise(inv_args,comm,size,rank,corr_path,perc=inv_args.add_noise,method="amp")
             
     comm.barrier()
     
