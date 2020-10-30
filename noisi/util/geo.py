@@ -39,7 +39,9 @@ def is_land(x, y, res="110m"):
                                  geometries()))
      
     # add Caspian Sea and Black Sea
-    outline_casp = np.asarray([[27,40],[60,30],[60,50],[23,50],[27,40]])
+    #outline_casp = np.asarray([[27,40],[60,30],[60,50],[23,50],[27,40]])
+    outline_casp = np.asarray([[35,5],[65,25],[60,50],[23,50],[35,5]])
+
     casp_poly = Polygon((outline_casp))
     casp = prep(casp_poly)
     
