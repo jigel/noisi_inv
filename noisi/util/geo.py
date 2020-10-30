@@ -8,6 +8,7 @@ try:
     import shapely.geometry as sgeom
     from shapely.ops import unary_union
     from shapely.prepared import prep
+    from shapely.geometry import Polygon
 except ImportError:
     pass
 from warnings import warn
@@ -36,10 +37,25 @@ def is_land(x, y, res="110m"):
 
     land_geom = unary_union(list(shpreader.Reader(land_shp_fname).
                                  geometries()))
+     
+    # add Caspian Sea and Black Sea
+    outline_casp = np.asarray([[27,40],[60,30],[60,50],[23,50],[27,40]])
+    casp_poly = Polygon((outline_casp))
+    casp = prep(casp_poly)
+    
+    outline_hud = np.asarray([[-80,48],[-105,58],[-77,74],[-58,53],[-80,48]])
+    hud_poly = Polygon((outline_hud))
+    hud = prep(hud_poly)
+    
+    
     land = prep(land_geom)
     is_land = np.zeros(len(x))
+    
     for i in range(len(x)):
-        is_land[i] = land.contains(sgeom.Point(x[i], y[i]))
+        #is_land[i] = land.contains(sgeom.Point(x[i], y[i]))
+        if land.contains(sgeom.Point(x[i], y[i])) or casp.contains(sgeom.Point(x[i], y[i])) or hud.contains(sgeom.Point(x[i], y[i])):
+            is_land[i] = 1
+        
     return is_land
 
 
