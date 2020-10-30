@@ -277,6 +277,12 @@ precompute_wavefield first.')
             distribution = np.zeros(grd.shape[-1])
             return(float(parameters['weight']) * distribution)
         
+        elif parameters['distribution'] == 'random':
+            if verbose:
+                print('Adding random distribution')
+            distribution = np.random.rand(grd.shape[-1])
+            return(float(parameters['weight']) * distribution)
+        
         elif parameters['distribution'] == 'ocean':
             if verbose:
                 print('Adding ocean-only distribution')
