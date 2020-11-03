@@ -250,7 +250,7 @@ if inv_args.download_data:
         
     
 else:
-    if rank == 0:
+    if rank == 0 and inv_args.stationlist != None:
         # copy stationlist
         print(f"Copying {inv_args.stationlist} to project folder")
         src = inv_args.stationlist
