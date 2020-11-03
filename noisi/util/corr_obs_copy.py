@@ -190,16 +190,18 @@ def copy_corr(args,comm,size,rank):
                         corr_data_norm = corr_data/np.max(np.abs(corr_data))
                         
                         # make sure it's boxcar window
-                        win_signal[win_signal>0] = 1
+                        win_signal_mask = np.zeros(np.shape(win_signal))
+                        win_signal_mask[win_signal>0] = 1
+                        win_signal_mask[np.flip(win_signal)>0] = 1       
                         
                         # compute signal to noise ratio
-                        corr_data_win = data_var*win_signal + data_var*np.flip(win_signal)
-                        corr_data_win_norm = corr_data_win/np.max(np.abs(corr_data))
+                        corr_data_win = corr_data_norm*win_signal_mask
+                        #corr_data_win_norm = corr_data_win/np.max(np.abs(corr_data))
 
                         corr_std = np.std(corr_data_norm)
                         
                         # get maximum only in windows
-                        corr_max = np.max(np.abs(corr_data_win_norm))
+                        corr_max = np.max(np.abs(corr_data_win))
                         std_max_var = corr_max/corr_std
                         
                         
