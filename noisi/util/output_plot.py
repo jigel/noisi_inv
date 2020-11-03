@@ -436,8 +436,8 @@ def output_plot(args,output_path,only_ocean=False,triangulation=False):
             kern_stat_dict.update({i:[station_dict[i][0],station_dict[i][1]]})
             kern_stat_dict.update({j:[station_dict[j][0],station_dict[j][1]]})
 
-            plt.plot([station_dict[i][1],station_anti_dict[j][1]],[station_dict[i][0],station_anti_dict[j][0]], color='k',zorder=2, transform=ccrs.Geodetic(),alpha=2.5/np.size(list(station_dict.keys())))
-            plt.plot([station_anti_dict[i][1],station_dict[j][1]],[station_anti_dict[i][0],station_dict[j][0]], color='k',zorder=2, transform=ccrs.Geodetic(),alpha=2.5/np.size(list(station_dict.keys())))
+            plt.plot([station_dict[i][1],station_anti_dict[j][1]],[station_dict[i][0],station_anti_dict[j][0]], color='k',zorder=2, transform=ccrs.Geodetic(),alpha=4/np.size(list(station_dict.keys())))
+            plt.plot([station_anti_dict[i][1],station_dict[j][1]],[station_anti_dict[i][0],station_dict[j][0]], color='k',zorder=2, transform=ccrs.Geodetic(),alpha=4/np.size(list(station_dict.keys())))
 
             n_rays += 1
 
