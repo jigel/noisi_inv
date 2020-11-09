@@ -119,7 +119,7 @@ def log_en_ratio_sqr(correlation, g_speed, window_params):
         sig_a = correlation.data * win[::-1]
         E_plus = np.trapz(np.power(sig_c, 2)) * delta
         E_minus = np.trapz(np.power(sig_a, 2)) * delta
-        msr = 2*log(E_plus / (E_minus + np.finfo(E_minus).tiny))
+        msr = log(E_plus / (E_minus + np.finfo(E_minus).tiny))**2
 
         #msr = log((E_plus/(E_minus+wl)))
         #msr = log((E_plus/(E_minus+(wl*E_plus))))
