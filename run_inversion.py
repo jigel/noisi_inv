@@ -497,8 +497,9 @@ else:
         assign_geographic_metadata(corr_path,stationlist_path,comm,size,rank)
 
     comm.barrier()
+
     
-    if inv_args.add_noise != None or inv_args.add_noise != False:
+    if inv_args.add_noise not in [False, None]:
         if rank == 0:
             print("Adding noise to cross-correlations..")
         
@@ -908,7 +909,7 @@ for iter_nr in range(start_iter, inv_args.nr_iterations):
         t_9904 = time.time()
         run_time.write(f"Correlations iteration_{inv_args.step}: {np.around((t_9904-t_9903)/60,4)} \n")
 
-    if inv_args.add_noise != None or inv_args.add_noise != False:
+    if inv_args.add_noise not in [False, None]:
         if rank == 0:
             print("Adding noise to cross-correlations..")
             

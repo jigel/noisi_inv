@@ -129,7 +129,7 @@ def steplengthtest(args,comm,size,rank,mf_dict,gradient_path,grad_smooth_path,so
         
         comm.barrier()
         
-        if args.add_noise != None or args.add_noise != False:
+        if args.add_noise not in [False, None]:
             if rank == 0:
                 print("Adding noise to cross-correlations..")
             
