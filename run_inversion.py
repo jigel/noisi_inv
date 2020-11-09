@@ -661,40 +661,7 @@ else:
             print("0 iterations, exiting..")
         
         sys.exit()
-        
-    elif inv_args.compress_output_files and rank == 0:
-
-        print("Converting SAC to ASDF and NPY to H5..")
-        corr_path = os.path.join(inv_args.source_model,"iteration_0","corr")
-        corr_files = glob(os.path.join(corr_path,'*.sac'))
-        corr_asdf_file = os.path.join(corr_path,f'corr_iter_{inv_args.step}.h5')
-        corr_asdf_path = sac_to_asdf(corr_files,corr_asdf_file,n=4)
-
-        adjt_path = os.path.join(inv_args.source_model,"iteration_0","adjt")
-        adjt_files = glob(os.path.join(adjt_path,'*.sac'))
-        adjt_asdf_file = os.path.join(adjt_path,f'adjt_iter_{inv_args.step}.h5')
-        adjt_asdf_path = sac_to_asdf(adjt_files,adjt_asdf_file,n=6)
-
-        kern_path = os.path.join(inv_args.source_model,"iteration_0","kern")
-        kern_files = glob(os.path.join(kern_path,'*.npy'))
-        kern_h5_file = os.path.join(kern_path,f'kern_iter_{inv_args.step}.h5')
-        kern_h5_path = npy_to_h5(kern_files,kern_h5_file,n=4)
-
-        print("Removing SAC/NPY files..")
-
-        for file in corr_files:
-            os.remove(file)
-
-        for file in adjt_files:
-            os.remove(file)
-
-        for file in kern_files:
-            os.remove(file)
-
-        print(f"Correlations in {corr_asdf_path}")
-        print(f"Adjoint sources in {adjt_asdf_path}")
-        print(f"Sensitivity Kernels in {kern_h5_path}")
-        
+                
     else:
         pass
 
@@ -882,7 +849,44 @@ for iter_nr in range(start_iter, inv_args.nr_iterations):
         print(f'Made iteration_{inv_args.step} folder.')
         
     comm.barrier()
-    
+
+
+
+
+    if inv_args.compress_output_files and rank == 0:
+
+        print("Converting SAC to ASDF and NPY to H5..")
+        corr_path = os.path.join(inv_args.source_model,f'iteration_{inv_args.step-1}',"corr")
+        corr_files = glob(os.path.join(corr_path,'*.sac'))
+        corr_asdf_file = os.path.join(corr_path,f'corr_iter_{inv_args.step-1}.h5')
+        corr_asdf_path = sac_to_asdf(corr_files,corr_asdf_file,n=4)
+
+        adjt_path = os.path.join(inv_args.source_model,f'iteration_{inv_args.step-1}',"adjt")
+        adjt_files = glob(os.path.join(adjt_path,'*.sac'))
+        adjt_asdf_file = os.path.join(adjt_path,f'adjt_iter_{inv_args.step-1}.h5')
+        adjt_asdf_path = sac_to_asdf(adjt_files,adjt_asdf_file,n=6)
+
+        kern_path = os.path.join(inv_args.source_model,f'iteration_{inv_args.step-1}',"kern")
+        kern_files = glob(os.path.join(kern_path,'*.npy'))
+        kern_h5_file = os.path.join(kern_path,f'kern_iter_{inv_args.step-1}.h5')
+        kern_h5_path = npy_to_h5(kern_files,kern_h5_file,n=4)
+
+        print("Removing SAC/NPY files..")
+
+        for file in corr_files:
+            os.remove(file)
+
+        for file in adjt_files:
+            os.remove(file)
+
+        for file in kern_files:
+            os.remove(file)
+
+        print(f"Correlations in {corr_asdf_path}")
+        print(f"Adjoint sources in {adjt_asdf_path}")
+        print(f"Sensitivity Kernels in {kern_h5_path}")
+        
+        
     if rank==0:
 
         t_9903 = time.time()
@@ -908,7 +912,7 @@ for iter_nr in range(start_iter, inv_args.nr_iterations):
         if rank == 0:
             print("Adding noise to cross-correlations..")
             
-        corr_path = os.path.join(inv_args.source_model,"iteration_0","corr")
+        corr_path = os.path.join(inv_args.source_model,f"iteration_{inv_args.step}","corr")
         corr_add_noise(inv_args,comm,size,rank,corr_path,perc=inv_args.add_noise,method="amp")
             
     comm.barrier()
@@ -972,45 +976,39 @@ for iter_nr in range(start_iter, inv_args.nr_iterations):
     mf_dict.update({f'iteration_{inv_args.step}':mf_step_var})
 
 
-    if rank == 0:
-        print(f'Misfit for iteration {inv_args.step}: ',mf_step_var)
-        print('Misfit dictionary: ',mf_dict)   
-        
-        if inv_args.compress_output_files:
+if inv_args.compress_output_files and rank == 0:
 
-            print("Converting SAC to ASDF and NPY to H5..")
-            corr_path = os.path.join(inv_args.source_model,f'iteration_{inv_args.step}',"corr")
-            corr_files = glob(os.path.join(corr_path,'*.sac'))
-            corr_asdf_file = os.path.join(corr_path,f'corr_iter_{inv_args.step}.h5')
-            corr_asdf_path = sac_to_asdf(corr_files,corr_asdf_file,n=4)
+    print("Converting SAC to ASDF and NPY to H5..")
+    corr_path = os.path.join(inv_args.source_model,f'iteration_{inv_args.step}',"corr")
+    corr_files = glob(os.path.join(corr_path,'*.sac'))
+    corr_asdf_file = os.path.join(corr_path,f'corr_iter_{inv_args.step}.h5')
+    corr_asdf_path = sac_to_asdf(corr_files,corr_asdf_file,n=4)
 
-            adjt_path = os.path.join(inv_args.source_model,f'iteration_{inv_args.step}',"adjt")
-            adjt_files = glob(os.path.join(adjt_path,'*.sac'))
-            adjt_asdf_file = os.path.join(adjt_path,f'adjt_iter_{inv_args.step}.h5')
-            adjt_asdf_path = sac_to_asdf(adjt_files,adjt_asdf_file,n=6)
+    adjt_path = os.path.join(inv_args.source_model,f'iteration_{inv_args.step}',"adjt")
+    adjt_files = glob(os.path.join(adjt_path,'*.sac'))
+    adjt_asdf_file = os.path.join(adjt_path,f'adjt_iter_{inv_args.step}.h5')
+    adjt_asdf_path = sac_to_asdf(adjt_files,adjt_asdf_file,n=6)
 
-            kern_path = os.path.join(inv_args.source_model,f'iteration_{inv_args.step}',"kern")
-            kern_files = glob(os.path.join(kern_path,'*.npy'))
-            kern_h5_file = os.path.join(kern_path,f'kern_iter_{inv_args.step}.h5')
-            kern_h5_path = npy_to_h5(kern_files,kern_h5_file,n=4)
+    kern_path = os.path.join(inv_args.source_model,f'iteration_{inv_args.step}',"kern")
+    kern_files = glob(os.path.join(kern_path,'*.npy'))
+    kern_h5_file = os.path.join(kern_path,f'kern_iter_{inv_args.step}.h5')
+    kern_h5_path = npy_to_h5(kern_files,kern_h5_file,n=4)
 
-            print("Removing SAC/NPY files..")
+    print("Removing SAC/NPY files..")
 
-            for file in corr_files:
-                os.remove(file)
+    for file in corr_files:
+        os.remove(file)
 
-            for file in adjt_files:
-                os.remove(file)
+    for file in adjt_files:
+        os.remove(file)
 
-            for file in kern_files:
-                os.remove(file)
+    for file in kern_files:
+        os.remove(file)
 
-            print(f"Correlations in {corr_asdf_path}")
-            print(f"Adjoint sources in {adjt_asdf_path}")
-            print(f"Sensitivity Kernels in {kern_h5_path}")
-        
-        
-        
+    print(f"Correlations in {corr_asdf_path}")
+    print(f"Adjoint sources in {adjt_asdf_path}")
+    print(f"Sensitivity Kernels in {kern_h5_path}")
+
         
         
 if rank == 0:
