@@ -91,7 +91,37 @@ def log_en_ratio(correlation, g_speed, window_params):
         E_minus = np.trapz(np.power(sig_a, 2)) * delta
         #msr = log(E_plus / (E_minus + np.finfo(E_minus).tiny))
 
-        msr = log((E_plus/(E_minus+wl)))
+        #msr = log((E_plus/(E_minus+wl)))
+        msr = log((E_plus/(E_minus+(wl*E_plus))))
+
+        #if E_plus > E_minus:
+        #    msr = log(E_plus/(E_minus + (wl*E_plus)))
+        #else:
+        #    msr = log((E_plus+(wl*E_minus))/(E_minus))
+        
+        if window_params['plot']:
+            plot_window(correlation, win, msr)
+    else:
+        msr = np.nan
+    return msr
+
+
+def log_en_ratio_sqr(correlation, g_speed, window_params):
+    delta = correlation.stats.delta
+    window = get_window(correlation.stats, g_speed, window_params)
+    win = window[0]
+
+    if window[2]:
+
+        wl = window_params['waterlevel_perc']
+        
+        sig_c = correlation.data * win
+        sig_a = correlation.data * win[::-1]
+        E_plus = np.trapz(np.power(sig_c, 2)) * delta
+        E_minus = np.trapz(np.power(sig_a, 2)) * delta
+        msr = 2*log(E_plus / (E_minus + np.finfo(E_minus).tiny))
+
+        #msr = log((E_plus/(E_minus+wl)))
         #msr = log((E_plus/(E_minus+(wl*E_plus))))
 
         #if E_plus > E_minus:
@@ -104,6 +134,7 @@ def log_en_ratio(correlation, g_speed, window_params):
     else:
         msr = np.nan
     return msr
+
 
 
 # This is a bit problematic cause here the misfit already needs
@@ -139,6 +170,11 @@ def get_measure_func(mtype):
 
     if mtype == 'ln_energy_ratio':
         func = log_en_ratio
+    elif mtype == 'ln_energy_ratio_sqr':
+        func = log_en_ratio_sqr
+        
+        
+        
     elif mtype == 'energy_diff':
         func = energy
     elif mtype == 'square_envelope':

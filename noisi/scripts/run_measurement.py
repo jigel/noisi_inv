@@ -188,7 +188,7 @@ def measurement(comm,size,rank,source_config, mtype, step, ignore_net,
                     adjoint_source[ix_branch].data *= (msr_s[ix_branch] -
                                                        msr_o[ix_branch]) / msr_o[ix_branch] ** 2
 
-            elif mtype == 'ln_energy_ratio':
+            elif mtype in ['ln_energy_ratio','ln_energy_ratio_sqr']:
                 l2_so = 0.5 * (msr_s - msr_o)**2
                 msr = msr_o
                 snr = snratio(tr_o, **options)

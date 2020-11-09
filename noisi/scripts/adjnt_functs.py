@@ -35,8 +35,44 @@ def log_en_ratio_adj(corr_o, corr_s, g_speed, window_params):
         # to win**2
         u_plus = sig_c * win
         u_minus = sig_a * win[::-1]
-        adjt_src = 2. * (u_plus / E_plus - u_minus / (E_minus+wl))
-        #adjt_src = 2. * (u_plus/E_plus - (u_minus+wl*u_plus)/(E_minus+wl*E_plus))
+        #adjt_src = 2. * (u_plus / E_plus - u_minus / (E_minus+wl))
+        adjt_src = 2. * (u_plus/E_plus - (u_minus+wl*u_plus)/(E_minus+wl*E_plus))
+        
+        #if E_plus >= E_minus:
+        #    adjt_src = 2. * (u_plus/E_plus - (u_minus+wl*u_plus)/(E_minus+wl*E_plus))
+        #else:
+        #    adjt_src = 2. * ((u_plus+wl*u_minus)/(E_plus+wl*E_minus) - u_minus/E_minus)
+        
+        success = True
+    else:
+        
+        adjt_src = win - win + np.nan
+    return adjt_src, success
+
+def log_en_ratio_sqr_adj(corr_o, corr_s, g_speed, window_params):
+
+    success = False
+    window = wn.get_window(corr_o.stats, g_speed, window_params)
+    win = window[0]
+
+    wn.my_centered(corr_s.data, corr_o.stats.npts)
+
+    if window[2]:
+        
+        wl = window_params['waterlevel_perc']
+
+        sig_c = corr_s.data * win
+        sig_a = corr_s.data * win[::-1]
+        E_plus = np.trapz(np.power(sig_c, 2)) * corr_s.stats.delta
+        E_minus = np.trapz(np.power(sig_a, 2)) * corr_s.stats.delta
+        
+        ### Need to implement waterlevel
+        
+        # to win**2
+        u_plus = sig_c * win
+        u_minus = sig_a * win[::-1]                           
+        #adjt_src = 2. * (u_plus / E_plus - u_minus / (E_minus+wl))
+        adjt_src = 4. * (u_plus/E_plus - (u_minus+wl*u_plus)/(E_minus+wl*E_plus))
         
         #if E_plus >= E_minus:
         #    adjt_src = 2. * (u_plus/E_plus - (u_minus+wl*u_plus)/(E_minus+wl*E_plus))
@@ -135,7 +171,9 @@ def envelope_difference(corr_o, corr_s, g_speed, window_params):
 def get_adj_func(mtype):
     if mtype == 'ln_energy_ratio':
         func = log_en_ratio_adj
-
+    elif mtype == 'ln_energy_ratio_sqr':
+        func = log_en_ratio_sqr_adj
+        
     elif mtype == 'energy_diff':
         func = energy
 
