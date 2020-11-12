@@ -7,7 +7,7 @@ import re
 
 from noisi.ants.tools.util_noisi import get_geoinf
 from noisi.ants.classes.corrtrace_noisi import CorrTrace
-from noisi.ants.tools.correlations import cross_covar, interference, pcc_2
+from noisi.ants.tools.correlations import cross_covar, interference, pcc_2, deconv
 from noisi.ants.tools.treatment import ram_norm, whiten, cap, bandpass
 # list of possible channels combinations
 horizontals = ['RR', 'RT', 'TR', 'TT', 'TZ', 'ZT', 'RZ', 'ZR']
@@ -23,6 +23,7 @@ class CorrBlock(object):
         self.cfg = cfg
         self._correlations = {}
         self.inv = block.inventory
+        self.readtimes = block.readtimes
         self.channels = block.channels
         self.station_pairs = block.station_pairs
         self.channel_pairs = block.channel_pairs
@@ -105,11 +106,6 @@ must be above lower corner frequency."
                 break
             if len(self.data) == 0:
                 break
-
-            #for corr_k, corr_v in self._correlations.items():
-            #    summary.print_(summary.summarize(corr_v))
-            # if "windows" in locals():
-            #     del windows
             
             windows = self.data.slide(win_len_seconds - self.delta, win_len_seconds - self.cfg.time_overlap,
                                       offset=(t - self.data[0].stats.starttime),
@@ -118,15 +114,15 @@ must be above lower corner frequency."
             for w in windows:
                 
 
-                t += self.cfg.time_window_length - self.cfg.time_overlap
-                if True in [wt.stats.endtime - wt.stats.starttime < (win_len_seconds - self.delta)\
-                            for wt in w]:
-                    # skip this window
-                    continue
-
-
                 if w[0].stats.endtime > t_end:
                     break
+                    
+                if len(self.readtimes) > 0:
+                    # check if we have passed a point of time where a new data file needs to be added
+                    if w[0].stats.starttime > self.readtimes[0]:
+                        # if so, leave the loop, update the data, and restart.
+                        break
+                    
 
                 # Apply preprocessing
                 w = self.preprocess(w)
@@ -190,6 +186,8 @@ must be above lower corner frequency."
                         elif self.cfg.corr_type == 'pcc':
                             correlation = pcc_2(tr1.data, tr2.data,
                                                 max_lag_samples)[0]
+                        elif self.cfg.corr_type == "dcv":
+                            correlation = deconv(tr1.data, tr2.data, max_lag_samples)[0]
 
                         # add to stack
                         if len(correlation) == 2 * max_lag_samples + 1:
@@ -199,26 +197,23 @@ must be above lower corner frequency."
                         else:
                             print('Empty window.',
                                   file=output_file)
-                #t += self.cfg.time_window_length - self.cfg.time_overlap
+                            
+                t += self.cfg.time_window_length - self.cfg.time_overlap
+                
             if t == t_old:
                 t += self.cfg.time_window_length - self.cfg.time_overlap
                 
-                
-                
             #print("Trying update at time ", t)
-
             self.update_data(t)
-            
             if len(self.data) == 0:
                 break
 
             # check if there is a gap
             while t < self.data[0].stats.starttime - self.cfg.time_overlap:
-                t += win_len_seconds - self.cfg.time_overlap
+                t += self.cfg.time_window_length - self.cfg.time_overlap
                 #print("jumping to t ", t)
             t_old = t
             
-            # summary.print_(summary.summarize(self.data))
         
         # - Write results
         for corr in self._correlations.values():
@@ -227,9 +222,10 @@ must be above lower corner frequency."
         #print('Finished a correlation block.')
 
     def perform_checks(self, tr1, tr2, output_file, min_len_samples):
-        #if tr1.stats.starttime != tr2.stats.starttime:
-        #    print("Traces are not synchronous.", file=output_file)
-        #    return(False)
+
+        if tr1.stats.starttime - tr2.stats.starttime > tr1.stats.delta:
+            print("Traces are not synchronous.", file=output_file)
+            return(False)
 
         if tr1.stats.npts < min_len_samples:
             print("Trace length < min samples\n", file=output_file)
@@ -302,17 +298,17 @@ must be above lower corner frequency."
             s_temp1.rotate('NE->RT', back_azimuth=baz1)
         except:
             if str1[0].stats.station != str2[0].stats.station:
-                print('** data not rotated for stream: ')
-                print(s_temp1)
-            pass
+                #print('** data not rotated for stream: ')
+                #print(s_temp1)
+                pass
 
         try:
             s_temp2.rotate('NE->RT', back_azimuth=baz2)
         except:
             if str1[0].stats.station != str2[1].stats.station:
-                print('** data not rotated for stream: ')
-                print(s_temp2)
-            pass
+                #print('** data not rotated for stream: ')
+                #print(s_temp2)
+                pass
         del str1, str2
         return(s_temp1, s_temp2)
 
@@ -323,26 +319,36 @@ must be above lower corner frequency."
         # add a new round of data:
         for ix_c, channel in enumerate(self.channels):
 
-            if len(self.data.select(id=channel)) > 0:
-                if self.data.select(id=channel)[-1].stats.endtime > t + self.cfg.time_window_length:
-                    continue
+            mark_for_removal = 0
 
             while True:
+
+                if len(self.data.select(id=channel)) > 0:
+                    if self.data.select(id=channel)[-1].stats.endtime > t + self.cfg.time_window_length:
+                        # a long enough window is available, go right back
+                        break
+                    else:
+                        if mark_for_removal:  # no more files?
+                            break
+                else:
+                    if mark_for_removal:  # no more files?
+                        break
                 try:
                     f = self.inv[channel].pop(0)
+                    m_and_ms = self.readtimes.pop(0)
+                    #print("Updated past ", m_and_ms, "  ", f)
+                    try:
+                        self.data += read(f)
+                        #print("read trace to ", self.data[-1].stats.endtime)
+                    except IOError:
+                        #print("** Could not read trace: %s" % f)
+                        pass
+                    
                 except IndexError:
-                    # No more data. Remove this channel
-                    self.channels.pop(ix_c)
-                    break
-                try:
-                    self.data += read(f)
-                    #print("read trace to ", self.data[-1].stats.endtime)
-                    # success
-                    break
-                except IOError:
-                    #print("** Could not read trace: %s" % f)
+                    # No more data.
+                    mark_for_removal = 1
                     pass
-                    # try the next file
+            
         self.data._cleanup()
         self.data.sort(keys=["starttime"])
         self.data.trim(starttime=t)
@@ -351,24 +357,29 @@ must be above lower corner frequency."
 
     def initialize_data(self, t0):
         # t0: begin time of observation
-        t_min = t0 + self.cfg.time_window_length - self.cfg.time_overlap
+        # have at least one window in each channel
+        t_min = t0 + self.cfg.time_window_length# - self.cfg.time_overlap
+        
         self.data = Stream()
 
         for channel in self.channels:
             ttemp = 0
             while ttemp < t_min:
-                # try, except in case of empty list
+                # try except incase of empty list
                 try:
                     f = self.inv[channel].pop(0)
+                    m_and_ms = self.readtimes.pop(0)
+
                     try:
                         self.data += read(f)
                         ttemp = self.data[-1].stats.endtime
                     except IOError:
-                        print('** problems reading file %s'
-                              % self.inv.data[channel])
+                        #print('** problems reading file %s'
+                        #      % self.inv.data[channel])
+                        pass
                 except:
                     break
-
+                
         earliest_start_date = min([tr.stats.starttime for tr in self.data])
         self.data.trim(max(t0, earliest_start_date))
         self.data._cleanup()

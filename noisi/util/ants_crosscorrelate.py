@@ -105,7 +105,8 @@ def ants_preprocess(args,comm,size,rank):
         "wins_len_sec": args.process_data_win_len,
         "wins_taper": 0.01,
         "wins_taper_type": "cosine",
-        "wins_trim": True
+        "wins_trim": True,
+        "interpolation_samples_gap": 100,
     }
 
     # save to config file
@@ -161,7 +162,7 @@ def ants_crosscorrelate(args,comm,size,rank):
         "project_path": args.project_path,
 
         "bandpass": None,
-        "cap_glitch": False,
+        "cap_glitch": True,
         "cap_thresh": 10.0,
         "corr_autocorr": args.get_auto_corr,
         "corr_only_autocorr": False,
@@ -186,8 +187,8 @@ def ants_crosscorrelate(args,comm,size,rank):
         "n_stationpairs": 1,
         "onebit": False,
         "ram_norm": False,
-        "ram_prefilt": [],
-        "ram_window": 0.0,
+        "ram_prefilt": [0.1,0.2,5],
+        "ram_window": 500.0,
         "rotate": False,
         "time_begin": str(args.t_start),
         "time_end": str(args.t_end),
@@ -195,8 +196,8 @@ def ants_crosscorrelate(args,comm,size,rank):
         "time_overlap": args.process_data_overlap,
         "time_window_length": args.process_data_win_len,
         "update": False,
-        "white_freqmax": 0.0,
-        "white_freqmin": 0.0,
+        "white_freqmax": 0.2,
+        "white_freqmin": 0.1,
         "white_taper_samples": 100,
         "whiten": False
     }

@@ -55,7 +55,8 @@ def file_inventory(cfg):
     
     stations = {}
     data = {}
-
+    readtimes = {}
+    
     # start- and endtime specified in configuration
     t0 = UTCDateTime(cfg.time_begin) 
     t1 = UTCDateTime(cfg.time_end)
@@ -92,9 +93,12 @@ def file_inventory(cfg):
 
             if channel not in data.keys():
                 data[channel] = []
-
+                readtimes[channel] = []
+                
             data[channel].append(f)
-    return(stations, data)
+            readtimes[channel].append(st)
+
+    return(stations, data, readtimes)
 
 
 def station_pairs(staids,n,autocorr, only_autocorr=False):
@@ -227,7 +231,7 @@ class correlation_inventory(object):
         self.cfg = cfg
 
         # - Find available data
-        self.stations, self.files = file_inventory(cfg)
+        self.stations, self.files, self.readtimes = file_inventory(cfg)
         all_stations = self.stations.keys()
 
         # - Determine station pairs
@@ -284,8 +288,18 @@ class correlation_inventory(object):
 
         # Add file inventory for the channels in question
         inventory = {c: self.files[c] for c in block.channels}
+        # add time stamps where files should be updated
+        rtimes = []
+        
+        for c in block.channels:
+            #print(c)
+            rtimes.extend(self.readtimes[c])
         block.inventory = deepcopy(inventory)
 
+        block.readtimes = rtimes
+        block.readtimes.sort()
+        #print(block.readtimes)
+        
         # No channels are found if updating, and those pairs have already been computed.
         if block.channels != []: 
             self.blocks.append(block)

@@ -38,6 +38,7 @@ DEFAULT_Preprocess = {
     "wins_demean":True,
     "wins_taper":0.01,
     "wins_taper_type":'cosine',
+    "interpolation_samples_gap": 100,
     "Fs_old":[],
     "Fs_new":[],
     "phaseshift": True,
@@ -87,6 +88,8 @@ class ConfigPreprocess(object):
         self.event_exclude_freqmin = None
         self.event_exclude_freqmax = None
         self.event_exclude_level = None
+        
+        self.interpolation_samples_gap = None
 
         self.wins = None
         self.wins_trim = None

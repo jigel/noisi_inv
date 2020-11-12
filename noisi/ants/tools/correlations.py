@@ -3,6 +3,7 @@ import numpy as np
 from math import sqrt, isnan
 from obspy.signal.cross_correlation import xcorr
 from scipy.signal import hilbert, correlate
+from scipy.fftpack import next_fast_len
 import warnings
 
 
@@ -14,6 +15,16 @@ def my_centered(arr, newsize):
         i0 += 1
     i1 = i0 + newsize
     return arr[i0:i1]
+
+def running_mean(x, N):
+    # adapted from:
+    # https://stackoverflow.com/questions/
+    # 13728392/moving-average-or-running-mean/27681394#27681394
+    ma = np.zeros(len(x), dtype=np.complex)
+    cumsum = np.cumsum(np.insert(x, 0, 0))
+    ma[: -N + 1] = (cumsum[N:] - cumsum[:-N]) / float(N)
+    ma[-N:] = (cumsum[-1] - cumsum[-N]) / float(N)
+    return ma
 
 
 def obspy_xcorr(trace1, trace2, max_lag_samples):
@@ -118,6 +129,24 @@ def cross_covar(data1, data2, max_lag_samples, normalize, params=False):
     if normalize:
         ccv /= (sqrt(ren1) * sqrt(ren2))
     return my_centered(ccv, 2 * max_lag_samples + 1), params
+
+
+def deconv(data1, data2, max_lag_samples, ma_n=20):
+
+    if len(data1) == 0 or len(data1) == 0:
+        return([], [])
+    nfft = next_fast_len(2 * len(data1))
+    spec1 = np.fft.rfft(data1, n=nfft)
+    spec2 = np.fft.rfft(data2, n=nfft)
+
+    smoothed_spectrum2 = running_mean(spec2, N=ma_n)
+
+    crossspec = np.conjugate(spec1) * spec2 / (np.abs(
+            np.conjugate(smoothed_spectrum2) * smoothed_spectrum2) +
+            np.finfo(spec2.dtype).eps)
+    coh = np.fft.irfft(crossspec, n=nfft)
+    return(my_centered(coh, 2 * max_lag_samples + 1), [])
+
 
 
 def pcc_2(data1, data2, max_lag_samples, params=False):
