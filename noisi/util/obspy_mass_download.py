@@ -116,7 +116,8 @@ def obspy_mass_downloader(args):
         network=net,station=sta,location='*',channel=cha,
         reject_channels_with_gaps=True,
         minimum_length=0.0,
-        minimum_interstation_distance_in_m=min_stat_dist_m)
+        minimum_interstation_distance_in_m=min_stat_dist_m,
+        sanitize=True)
 
 
     # get mass downloader and use all providers (in better order)

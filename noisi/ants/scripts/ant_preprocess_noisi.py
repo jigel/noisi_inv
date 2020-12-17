@@ -52,14 +52,20 @@ def preprocess(cfg,comm,size,rank):
 
         if rank == 0:
             c = Client()
-            cata = c.get_events(starttime=UTCDateTime(cfg.gcmt_begin),
-                                endtime=UTCDateTime(cfg.gcmt_end),
-                                catalog='GCMT',
-                                minmagnitude=cfg.gcmt_minmag)
 
-            event_filter = get_event_filter(cata, cfg.Fs_new[-1],
-                                            t0=UTCDateTime(cfg.gcmt_begin),
-                                            t1=UTCDateTime(cfg.gcmt_end))
+            try:
+	            cata = c.get_events(starttime=UTCDateTime(cfg.gcmt_begin),
+	                                endtime=UTCDateTime(cfg.gcmt_end),
+	                                catalog='GCMT',
+	                                minmagnitude=cfg.gcmt_minmag)
+
+	            event_filter = get_event_filter(cata, cfg.Fs_new[-1],
+	                                            t0=UTCDateTime(cfg.gcmt_begin),
+	                                            t1=UTCDateTime(cfg.gcmt_end))
+	        except:
+	        	print("FDSNNoDataException: No data available for request.")
+	            event_filter = None
+
 
         # communicate event_filter (would it be better
         # if every rank sets it up individually?)
