@@ -29,6 +29,7 @@ import matplotlib.pyplot as plt
 from math import pi, sqrt
 from warnings import warn
 import pprint
+from noisi.util.smoothing import get_distance, smooth_gaussian, apply_smoothing_sphere
 
 import functools
 print = functools.partial(print, flush=True)
@@ -39,7 +40,7 @@ class source_setup(object):
     def __init__(self, args, comm, size, rank):
 
         if not args.new_model:
-            self.setup_source_startingmodel(args)
+            self.setup_source_startingmodel(args,comm,size,rank)
         else:
             self.initialize_source(args)
 
@@ -127,13 +128,15 @@ class source_setup(object):
             
         return()
 
-    def setup_source_startingmodel(self, args):
+    def setup_source_startingmodel(self, args,comm,size,rank):
 
         # plotting:
         colors = ['purple', 'g', 'b', 'orange']
         colors_cmaps = [plt.cm.Purples, plt.cm.Greens, plt.cm.Blues,
                         plt.cm.Oranges]
-        print("Setting up source starting model.", end="\n")
+        if rank == 0:
+            print("Setting up source starting model.", end="\n")
+            
         with io.open(os.path.join(args.source_model,
                                   'source_config.yml'), 'r') as fh:
             source_conf = yaml.safe_load(fh)
@@ -144,7 +147,7 @@ class source_setup(object):
 
         with io.open(source_conf['source_setup_file'], 'r') as fh:
             parameter_sets = yaml.safe_load(fh)
-            if conf['verbose']:
+            if conf['verbose'] and rank == 0:
                 print("The following input parameters are used:", end="\n")
                 pp = pprint.PrettyPrinter()
                 pp.pprint(parameter_sets)
@@ -180,7 +183,7 @@ class source_setup(object):
         # get the relevant array sizes
         wfs = glob(os.path.join(conf['project_path'], 'greens', '*.h5'))
         if wfs != []:
-            if conf['verbose']:
+            if conf['verbose'] and rank == 0:
                 print('Found wavefield stats.')
             else:
                 pass
@@ -198,21 +201,28 @@ precompute_wavefield first.')
         # fill in the distributions and the spectra
         for i in range(n_distr):
             
-            if parameter_sets[i]['distribution'].endswith('.npy'):                
+            if parameter_sets[i]['distribution'].endswith('.npy') and rank == 0:                
                 coeffs[:, i] = self.distribution_from_data(grd,parameter_sets[i]['distribution'],conf["verbose"])
                 
-            elif parameter_sets[i]['distribution'].endswith('.h5'):
+            elif parameter_sets[i]['distribution'].endswith('.h5') and rank == 0:
                 coeffs[:, i] = self.distribution_from_prev_model(grd,parameter_sets[i]['distribution'])
+                
+            elif parameter_sets[i]['distribution'] in ['mfp','matchedfieldprocessing']:
+                coeffs[:, i] = self.distribution_from_mfp(grd, args, comm, size, rank)
 
-            else:              
-                coeffs[:, i] = self.distribution_from_parameters(grd,
-                                                                 parameter_sets[i],
-                                                                 conf['verbose'])
-
+            else:
+                if rank == 0:
+                    coeffs[:, i] = self.distribution_from_parameters(grd,
+                                                                     parameter_sets[i],
+                                                                     conf['verbose'])
+                else: 
+                    continue
+                
             # plot
             outfile = os.path.join(args.source_model,
                                    'source_starting_model_distr%g.png' % i)
-            if create_plot:
+            
+            if create_plot and rank == 0:
                 plot_grid(grd[0], grd[1], coeffs[:, i],
                           outfile=outfile, cmap=colors_cmaps[i%len(colors_cmaps)],
                           sequential=True, normalize=False,
@@ -223,45 +233,51 @@ precompute_wavefield first.')
             spectra[i, :] = self.spectrum_from_parameters(freq,
                                                           parameter_sets[i])
 
-        # plotting the spectra
-        # plotting is not necessarily done to make sure code runs on clusters
-        if create_plot:
-            fig1 = plt.figure()
-            ax = fig1.add_subplot('111')
-            for i in range(n_distr):
-                ax.plot(freq, spectra[i, :] / spectra.max(),
-                        color=colors[i%len(colors_cmaps)])
+            
+        comm.barrier()
+        
+        if rank == 0:
+            # plotting the spectra
+            # plotting is not necessarily done to make sure code runs on clusters
+            if create_plot:
+                fig1 = plt.figure()
+                ax = fig1.add_subplot('111')
+                for i in range(n_distr):
+                    ax.plot(freq, spectra[i, :] / spectra.max(),
+                            color=colors[i%len(colors_cmaps)])
 
-            ax.set_xlabel('Frequency / Nyquist Frequency')
-            plt.xticks([0, freq.max() * 0.25, freq.max() * 0.5,
-                       freq.max() * 0.75, freq.max()],
-                       ['0', '0.25', '0.5', '0.75', '1'])
-            ax.set_ylabel('Rel. PSD norm. to strongest spectrum (-)')
-            fig1.savefig(os.path.join(args.source_model,
-                                      'source_starting_model_spectra.png'))
+                ax.set_xlabel('Frequency / Nyquist Frequency')
+                plt.xticks([0, freq.max() * 0.25, freq.max() * 0.5,
+                           freq.max() * 0.75, freq.max()],
+                           ['0', '0.25', '0.5', '0.75', '1'])
+                ax.set_ylabel('Rel. PSD norm. to strongest spectrum (-)')
+                fig1.savefig(os.path.join(args.source_model,
+                                          'source_starting_model_spectra.png'))
 
-        # Save to an hdf5 file
-        with h5py.File(os.path.join(args.source_model, 'iteration_0',
-                                    'starting_model.h5'), 'w') as fh:
-            fh.create_dataset('coordinates', data=grd)
-            fh.create_dataset('frequencies', data=freq)
-            fh.create_dataset('model', data=coeffs.astype(np.float))
-            fh.create_dataset('spectral_basis',
-                              data=spectra.astype(np.float))
-            fh.create_dataset('surface_areas',
-                              data=surf_el.astype(np.float))
+            # Save to an hdf5 file
+            with h5py.File(os.path.join(args.source_model, 'iteration_0',
+                                        'starting_model.h5'), 'w') as fh:
+                fh.create_dataset('coordinates', data=grd)
+                fh.create_dataset('frequencies', data=freq)
+                fh.create_dataset('model', data=coeffs.astype(np.float))
+                fh.create_dataset('spectral_basis',
+                                  data=spectra.astype(np.float))
+                fh.create_dataset('surface_areas',
+                                  data=surf_el.astype(np.float))
 
-        # Save to an hdf5 file
-        with h5py.File(os.path.join(args.source_model,
-                                    'spectral_model.h5'), 'w') as fh:
-            uniform_spatial = np.ones(coeffs.shape) * 1.0
-            fh.create_dataset('coordinates', data=grd)
-            fh.create_dataset('frequencies', data=freq)
-            fh.create_dataset('model', data=uniform_spatial.astype(np.float))
-            fh.create_dataset('spectral_basis',
-                              data=spectra.astype(np.float))
-            fh.create_dataset('surface_areas',
-                              data=surf_el.astype(np.float))
+            # Save to an hdf5 file
+            with h5py.File(os.path.join(args.source_model,
+                                        'spectral_model.h5'), 'w') as fh:
+                uniform_spatial = np.ones(coeffs.shape) * 1.0
+                fh.create_dataset('coordinates', data=grd)
+                fh.create_dataset('frequencies', data=freq)
+                fh.create_dataset('model', data=uniform_spatial.astype(np.float))
+                fh.create_dataset('spectral_basis',
+                                  data=spectra.astype(np.float))
+                fh.create_dataset('surface_areas',
+                                  data=surf_el.astype(np.float))
+                
+        comm.barrier()
 
     def distribution_from_parameters(self, grd, parameters, verbose=False):
 
@@ -426,6 +442,96 @@ precompute_wavefield first.')
         print('Source distribution setup with previous model.')
         
         return model_dist
+    
+    
+    def distribution_from_mfp(self,grd,args,comm,size,rank):
+        """
+        Use the Matched-Field Processing code to create a starting model from the given correlations
+        """
+        from noisi.mfp.run_mfp import run_noisi_mfp
+        
+        # create a config file for the mfp
+        # folder structure will be created by mfp code
+        if rank == 0:
+            print("Source from MFP")
+             
+            mfp_config = {
+                "project_name": f"mfp_startingmodel",
+                "output_path": args.project_path,
+                "correlation_path": args.observed_corr,
+                "corr_format": ["SAC","sac"],
+                "bandpass_filter": args.bandpass[0],
+                "stationlist_path": args.stationlist,
+                "station_distance_min": 0,
+                "station_distance_max": 0,
+                "sourcegrid_path": os.path.join(args.project_path,'sourcegrid.npy'),
+                "method": ["envelope_snr"],
+                "envelope_snr": 2,
+                "stationary_phases": False,            
+                "taup_model": "iasp91",
+                "phases": [f"{str(args.g_speed).zfill(5)[-4]}.{str(args.g_speed).zfill(5)[-3]}kmps"],
+                "phase_pairs": "same",
+                "phase_pairs_auto": False,
+                "phase_pairs_sum": False,
+                "geo_spreading": True,
+                "plot": True
+            }
+
+            # write mfp config to yaml file
+
+            mfp_config_path = os.path.join(args.project_path,'mfp_config.yml')
+
+            with open(mfp_config_path, 'w') as outfile:
+                yaml.safe_dump(mfp_config, outfile, default_flow_style=False)
+            
+        comm.barrier()
+                
+        mfp_final = run_noisi_mfp(args,comm,size,rank)
+        
+        
+        
+        ## smooth with 2 degrees, copy code from smoothing script
+        sigma=[2*111000]
+        cap=100
+        thresh=1e-1000
+        
+        for ixs in range(len(sigma)):
+            sigma[ixs] = float(sigma[ixs])
+
+        coords = [mfp_final[0],mfp_final[1]]
+        values = np.array(mfp_final[2]/np.max(np.abs(mfp_final[2])), ndmin=2)
+
+        if values.shape[0] > values.shape[-1]:
+            values = np.transpose(values)
+        smoothed_values = np.zeros(values.shape)
+        for i in range(values.shape[0]):
+            array_in = values[i, :]
+
+            try:
+                sig = sigma[i]
+            except IndexError:
+                sig = sigma[-1]
+
+            v = apply_smoothing_sphere(rank, size, array_in,
+                                       coords, sig, cap, threshold=thresh,
+                                       comm=comm)
+            comm.barrier()
+
+            #if rank == 0:
+            smoothed_values[i, :] = v
+        
+        
+        
+        # normalise
+        mfp_smooth = smoothed_values[0]/np.max(np.abs(smoothed_values[0]))
+        
+            
+
+                
+        #return mfp_final[2]/np.max(np.abs(mfp_final[2]))
+        
+        return mfp_smooth
+        
 
     
     

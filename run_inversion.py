@@ -94,8 +94,8 @@ else:
     
     
 noisi_v2_path = os.getcwd()
-if rank == 0:
-    print(f"Current directory: {noisi_v2_path}")
+#if rank == 0:
+#    print(f"Current directory: {noisi_v2_path}")
 
     
 noisi_path = os.path.join(noisi_v2_path,'noisi')
@@ -118,10 +118,12 @@ comm.barrier()
 ########################################################################
 
 if rank == 0:
+    
+    print("===="*20)
     print(f"Changing directory to {os.getcwd()}")
-
-    print("Setting up project..")
+    print(f"Setting up project {inv_args.project_name}..")
     setup_proj(inv_args,comm,size,rank)
+    print("===="*20)
 
 
 comm.barrier()
@@ -382,9 +384,11 @@ setattr(inv_args,'new_model',False)
 # initial source distribution has to be given in yaml file
 if rank == 0:        
     print("Setting up source distribution..")
-    source_setup(inv_args,comm,size,rank)
+
+source_setup(inv_args,comm,size,rank)
     
 comm.barrier()
+
 
 if rank==0:
     # time for source setup

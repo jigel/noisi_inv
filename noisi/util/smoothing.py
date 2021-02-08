@@ -74,7 +74,7 @@ def apply_smoothing_sphere(rank, size, values, coords, sigma, cap,
     v_s_all = comm.gather(v_s, root=0)
     # rank 0: save the values
     if rank == 0:
-        print('Gathered.')
+        #print('Gathered.')
         v_s = np.zeros(v_s.shape)
         for i in range(size):
             v_s += v_s_all[i]

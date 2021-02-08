@@ -1,0 +1,84 @@
+# give the project a name, for example herbert
+project_name: 0204_mfp_synth_blob_long_ENVELOPE_SNR_TEST
+
+# In which folder do you want to save it?
+output_path: ./mfp_output
+
+# Where are the cross-correlations that should be used? If path is given and stationary phase is True, only correlations in this folder will be used
+correlation_path: /Users/jigel/noisi/noisi_inv/noisi_output/0201_fwd_mfp_30deg_blob_long_flat/source_1/iteration_0/corr 
+
+# What file format are they? List with, e.g., ["SAC","sac"]
+corr_format: ["SAC","sac"]
+
+# What frequency band do you want to look at? Bandpass filter with [freq_min,freq_max,corners]. Set to null if data should not be filtered.
+bandpass_filter: [0.1,0.2,5]
+
+# Which stations am I using?
+stationlist_path: /Users/jigel/noisi/stationlists/stationlist_synth_mfp_30deg.csv 
+
+# Do you want to set a minimum and maximum inter-station distance? It's in degrees. Set to both to 0 or null if you want to use all cross-correlations.
+station_distance_min: 0
+station_distance_max: 0
+
+# Which grid shall be used to do the grid search? Either path to a .npy file with [[lat],[lon]] or set to svp_grid to create a spatially variable grid with parameters below
+sourcegrid_path: svp_grid
+
+# If svp_grid: need to set parameters below
+# If you want a (quasi) homogeneous grid just set svp_phi_min = svp_phi_max at the desired grid point distance
+svp_grid_config:
+    svp_dense_antipole: false # flips the grid at the equator before rotating it, i.e. both sides are the same
+    svp_only_ocean: false # If true removes all grid points on land 
+    svp_plot: false # plot the grid
+    # the following are parameters (lists) for the grid. Multiple parameters can be given to create a grid with multiple dense areas
+    svp_beta: # How fast should the grid go from phi_min to phi_max? Low value -> slow, high value -> fast. Standard roughly 5
+    - 5
+    svp_gamma: # If multiple grids are given: Radius of circle (in degrees) that is removed and replaced by the new grid. First value is ignored.
+    - 0
+    svp_lat_0: # Centre of the spatially variable grid (or grids if multiple are given)
+    - 21
+    svp_lon_0: # Centre of the spatially variable grid (or grids if multiple are given)
+    - -68
+    svp_phi_min: # Minimum grid point distance in degrees
+    - 4
+    svp_phi_max: # Maximum grid point distance in degrees
+    - 4
+    svp_sigma: # Radius of area (in degrees) of high grid point density
+    - 20
+
+# What method should I use for the MFP? Should be a list. Currently available are: ["basic","envelope","envelope_snr"] where basic takes the value of the time series and envelope the value of the envelope
+method: ["basic","envelope","envelope_snr"]
+# if envelope_snr is given as method, select value here. This will be multiplied with the standard deviation of the time series and then subtracted from the envelope. 
+envelope_snr: 2
+
+# Do you want to check the stationary phases? Creates a time series with the given input, either Ricker or Gauss, at the expected arrival time
+stationary_phases: False
+stat_phase_input: ricker
+# Parameters for the synthetic correlations, number of points (npts) and delta between points (dt)
+stat_phase_npts: 5000
+stat_phase_dt: 1
+# set sigma here (in seconds if dt = 1). For Gauss is the variance, for Ricker the width parameter of the wavelet.
+stat_phase_sigma: 10
+# should it be on the causal, acausal, or both sides of the correlation?
+stat_phase_caus: both
+# Add phases for which stationary phase synthetic data should be created, i.e. at these arrivals the given wavelet will be added
+stat_phase_main: ['P']
+
+# taup model and list of phases (e.g. P, S) you want to look at
+# see https://docs.obspy.org/packages/obspy.taup.html for more details
+# Will iterate over this list. To set a speed in km per second use e.g. ['P','PP','3kmps'] 
+taup_model: 'iasp91'
+phases: ['2.9kmps']
+# set the phase pairs you want to look at for stationary phases. If set to all, the above list will be used. If set to same, only same pairs will be done, i.e. P-P, PP-PP, 3kmps-3kmps etc.
+# will be done in both directions, i.e. P-PP will also do PP-P
+phase_pairs: same 
+# Do you want 'auto'-phases like P-P when phase_pairs is set to all? This is automatically True if stationary phases is False or phase_pairs is same
+phase_pairs_auto: False
+
+# Sum up the given phase pairs to one map?
+phase_pairs_sum: True
+
+# Should geometrical spreading be implement?
+# currently only works for phases where velocity is given, i.e. surface waves
+geo_spreading: True
+# Do you want to plot the output?
+plot: True
