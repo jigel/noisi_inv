@@ -208,7 +208,7 @@ precompute_wavefield first.')
                 coeffs[:, i] = self.distribution_from_prev_model(grd,parameter_sets[i]['distribution'])
                 
             elif parameter_sets[i]['distribution'] in ['mfp','matchedfieldprocessing']:
-                coeffs[:, i] = self.distribution_from_mfp(grd, args, comm, size, rank)
+                coeffs[:, i] = self.distribution_from_mfp(grd, args,parameter_sets[i], comm, size, rank)
 
             else:
                 if rank == 0:
@@ -444,7 +444,7 @@ precompute_wavefield first.')
         return model_dist
     
     
-    def distribution_from_mfp(self,grd,args,comm,size,rank):
+    def distribution_from_mfp(self,grd,args,parameters,comm,size,rank):
         """
         Use the Matched-Field Processing code to create a starting model from the given correlations
         """
@@ -465,7 +465,7 @@ precompute_wavefield first.')
                 "station_distance_min": 0,
                 "station_distance_max": 0,
                 "sourcegrid_path": os.path.join(args.project_path,'sourcegrid.npy'),
-                "method": ["envelope_snr"],
+                "method": ["basic","envelope","envelope_snr"],
                 "envelope_snr": 2,
                 "stationary_phases": False,            
                 "taup_model": "iasp91",
@@ -491,7 +491,7 @@ precompute_wavefield first.')
         
         
         ## smooth with 2 degrees, copy code from smoothing script
-        sigma=[2*111000]
+        sigma=[parameters['mfp_smooth']*111000]
         cap=100
         thresh=1e-1000
         
