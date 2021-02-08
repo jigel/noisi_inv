@@ -1,27 +1,27 @@
 main:
     output_folder: ./noisi_output
-    stationlist: /Users/jigel/noisi/stationlists/stationlist_swiss_6.csv 
+    stationlist: /Users/jigel/noisi/stationlists/stationlist_synth_mfp_30deg.csv 
     add_metadata: false
     add_noise: false
     output_plot: true
 
 project_config:
-    project_name: 1015_realinv_0917_ocean_10days
+    project_name: 0208_synth_inv_30deg_MFP_TEST_2 
     synt_data: DIS
     verbose: false
     load_to_memory: true
     compress_output_files: false
 
 data_download:
-    download_data: true
+    download_data: false
     download_data_date: 2020-09-17
-    download_data_days: 10
+    download_data_days: 1
     download_data_channels: ['BHZ']
     
-    process_data_win_len: 3600
-    process_data_overlap: 100
+    process_data_win_len: 86400
+    process_data_overlap: 0
     
-    gcmt_exclude: True
+    gcmt_exclude: False
 
     min_station_dist: 0
 
@@ -39,7 +39,7 @@ data_download:
     
 
 inversion_config:
-    observed_corr: null 
+    observed_corr: /Users/jigel/noisi/noisi_inv/noisi_output/0201_fwd_mfp_30deg_blob_2/source_1/iteration_0/corr
     opt_statpair: null 
     snr_thresh: 0
     corr_max_dist: null
@@ -72,13 +72,13 @@ svp_grid_config:
     svp_gamma:
     - 0
     svp_lat_0:
-    - 47
+    - 21.96
     svp_lon_0:
-    - 8
+    - -68.2
     svp_phi_min:
-    - 1
+    - 2
     svp_phi_max:
-    - 10
+    - 5
     svp_sigma:
     - 10
 
@@ -102,9 +102,9 @@ auto_data_grid_config:
 wavefield_config:
     wavefield_channel: Z
     wavefield_domain: time
-    wavefield_duration: 800.0
+    wavefield_duration: 5000.0
     wavefield_filter: null
-    wavefield_path: /Users/jigel/noisi/noisi_inv/noisi_output/1015_realinv_0917_ocean_wl_perc_0/greens 
+    wavefield_path: /Users/jigel/noisi/noisi_inv/noisi_output/0201_fwd_mfp_30deg_blob/greens 
     wavefield_point_force: 1.0e9
     wavefield_sampling_rate: 1.0
     wavefield_type: greens
@@ -115,14 +115,15 @@ wavefield_config:
 source_config:
     get_auto_corr: false
     model_observed_only: true
-    max_lag: 400
+    max_lag: 1500
     diagonals: false
     rotate_horizontal_components: false
 
 source_setup_config:
-    - distribution: homogeneous
-      mean_frequency_Hz: 0.05
-      standard_deviation_Hz: 0.03
+    - distribution: mfp
+      mfp_smooth: 4
+      mean_frequency_Hz: 0.15
+      standard_deviation_Hz: 0.05
       weight: 1.0
       taper_percent: 1.0
       normalize_spectrum_to_unity: true
