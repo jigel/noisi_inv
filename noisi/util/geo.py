@@ -54,9 +54,9 @@ def is_land(x, y, res="110m"):
     is_land = np.zeros(len(x))
     
     for i in range(len(x)):
-        #is_land[i] = land.contains(sgeom.Point(x[i], y[i]))
-        if land.contains(sgeom.Point(x[i], y[i])) or casp.contains(sgeom.Point(x[i], y[i])) or hud.contains(sgeom.Point(x[i], y[i])):
-            is_land[i] = 1
+        is_land[i] = land.contains(sgeom.Point(x[i], y[i]))
+        #if land.contains(sgeom.Point(x[i], y[i])) or casp.contains(sgeom.Point(x[i], y[i])) or hud.contains(sgeom.Point(x[i], y[i])):
+        #    is_land[i] = 1
         
     return is_land
 
