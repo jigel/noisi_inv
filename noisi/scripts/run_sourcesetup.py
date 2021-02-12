@@ -406,7 +406,7 @@ precompute_wavefield first.')
 
         print('Source distribution setup with data.')
         
-        return data_dist
+        return data_dist*parameters['weight']
     
     def distribution_from_prev_model(self,grd,model):
         """ 
@@ -441,7 +441,7 @@ precompute_wavefield first.')
 
         print('Source distribution setup with previous model.')
         
-        return model_dist
+        return model_dist*parameters['weight']
     
     
     def distribution_from_mfp(self,grd,args,parameters,comm,size,rank):
@@ -530,7 +530,7 @@ precompute_wavefield first.')
                 
         #return mfp_final[2]/np.max(np.abs(mfp_final[2]))
         
-        return mfp_smooth
+        return mfp_smooth*parameters['weight']
         
 
     
