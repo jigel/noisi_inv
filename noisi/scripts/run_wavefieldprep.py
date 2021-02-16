@@ -94,7 +94,7 @@ class precomp_wavefield(object):
         if self.rank == 0:
             wfile = glob(os.path.join(self.args.project_path,
                                       'greens', '*' +
-                                      station['sta'] + '.*.h5'))[0]
+                                      str(station['sta']) + '.*.h5'))[0]
             ofile = os.path.join(self.args.project_path,
                                  'wavefield_example.png')
             with WaveField(wfile) as wf:
@@ -182,7 +182,7 @@ class precomp_wavefield(object):
 
                 # DATASET NR 1: STATS
                 stats = f.create_dataset('stats', data=(0,))
-                stats.attrs['reference_station'] = station['sta']
+                stats.attrs['reference_station'] = str(station['sta'])
                 stats.attrs['data_quantity'] = self.data_quantity
                 stats.attrs['ntraces'] = self.ntraces
                 stats.attrs['Fs'] = self.Fs
@@ -296,7 +296,7 @@ invalid for horizontal components; set channel to \"Z\" or use instaseis.")
 
                 # DATASET NR 1: STATS
                 stats = f.create_dataset('stats', data=(0,))
-                stats.attrs['reference_station'] = station['sta']
+                stats.attrs['reference_station'] = str(station['sta'])
                 stats.attrs['data_quantity'] = self.data_quantity
                 stats.attrs['ntraces'] = self.ntraces
                 stats.attrs['Fs'] = self.Fs

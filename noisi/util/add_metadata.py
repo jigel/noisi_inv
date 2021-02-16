@@ -27,7 +27,7 @@ def assign_geographic_metadata(indir, stationlistfile,comm,size,rank):
         print(traces[-1])
         print('Assign geographical information.\n')
 
-    meta = pd.read_csv(stationlistfile,keep_default_na=False)
+    meta = pd.read_csv(stationlistfile,keep_default_na=False,dtype=str)
     count_tr = 0
     
     # split up traces
@@ -44,11 +44,11 @@ def assign_geographic_metadata(indir, stationlistfile,comm,size,rank):
             print(f"At {count_tr} of {np.size(traces_split)} traces")
 
         tr = read(t)
-        sta1 = os.path.basename(t).split('.')[1]
+        sta1 = str(os.path.basename(t).split('.')[1])
         try:
-            sta2 = os.path.basename(t).split('--')[1].split('.')[1]
+            sta2 = str(os.path.basename(t).split('--')[1].split('.')[1])
         except IndexError:
-            sta2 = os.path.basename(t).split('.')[5]
+            sta2 = str(os.path.basename(t).split('.')[5])
         #print(sta1, sta2)
         lat1 = float(meta[meta['sta'] == sta1].iloc[0]['lat'])
         lat2 = float(meta[meta['sta'] == sta2].iloc[0]['lat'])

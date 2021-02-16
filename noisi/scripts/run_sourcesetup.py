@@ -202,10 +202,10 @@ precompute_wavefield first.')
         for i in range(n_distr):
             
             if parameter_sets[i]['distribution'].endswith('.npy') and rank == 0:                
-                coeffs[:, i] = self.distribution_from_data(grd,parameter_sets[i]['distribution'],conf["verbose"])
+                coeffs[:, i] = self.distribution_from_data(grd,parameter_sets[i]['distribution'],parameter_sets[i],conf["verbose"])
                 
             elif parameter_sets[i]['distribution'].endswith('.h5') and rank == 0:
-                coeffs[:, i] = self.distribution_from_prev_model(grd,parameter_sets[i]['distribution'])
+                coeffs[:, i] = self.distribution_from_prev_model(grd,parameter_sets[i]['distribution'],parameter_sets[i])
                 
             elif parameter_sets[i]['distribution'] in ['mfp','matchedfieldprocessing']:
                 coeffs[:, i] = self.distribution_from_mfp(grd, args,parameter_sets[i], comm, size, rank)
@@ -368,7 +368,7 @@ precompute_wavefield first.')
         return(spec)
     
     
-    def distribution_from_data(self,grd,data,verbose=False):
+    def distribution_from_data(self,grd,data,parameters,verbose=False):
         """ 
         Use .npy file to setup source distribution
         Input file has to be: [lat,lon,data] where -90 < lat < 90 and -180 < lon < 180
@@ -408,7 +408,7 @@ precompute_wavefield first.')
         
         return data_dist*parameters['weight']
     
-    def distribution_from_prev_model(self,grd,model):
+    def distribution_from_prev_model(self,grd,model,parameters):
         """ 
         Use .h5 file from previous model
         """
