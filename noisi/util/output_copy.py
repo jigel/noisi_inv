@@ -1,5 +1,6 @@
 import numpy as np
 from shutil import copy2
+from shutil import copytree
 import os
 from glob import glob
 import sys
@@ -103,6 +104,10 @@ def output_copy(project_path):
             for g_file in grad_file:
                 copy2(g_file,step_path)
     
+    
+    # copy mfp
+    if os.path.exists(os.path.join(project_path,'mfp_startingmodel')):
+        copytree(os.path.join(project_path,'mfp_startingmodel'),os.path.join(output_path,'mfp'))
     
     
     
