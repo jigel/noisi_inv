@@ -522,7 +522,7 @@ else:
         if rank == 0:
             print("Cross-correlations done.")
             
-            if inv_args.compress_output_files:
+            if inv_args.compress_output_files == True:
 
                 print("Converting SAC files to ASDF..")
                 corr_path = os.path.join(inv_args.source_model,f"iteration_0","corr")
@@ -566,7 +566,7 @@ else:
             print("!"*30)
             print("No adjoint sources found. Can't compute any sensitivity kernels.")
             
-            if inv_args.compress_output_files:
+            if inv_args.compress_output_files == True:
 
                 print("Converting SAC files to ASDF..")
                 corr_path = os.path.join(inv_args.source_model,f"iteration_0","corr")
@@ -630,7 +630,7 @@ else:
     if inv_args.nr_iterations == 0:
         if rank == 0:
             
-            if inv_args.compress_output_files:
+            if inv_args.compress_output_files == True:
 
                 print("Converting SAC to ASDF and NPY to H5..")
                 corr_path = os.path.join(inv_args.source_model,"iteration_0","corr")
@@ -858,7 +858,7 @@ for iter_nr in range(start_iter, inv_args.nr_iterations):
 
 
 
-    if inv_args.compress_output_files and rank == 0:
+    if inv_args.compress_output_files == True and rank == 0:
 
         print("Converting SAC to ASDF and NPY to H5..")
         corr_path = os.path.join(inv_args.source_model,f'iteration_{inv_args.step-1}',"corr")
@@ -981,7 +981,7 @@ for iter_nr in range(start_iter, inv_args.nr_iterations):
     mf_dict.update({f'iteration_{inv_args.step}':mf_step_var})
 
 
-if inv_args.compress_output_files and rank == 0:
+if inv_args.compress_output_files == True and rank == 0:
 
     print("Converting SAC to ASDF and NPY to H5..")
     corr_path = os.path.join(inv_args.source_model,f'iteration_{inv_args.step}',"corr")
@@ -1035,6 +1035,18 @@ if rank == 0:
 
     if inv_args.output_plot:
         output_plot(inv_args,os.path.join(inv_args.project_path,"output"),only_ocean=only_ocean,triangulation=True)
+
+    if inv_args.compress_output_files == 'delete':
+        print("Deleting correlation and kernel files..")
+
+        for file in glob(os.path.join(inv_args.source_model,'iteration_*/corr/*.sac')):
+            os.remove(file)
+
+        for file in glob(os.path.join(inv_args.source_model,'iteration_*/kern/*.0.npy')):
+            os.remove(file)
+
+        print("Files removed.")
+
 
         
 comm.barrier()
