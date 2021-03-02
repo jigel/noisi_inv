@@ -68,6 +68,8 @@ def test_adjoint_functions():
     window_params['win_overlap'] = False
     window_params['wtype'] = "hann"
     window_params['plot'] = False
+    window_params['waterlevel_perc'] = 0
+
 
     g_speed = 2000.
 
@@ -105,6 +107,7 @@ def test_measurements():
     window_params['win_overlap'] = False
     window_params['wtype'] = "hann"
     window_params['plot'] = False
+    window_params['waterlevel_perc'] = 0
 
     g_speed = 2000.
 

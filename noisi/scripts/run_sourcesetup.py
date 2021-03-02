@@ -465,7 +465,7 @@ precompute_wavefield first.')
                 "station_distance_min": 0,
                 "station_distance_max": 0,
                 "sourcegrid_path": os.path.join(args.project_path,'sourcegrid.npy'),
-                "method": ["basic","envelope","envelope_snr"],
+                "method": ["basic","envelope","envelope_snr","square_envelope_snr"],
                 "envelope_snr": 2,
                 "stationary_phases": False,            
                 "taup_model": "iasp91",

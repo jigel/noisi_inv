@@ -201,7 +201,7 @@ def output_plot(args,output_path,only_ocean=False,triangulation=False):
         except:
             plt.title(f'Noise distribution for iteration {step}',fontsize=50)
 
-        plt.scatter(lon,lat,s=25,c='k',marker='^',transform=ccrs.PlateCarree(),zorder=4)
+        plt.scatter(lon,lat,s=50,c='lawngreen',marker='^',edgecolor='k',linewidth=1,transform=ccrs.PlateCarree(),zorder=4)
         plt.savefig(os.path.join(output_plots,f'iteration_{step}_1_noise_distribution.png'),bbox_inches='tight')
         #plt.show()
         plt.close()
@@ -243,7 +243,7 @@ def output_plot(args,output_path,only_ocean=False,triangulation=False):
             except:
                 plt.title(f'Gradient for iteration {step}',fontsize=50
                          )
-            plt.scatter(lon,lat,s=25,c='k',marker='^',transform=ccrs.PlateCarree(),zorder=3)
+            plt.scatter(lon,lat,s=50,c='lawngreen',marker='^',edgecolor='k',linewidth=1,transform=ccrs.PlateCarree(),zorder=3)
             plt.savefig(os.path.join(output_plots,f'iteration_{step}_2_gradient.png'),bbox_inches='tight')
             #plt.show() 
             plt.close()
@@ -284,7 +284,7 @@ def output_plot(args,output_path,only_ocean=False,triangulation=False):
             except:
                 plt.title(f'Smoothed gradient for iteration {step}',fontsize=50
                          )
-            plt.scatter(lon,lat,s=25,c='k',marker='^',transform=ccrs.PlateCarree(),zorder=3)
+            plt.scatter(lon,lat,s=50,c='lawngreen',marker='^',edgecolor='k',linewidth=1,transform=ccrs.PlateCarree(),zorder=3)
             plt.savefig(os.path.join(output_plots,f'iteration_{step}_3_gradient_smooth.png'),bbox_inches='tight')
             #plt.show()
             plt.close()
@@ -321,7 +321,7 @@ def output_plot(args,output_path,only_ocean=False,triangulation=False):
 
         #cbar.set_label('Power Spectral Density',rotation=270,labelpad=10)
         plt.title(f'Station Sensitivity with vmax = {v}',fontsize=50)
-        plt.scatter(lon,lat,s=25,c='k',marker='^',transform=ccrs.PlateCarree(),zorder=3)
+        plt.scatter(lon,lat,s=50,c='lawngreen',marker='^',edgecolor='k',linewidth=1,transform=ccrs.PlateCarree(),zorder=3)
         plt.savefig(os.path.join(output_plots,f'station_sensitivity.png'),bbox_inches='tight')
         #plt.show()
         plt.close()
@@ -335,7 +335,7 @@ def output_plot(args,output_path,only_ocean=False,triangulation=False):
         plt.scatter(grid[0],grid[1],s=20,c='k',transform=ccrs.PlateCarree(),zorder=3)
         #cbar.set_label('Power Spectral Density',rotation=270,labelpad=10)
         plt.title(f'Sourcegrid',fontsize=50)
-        plt.scatter(lon,lat,s=25,c='k',marker='^',transform=ccrs.PlateCarree(),zorder=3)
+        plt.scatter(lon,lat,s=50,c='lawngreen',marker='^',edgecolor='k',linewidth=1,transform=ccrs.PlateCarree(),zorder=3)
         plt.savefig(os.path.join(output_plots,f'sourcegrid.png'),bbox_inches='tight')
         #plt.show()
         plt.close()
@@ -385,7 +385,7 @@ def output_plot(args,output_path,only_ocean=False,triangulation=False):
         except:
             plt.title(f'Noise distribution for iteration {step} capped at {sense_min*100}% sensitivity',fontsize=50)
 
-        plt.scatter(lon,lat,s=25,c='k',marker='^',transform=ccrs.PlateCarree(),zorder=4)
+        plt.scatter(lon,lat,s=50,c='lawngreen',marker='^',edgecolor='k',linewidth=1,transform=ccrs.PlateCarree(),zorder=4)
         plt.savefig(os.path.join(output_plots,f'iteration_{step}_2_noise_distribution_capped.png'),bbox_inches='tight')
         #plt.show()
         plt.close()

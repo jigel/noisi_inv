@@ -107,7 +107,10 @@ def output_copy(project_path):
     
     # copy mfp
     if os.path.exists(os.path.join(project_path,'mfp_startingmodel')):
-        copytree(os.path.join(project_path,'mfp_startingmodel'),os.path.join(output_path,'mfp'))
+        try:
+            copytree(os.path.join(project_path,'mfp_startingmodel'),os.path.join(output_path,'mfp'))
+        except:
+            pass
     
     
     

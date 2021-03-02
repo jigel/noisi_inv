@@ -96,8 +96,10 @@ def mfp_main(args,comm,size,rank):
     MFP_phases_dict = dict()
 
     for phases in args.phase_list:
-        MFP_phases_dict[f'{phases[0]}-{phases[1]}'] = np.asarray([sourcegrid[0],sourcegrid[1],np.zeros(np.shape(sourcegrid[0])),np.zeros(np.shape(sourcegrid[0])),np.zeros(np.shape(sourcegrid[0]))])
-
+        MFP_phases_dict[f'{phases[0]}-{phases[1]}'] = np.zeros([np.size(args.method)+2,np.shape(sourcegrid[0])[0]])
+        MFP_phases_dict[f'{phases[0]}-{phases[1]}'][0] = sourcegrid[0]
+        MFP_phases_dict[f'{phases[0]}-{phases[1]}'][1] = sourcegrid[1]
+        
     
     for i,corr in enumerate(corr_files_split):
         
@@ -222,33 +224,49 @@ def mfp_main(args,comm,size,rank):
                     A = np.sqrt((2*g_speed)/(np.pi*omega*geo_dist_var))
                 
                 # get values and add to distribution 
-                for meth in args.method:
+                for m_idx,meth in enumerate(args.method):
                     # basic is dictionary index 2
                     # envelope is dictionary index 3
+                    meth_idx = m_idx+2
 
                     if args.geo_spreading and phase_1.endswith('kmps') and phase_2.endswith('kmps'):
                         if meth == "basic":
-                            MFP_phases_dict[f"{phase_1}-{phase_2}"][2][k] += data[corr_idx] * A
+                            MFP_phases_dict[f"{phase_1}-{phase_2}"][meth_idx][k] += data[corr_idx] * A
                         elif meth == "envelope":
-                            MFP_phases_dict[f"{phase_1}-{phase_2}"][3][k] += data_env[corr_idx] * A
+                            MFP_phases_dict[f"{phase_1}-{phase_2}"][meth_idx][k] += data_env[corr_idx] * A
+                        elif meth == "square_envelope":
+                            MFP_phases_dict[f"{phase_1}-{phase_2}"][meth_idx][k] += np.power(data_env[corr_idx],2) * A
                         elif meth == "envelope_snr":
                             # shift the envelope
                             data_env_shift = data_env - np.std(data_env)*args.envelope_snr
                             data_env_shift[data_env_shift<0] = 0                                                                                 
-                            MFP_phases_dict[f"{phase_1}-{phase_2}"][4][k] += data_env_shift[corr_idx] * A 
+                            MFP_phases_dict[f"{phase_1}-{phase_2}"][meth_idx][k] += data_env_shift[corr_idx] * A
+                        elif meth == "square_envelope_snr":
+                            # shift the envelope
+                            data_env_shift = data_env - np.std(data_env)*args.envelope_snr
+                            data_env_shift[data_env_shift<0] = 0                                                                                 
+                            MFP_phases_dict[f"{phase_1}-{phase_2}"][meth_idx][k] += np.power(data_env_shift[corr_idx],2) * A
                         else:
                             print(f"{meth} not implemented.")
 
                     else:
                         if meth == "basic":
-                            MFP_phases_dict[f"{phase_1}-{phase_2}"][2][k] += data[corr_idx] 
+                            MFP_phases_dict[f"{phase_1}-{phase_2}"][meth_idx][k] += data[corr_idx] 
                         elif meth == "envelope":
-                            MFP_phases_dict[f"{phase_1}-{phase_2}"][3][k] += data_env[corr_idx] 
+                            MFP_phases_dict[f"{phase_1}-{phase_2}"][meth_idx][k] += data_env[corr_idx] 
+                        elif meth == "square_envelope":
+                            MFP_phases_dict[f"{phase_1}-{phase_2}"][meth_idx][k] += np.power(data_env[corr_idx],2) 
                         elif meth == "envelope_snr":
                             # shift the envelope
                             data_env_shift = data_env - np.std(data_env)*args.envelope_snr
                             data_env_shift[data_env_shift<0] = 0                                                                                 
-                            MFP_phases_dict[f"{phase_1}-{phase_2}"][4][k] += data_env_shift[corr_idx]
+                            MFP_phases_dict[f"{phase_1}-{phase_2}"][meth_idx][k] += data_env_shift[corr_idx]
+                        elif meth == "square_envelope_snr":
+                            # shift the envelope
+                            data_env_shift = data_env - np.std(data_env)*args.envelope_snr
+                            data_env_shift[data_env_shift<0] = 0                                                                                 
+                            MFP_phases_dict[f"{phase_1}-{phase_2}"][meth_idx][k] += np.power(data_env_shift[corr_idx],2)
+                    
                         else:
                             print(f"{meth} not implemented.")
                         
@@ -263,20 +281,24 @@ def mfp_main(args,comm,size,rank):
     
     MFP_phases_dict_all = comm.gather(MFP_phases_dict,root = 0)
 
-
     # expand the dictionary
     if rank == 0:
         MFP_phases_dict_exp = dict()
 
         for phases in args.phase_list:
-            MFP_phases_dict_exp[f'{phases[0]}-{phases[1]}'] = np.asarray([sourcegrid[0],sourcegrid[1],np.zeros(np.shape(sourcegrid[0])),np.zeros(np.shape(sourcegrid[0])),np.zeros(np.shape(sourcegrid[0]))])
+            MFP_phases_dict_exp[f'{phases[0]}-{phases[1]}'] = np.zeros([np.size(args.method)+2,np.shape(sourcegrid[0])[0]])
+            MFP_phases_dict_exp[f'{phases[0]}-{phases[1]}'][0] = sourcegrid[0]
+            MFP_phases_dict_exp[f'{phases[0]}-{phases[1]}'][1] = sourcegrid[1]
+            
+            #MFP_phases_dict_exp[f'{phases[0]}-{phases[1]}'] = np.asarray([sourcegrid[0],sourcegrid[1],np.zeros(np.shape(sourcegrid[0])),np.zeros(np.shape(sourcegrid[0])),np.zeros(np.shape(sourcegrid[0]))])
 
         for subdict in MFP_phases_dict_all:
             for phases in subdict:
-                # add the MFP maps from the different ranks
-                MFP_phases_dict_exp[phases][2] += subdict[phases][2]
-                MFP_phases_dict_exp[phases][3] += subdict[phases][3]
-                MFP_phases_dict_exp[phases][4] += subdict[phases][4]
+                for m_idx,meth in enumerate(args.method):
+                    meth_idx = m_idx+2
+                    # add the MFP maps from the different ranks
+                    MFP_phases_dict_exp[phases][meth_idx] += subdict[phases][meth_idx]
+
 
     else:
         MFP_phases_dict_exp = dict()

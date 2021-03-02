@@ -75,8 +75,6 @@ def run_noisi_mfp(args,comm,size,rank):
     with open(mfp_config_path) as f:
         mfp_config = yaml.safe_load(f)
 
-
-    
     for attr in mfp_config:
         setattr(mfp_args,attr,mfp_config[attr])
 
@@ -337,17 +335,15 @@ def run_noisi_mfp(args,comm,size,rank):
                 
             for i,phases in enumerate(mfp):
 
-                for method in mfp_args.method:
-
-                    if method == 'basic':
-                        meth_idx = 2
-                    if method == 'envelope':
-                        meth_idx = 3
-                    if method == 'envelope_snr':
-                        meth_idx = 4
+                for m_idx,method in enumerate(mfp_args.method):
+                    meth_idx = m_idx+2            
 
                     # save 
-                    np.save(os.path.join(mfp_result_path,f'MFP_{phase}_{phases}_{method}.npy'),mfp[phases][meth_idx])
+                    if not os.path.isfile(os.path.join(mfp_result_path,f'MFP_{phase}_{phases}_{method}.npy')):
+                        np.save(os.path.join(mfp_result_path,f'MFP_{phase}_{phases}_{method}.npy'),mfp[phases][meth_idx])
+                    else:
+                        np.save(os.path.join(mfp_result_path,f'MFP_{phase}_{phases}_{method}_{i}.npy'),mfp[phases][meth_idx])
+
 
                     if mfp_args.phase_pairs_sum and i == 0:
                         mfp_sum['grid'] = [mfp[phases][0],mfp[phases][1]]
@@ -359,9 +355,15 @@ def run_noisi_mfp(args,comm,size,rank):
 
                     if mfp_args.plot:
 
+                        if not os.path.isfile(os.path.join(mfp_plot_path,f'MFP_{phase}_{phases}_{method}.png')):
+                            output_file = os.path.join(mfp_plot_path,f'MFP_{phase}_{phases}_{method}.png')
+                        else:
+                            output_file = os.path.join(mfp_plot_path,f'MFP_{phase}_{phases}_{method}_{i}.png')
+
+
                         plot_grid(mfp_args,grid=[mfp[phases][1],mfp[phases][0]],
                                   data=mfp[phases][meth_idx],
-                                  output_file=os.path.join(mfp_plot_path,f'MFP_{phase}_{phases}_{method}.png'),
+                                  output_file=output_file,
                                   triangulate=True,
                                   cbar=True,
                                   only_ocean=False,
@@ -383,7 +385,6 @@ def run_noisi_mfp(args,comm,size,rank):
                               only_ocean=False,
                               title=f'MFP for all phases using {phase} arrival. Method: {method}.',
                               stationlist_path=mfp_args.stationlist_path)
-
 
 
     comm.Barrier()
@@ -409,9 +410,11 @@ def run_noisi_mfp(args,comm,size,rank):
     
     
     for i,phases in enumerate(mfp):
-        for method in mfp_args.method:
-            if method == 'envelope_snr':
-                mfp_dist_final = mfp[phases][4]
+        for m_idx,method in enumerate(mfp_args.method):
+            meth_idx = m_idx+2    
+            
+            if method == 'square_envelope_snr':
+                mfp_dist_final = mfp[phases][meth_idx]
 
     # at the moment only return envelope snr
     return [mfp[phases][0],mfp[phases][1],mfp_dist_final]
