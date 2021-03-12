@@ -1042,6 +1042,9 @@ if rank == 0:
         for file in glob(os.path.join(inv_args.source_model,'iteration_*/corr/*.sac')):
             os.remove(file)
 
+        for file in glob(os.path.join(inv_args.source_model,'iteration_*/adjt/*.sac')):
+            os.remove(file)
+
         for file in glob(os.path.join(inv_args.source_model,'iteration_*/kern/*.0.npy')):
             os.remove(file)
 
