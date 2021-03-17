@@ -156,7 +156,7 @@ def mfp_main(args,comm,size,rank):
             for k in range(np.size(mfp_grid[0])):
                 
                 if k%100 == 0 and rank == 0:
-                    print(f"At {k} of {np.size(mfp_grid[0])} gridpoints for phase {it+1} of {int(np.size(args.phase_list)/2)} on rank {rank}".ljust(100,' '),end="\r", flush=True)
+                    print(f"At {k} of {np.size(mfp_grid[0])} gridpoints for phase {it+1} of {int(np.size(args.phase_list)/2)} on rank {rank}".ljust(100,' '),end="\n", flush=True)
                     
                 g_point = [mfp_grid[0][k],mfp_grid[1][k]]
 

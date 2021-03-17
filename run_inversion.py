@@ -419,7 +419,8 @@ config_sourcesetup = inv_config['source_setup_config'][0]
 
 if 'weight_test' in list(config_sourcesetup.keys()) and config_sourcesetup['weight_test']:
     
-    print("Performing weight test for initial model..")
+    if rank == 0:
+        print("Performing weight test for initial model..")
     
     # set to steplengthrun to only use subset of correlations
     setattr(inv_args,'steplengthrun',True)
