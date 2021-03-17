@@ -157,13 +157,17 @@ def measurement(comm,size,rank,source_config, mtype, step, ignore_net,
         # Get the adjoint source
         adjt_func = am.get_adj_func(mtype)
         adjt, success = adjt_func(tr_o, tr_s, **options)
+        
+        #scaling to avoid tiny numbers
+        adjt *= 1e25
+        
         if not success:
             continue
 
         # timeseries-like measurements:
         if mtype in ['square_envelope',
                      'full_waveform', 'windowed_waveform','envelope']:
-            l2_so = 0.5 * np.sum(np.power((msr_s - msr_o), 2))
+            l2_so = 0.5 * np.sum(np.power((msr_s - msr_o), 2)) * 1e25 # scaling
             snr = snratio(tr_o, **options)
             snr_a = snratio(tr_o, **_options_ac)
             info.extend([np.nan, np.nan, np.nan, np.nan,

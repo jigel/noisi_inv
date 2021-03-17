@@ -121,7 +121,7 @@ if rank == 0:
     
     print("===="*20)
     print(f"Changing directory to {os.getcwd()}")
-    print(f"Setting up project {inv_args.project_name}..")
+    print(f"Setting up project {inv_args.project_name}")
     setup_proj(inv_args,comm,size,rank)
     print("===="*20)
 
@@ -352,6 +352,7 @@ if rank == 0:
     config_source.update({'source_setup_file':source_setup_configfile})
     config_sourcesetup = inv_config['source_setup_config']
     
+    
     if inv_args.observed_corr == None:
         config_source['model_observed_only'] = False
 
@@ -377,27 +378,8 @@ comm.barrier()
 setattr(inv_args,'new_model',False)
 
 
+
 ########################################################################
-# Setup source distribution
-########################################################################
-
-# initial source distribution has to be given in yaml file
-if rank == 0:        
-    print("Setting up source distribution..")
-
-source_setup(inv_args,comm,size,rank)
-    
-comm.barrier()
-
-
-if rank==0:
-    # time for source setup
-    t_4 = time.time()
-    run_time.write(f"Source setup: {np.around((t_4-t_3)/60,4)} \n")
-
-
-
-    ########################################################################
 # Copy observed cross-correlations
 ########################################################################
 
@@ -421,9 +403,151 @@ comm.barrier()
 
 if rank==0:
     # time for corr copy
-    t_5 = time.time()
-    run_time.write(f"Copy correlations: {np.around((t_5-t_4)/60,4)} \n")
+    t_4 = time.time()
+    run_time.write(f"Copy correlations: {np.around((t_4-t_3)/60,4)} \n")
+    
+    
+    
+########################################################################
+# Setup source distribution
+########################################################################
 
+
+###### need to do initial weight test here #######
+
+config_sourcesetup = inv_config['source_setup_config'][0]
+
+if 'weight_test' in list(config_sourcesetup.keys()) and config_sourcesetup['weight_test']:
+    
+    print("Performing weight test for initial model..")
+    
+    # set to steplengthrun to only use subset of correlations
+    setattr(inv_args,'steplengthrun',True)
+    setattr(inv_args,'step',0)
+    
+    # make starting model with weight 1
+    if rank == 0:
+        config_sourcesetup['weight'] = float(1)
+
+        with open(source_setup_configfile,"w+") as f:
+            yaml.safe_dump([config_sourcesetup],f,sort_keys=False)
+                
+    source_setup(inv_args,comm,size,rank)
+
+    # copy it and re-use it so starting model isn't recalculate every time
+    shutil.copy2(os.path.join(inv_args.source_model,f'iteration_{inv_args.step}','starting_model.h5'),os.path.join(inv_args.source_model,f'iteration_{inv_args.step}','starting_model_1.h5'))
+    model_ones = h5py.File(os.path.join(inv_args.source_model,f'iteration_0','starting_model_1.h5'),'r')['model'][()]
+    
+    
+    # make array of weights
+    weights_arr = 10**np.linspace(-7,1,9)
+    
+    weights_misfit_arr = []
+    
+    for i,weight in enumerate(weights_arr[::-1]):
+        
+        # create starting model by multipling starting_model_1.h5 with value
+        model_weight = model_ones * weight
+        
+        if rank == 0:
+            
+            print(f'Working on {i+1} of {np.size(weights_arr)} weights with {weight:.3e}')
+
+            with h5py.File(os.path.join(inv_args.source_model,f'iteration_0','starting_model.h5')) as fh:
+                del fh['model']
+                fh.create_dataset('model',data=model_weight.astype(np.float32))
+                fh.close() 
+        
+        comm.barrier()
+        
+        # compute correlations
+        run_corr(inv_args,comm,size,rank)
+        
+        comm.barrier()
+        
+        # compute measurements
+        run_measurement(inv_args,comm,size,rank)
+        
+        comm.barrier()
+        # get misfit
+        measr_step_var = read_csv(os.path.join(inv_args.source_model,f'iteration_{inv_args.step}',f'{inv_args.mtype}.0.measurement.csv'))
+
+        l2_norm_all = np.asarray(measr_step_var['l2_norm'])
+        l2_norm = l2_norm_all[~np.isnan(l2_norm_all)]
+        mf_step_var = np.mean(l2_norm)
+                
+        weights_misfit_arr.append([weight,mf_step_var])
+        
+        # delete correlation files
+        if rank == 0:
+            print(f"Misfit for {i+1}: {mf_step_var:.3e}")
+
+            for file in glob(os.path.join(inv_args.source_model,f'iteration_{inv_args.step}/corr/*.sac')):
+                os.remove(file)
+                
+        comm.barrier()
+            
+        # stop if the misfit of new one is higher than the previous one
+        # assumes we're going from worse to better model, i.e. starting at a strong model
+                
+        if i > 0  and mf_step_var > np.asarray(weights_misfit_arr).T[1][-2]:
+            if rank == 0:
+                print("Misfit increased. Stopping weight test.")
+            break
+            
+    # pick the weight
+    weights_misfit_arr = np.asarray(sorted(weights_misfit_arr,key = lambda x:x[0],reverse=True)).T
+    weights_min = weights_misfit_arr[0][np.argmin(weights_misfit_arr[1])]
+        
+    # change the weight in the source setup config file and inversion config file
+    if rank == 0:
+    
+        print(f"Final weight: {weights_min:.3e}")
+
+        model_weight = model_ones * weights_min
+        
+        with h5py.File(os.path.join(inv_args.source_model,f'iteration_0','starting_model.h5')) as fh:
+            del fh['model']
+            fh.create_dataset('model',data=model_weight.astype(np.float32))
+            fh.close() 
+    
+        config_sourcesetup['weight'] = float(weights_min)
+
+        with open(source_setup_configfile,"w+") as f:
+            yaml.safe_dump([config_sourcesetup],f,sort_keys=False)
+            
+        with open(os.path.join(inv_args.project_path,'inversion_config.yml')) as f:
+            inv_config = yaml.safe_load(f)
+
+        inv_config['source_setup_config'][0]['weight'] = float(weights_min)
+
+        with open(os.path.join(inv_args.project_path,'inversion_config.yml'), 'w') as f:
+            yaml.dump(inv_config, f, sort_keys=False)
+            
+    comm.barrier()
+            
+    # change back
+    setattr(inv_args,'steplengthrun',False)
+    
+else:
+    # initial source distribution has to be given in yaml file
+    if rank == 0:        
+        print("Setting up source distribution..")
+
+    source_setup(inv_args,comm,size,rank)
+
+    comm.barrier()
+
+
+if rank==0:
+    # time for source setup
+    t_5 = time.time()
+    run_time.write(f"Source setup: {np.around((t_5-t_4)/60,4)} \n")
+    
+
+#sys.exit()
+
+    
 ########################################################################
 # Begin inversion, first check for already computed iterations
 ########################################################################
@@ -689,7 +813,7 @@ else:
 
 
     if rank == 0:
-        print(f'Misfit for iteration 0: ',mf_step_0)
+        print(f'Misfit for iteration 0: {mf_step_0:.4e}')
         print('Misfit dictionary: ',mf_dict)        
 
     comm.barrier()
