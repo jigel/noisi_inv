@@ -434,9 +434,15 @@ if 'weight_test' in list(config_sourcesetup.keys()) and config_sourcesetup['weig
             yaml.safe_dump([config_sourcesetup],f,sort_keys=False)
                 
     source_setup(inv_args,comm,size,rank)
-
+    
+    comm.barrier()
     # copy it and re-use it so starting model isn't recalculate every time
-    shutil.copy2(os.path.join(inv_args.source_model,f'iteration_{inv_args.step}','starting_model.h5'),os.path.join(inv_args.source_model,f'iteration_{inv_args.step}','starting_model_1.h5'))
+   
+    if rank == 0: 
+        shutil.copy2(os.path.join(inv_args.source_model,f'iteration_{inv_args.step}','starting_model.h5'),os.path.join(inv_args.source_model,f'iteration_{inv_args.step}','starting_model_1.h5'))
+    
+    comm.barrier()
+    
     model_ones = h5py.File(os.path.join(inv_args.source_model,f'iteration_0','starting_model_1.h5'),'r')['model'][()]
     
     
