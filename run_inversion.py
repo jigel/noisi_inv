@@ -1145,7 +1145,7 @@ if rank == 0:
     print(f"---------- ITERATIONS DONE ----------")
     print("\n")
     
-    print(f"Inversion done. Misfit reduced from {np.around(list(mf_dict.values())[0],2)} to {np.around(list(mf_dict.values())[-1],2)}")
+    print(f"Inversion done. Misfit reduced from {list(mf_dict.values())[0]:.4e} to {list(mf_dict.values())[-1]:.4e}")
 
         # inversion time
     t_10 = time.time()
