@@ -10,6 +10,8 @@ import h5py
 import sys
 from glob import glob
 import matplotlib
+import obspy
+import csv
 from obspy import UTCDateTime
 matplotlib.use('agg')
 
@@ -223,15 +225,85 @@ if inv_args.download_data:
 
     if rank==0:
 
+        ###### CHECK PREPROCESSED DATA AND DELETE HIGH AMPLITUDES ########
+        proc_path = os.path.join(inv_args.project_path,'data','processed')
+        proc_files = glob(os.path.join(proc_path,"*.MSEED"))
+        
+        proc_delete_count = 0
+        
+        for file in proc_files:
+            
+            #print(data)
+            st = obspy.read(file)
+            #st.filter('bandpass',freqmin=0.01,freqmax=0.05,corners=5)
+            st.merge()
+            
+            data_var = st[0].data
+            
+            # delete
+            if np.max(data_var) > 5e-6:
+                os.remove(file)
+                proc_delete_count += 1
+                    
+                    
+        print(f"Deleted {proc_delete_count} of {np.size(proc_files)} processed files with amplitude above 5e-6.")
+                    
         # time for data preprocessing
         t_101 = time.time()
         run_time.write(f"Data Pre-processing: {np.around((t_101-t_100)/60,4)} \n")
 
+    comm.barrier()
+        
     ants_crosscorrelate(inv_args,comm,size,rank)
     
     comm.barrier()
     
     if rank==0:
+        
+        ##### CHANGE STATIONLIST TO ONLY HAVE STATIONS WITH CROSS-CORRELATIONS #######
+        # open stationlist
+        
+        stationlist_var = read_csv(inv_args.stationlist)
+        station_dict = dict()
+
+        for sta_i in stationlist_var.iterrows():
+            sta = sta_i[1]
+            station_dict.update({f"{sta['net']}.{sta['sta']}":[sta['lat'],sta['lon']]})
+
+        
+        
+        # get cross-correlation net.sta
+        # would probably be better with a set
+        corr_net_sta = []
+        corr_files = glob(os.path.join(inv_args.project_path,'data/correlations/*SAC'))
+        
+        stations_csv = [['net','sta','lat','lon']]
+
+                          
+        for file in corr_files:
+
+            file_name = os.path.basename(file)
+
+            net_1 = file_name.split('--')[0].split('.')[0]
+            sta_1 = file_name.split('--')[0].split('.')[1]
+            net_2 = file_name.split('--')[1].split('.')[0]
+            sta_2 = file_name.split('--')[1].split('.')[1]
+
+            if f'{net_1}.{sta_1}' not in corr_net_sta:
+                corr_net_sta.append(f'{net_1}.{sta_1}')       
+                stations_csv.append([net_1,sta_1,station_dict[f'{net_1}.{sta_1}'][0],station_dict[f'{net_1}.{sta_1}'][1]])
+
+            if f'{net_2}.{sta_2}' not in corr_net_sta:
+                corr_net_sta.append(f'{net_2}.{sta_2}')
+                stations_csv.append([net_2,sta_2,station_dict[f'{net_2}.{sta_2}'][0],station_dict[f'{net_2}.{sta_2}'][1]])
+
+
+        # write new stationlist
+        with open(inv_args.stationlist, 'w') as csvFile:
+            writer = csv.writer(csvFile)
+            writer.writerows(stations_csv)
+        csvFile.close()
+                          
 
         # time for data cross-correlating
         t_102 = time.time()
