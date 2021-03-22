@@ -149,41 +149,41 @@ def obspy_mass_downloader(args):
     if np.size(os.listdir(inv_path)) == []:
         raise Exception("Could not find any data")
    
-    #if args.stationlist is None: 
-    # turn it into stationlist
-    stations_csv_final = [['net','sta','lat','lon']]
+    if args.stationlist is None: 
+        # turn it into stationlist
+        stations_csv_final = [['net','sta','lat','lon']]
 
-    # loop over xml file and make stationlist file
-    station_xml_files = glob(os.path.join(inv_path,"*xml"))
-    stationlist_output = os.path.join(args.project_path,'stationlist_data.csv')
-
-
-    for station in station_xml_files:
-        inv_var = obspy.read_inventory(station)
-
-        net = os.path.basename(station).split(".")[0]
-        sta = os.path.basename(station).split(".")[1]
-        lat = inv_var.get_coordinates(inv_var.get_contents()['channels'][0])['latitude']
-        lon = inv_var.get_coordinates(inv_var.get_contents()['channels'][0])['longitude']
-
-        stations_csv_final.append([net,sta,lat,lon])
+        # loop over xml file and make stationlist file
+        station_xml_files = glob(os.path.join(inv_path,"*xml"))
+        stationlist_output = os.path.join(args.project_path,'stationlist_data.csv')
 
 
-    print(f"Found data and inventory for {np.size(stations_csv_final,0)-1} stations.")
-    print(f"Raw data can be found in: {data_path}")
-    print(f"Inventory can be found in: {inv_path}")
+        for station in station_xml_files:
+            inv_var = obspy.read_inventory(station)
 
-    with open(stationlist_output, 'w') as csvFile:
-        writer = csv.writer(csvFile)
-        writer.writerows(stations_csv_final)
-    csvFile.close()
+            net = os.path.basename(station).split(".")[0]
+            sta = os.path.basename(station).split(".")[1]
+            lat = inv_var.get_coordinates(inv_var.get_contents()['channels'][0])['latitude']
+            lon = inv_var.get_coordinates(inv_var.get_contents()['channels'][0])['longitude']
+
+            stations_csv_final.append([net,sta,lat,lon])
 
 
-    print(f"Data stationlist saved as {stationlist_output}")
+        print(f"Found data and inventory for {np.size(stations_csv_final,0)-1} stations.")
+        print(f"Raw data can be found in: {data_path}")
+        print(f"Inventory can be found in: {inv_path}")
 
-    #else:
-    #    stationlist_output = args.stationlist 
-    #    print(f"Raw data can be found in: {data_path}")
-    #    print(f"Inventory can be found in: {inv_path}")     
+        with open(stationlist_output, 'w') as csvFile:
+            writer = csv.writer(csvFile)
+            writer.writerows(stations_csv_final)
+        csvFile.close()
+
+
+        print(f"Data stationlist saved as {stationlist_output}")
+
+    else:
+        stationlist_output = args.stationlist 
+        print(f"Raw data can be found in: {data_path}")
+        print(f"Inventory can be found in: {inv_path}")     
 
     return stationlist_output
