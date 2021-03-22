@@ -458,7 +458,7 @@ precompute_wavefield first.')
             mfp_config = {
                 "project_name": f"mfp_startingmodel",
                 "output_path": args.project_path,
-                "correlation_path": args.observed_corr,
+                "correlation_path": os.path.join(args.source_model,"observed_correlations"),
                 "corr_format": ["SAC","sac"],
                 "bandpass_filter": args.bandpass[0],
                 "stationlist_path": args.stationlist,
