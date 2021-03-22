@@ -1192,6 +1192,10 @@ for iter_nr in range(start_iter, inv_args.nr_iterations):
 
     mf_dict.update({f'iteration_{inv_args.step}':mf_step_var})
 
+    if rank == 0:
+        print(f'Misfit for iteration {inv_args.step}: {mf_step_0:.4e}')
+        print('Misfit dictionary: ',mf_dict)    
+        
 
 if inv_args.compress_output_files == True and rank == 0:
 
