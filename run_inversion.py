@@ -290,12 +290,21 @@ if inv_args.download_data:
             sta_2 = file_name.split('--')[1].split('.')[1]
 
             if f'{net_1}.{sta_1}' not in corr_net_sta:
-                corr_net_sta.append(f'{net_1}.{sta_1}')       
-                stations_csv.append([net_1,sta_1,station_dict[f'{net_1}.{sta_1}'][0],station_dict[f'{net_1}.{sta_1}'][1]])
+                
+                try:
+                    corr_net_sta.append(f'{net_1}.{sta_1}')       
+                    stations_csv.append([net_1,sta_1,station_dict[f'{net_1}.{sta_1}'][0],station_dict[f'{net_1}.{sta_1}'][1]])
+                except:
+                    print(f"Could not add {net_1}.{sta_1} to stationlist")
 
             if f'{net_2}.{sta_2}' not in corr_net_sta:
-                corr_net_sta.append(f'{net_2}.{sta_2}')
-                stations_csv.append([net_2,sta_2,station_dict[f'{net_2}.{sta_2}'][0],station_dict[f'{net_2}.{sta_2}'][1]])
+            
+                try:
+                    corr_net_sta.append(f'{net_2}.{sta_2}')
+                    stations_csv.append([net_2,sta_2,station_dict[f'{net_2}.{sta_2}'][0],station_dict[f'{net_2}.{sta_2}'][1]])
+                except:
+                    print(f"Could not add {net_2}.{sta_2} to stationlist")
+
 
 
         # write new stationlist
