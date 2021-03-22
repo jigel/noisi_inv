@@ -225,6 +225,15 @@ if inv_args.download_data:
 
     if rank==0:
 
+        
+        stationlist_var = read_csv(inv_args.stationlist,keep_default_na=False)
+        station_dict = dict()
+
+        for sta_i in stationlist_var.iterrows():
+            sta = sta_i[1]
+            station_dict.update({f"{sta['net']}.{sta['sta']}":[sta['lat'],sta['lon']]})
+
+        
         ###### CHECK PREPROCESSED DATA AND DELETE HIGH AMPLITUDES ########
         proc_path = os.path.join(inv_args.project_path,'data','processed')
         proc_files = glob(os.path.join(proc_path,"*.MSEED"))
@@ -233,6 +242,11 @@ if inv_args.download_data:
         
         for file in proc_files:
             
+            file_name = os.path.basename(file)
+            
+            net_1 = file_name.split('.')[0]
+            sta_1 = file_name.split('.')[1]
+                        
             #print(data)
             st = obspy.read(file)
             #st.filter('bandpass',freqmin=0.01,freqmax=0.05,corners=5)
@@ -245,8 +259,12 @@ if inv_args.download_data:
                 os.remove(file)
                 proc_delete_count += 1
                     
+            elif f'{net_1}.{sta_1}' not in list(station_dict.keys()):
+                os.remove(file)
+                proc_delete_count += 1
                     
-        print(f"Deleted {proc_delete_count} of {np.size(proc_files)} processed files with amplitude above 5e-6.")
+                    
+        print(f"Deleted {proc_delete_count} of {np.size(proc_files)} processed files with amplitude above 5e-6 or not station in stationlist.")
                     
         # time for data preprocessing
         t_101 = time.time()
@@ -270,8 +288,6 @@ if inv_args.download_data:
             sta = sta_i[1]
             station_dict.update({f"{sta['net']}.{sta['sta']}":[sta['lat'],sta['lon']]})
 
-        
-        
         # get cross-correlation net.sta
         # would probably be better with a set
         corr_net_sta = []
@@ -295,16 +311,19 @@ if inv_args.download_data:
                     corr_net_sta.append(f'{net_1}.{sta_1}')       
                     stations_csv.append([net_1,sta_1,station_dict[f'{net_1}.{sta_1}'][0],station_dict[f'{net_1}.{sta_1}'][1]])
                 except:
-                    print(f"Could not add {net_1}.{sta_1} to stationlist")
-
+                    print(f"Could not add {net_1}.{sta_1} to stationlist. Deleting correlation {file}..")
+                    # delete correlation files that are not in stationlist
+                    os.remove(file)
+                    
             if f'{net_2}.{sta_2}' not in corr_net_sta:
             
                 try:
                     corr_net_sta.append(f'{net_2}.{sta_2}')
                     stations_csv.append([net_2,sta_2,station_dict[f'{net_2}.{sta_2}'][0],station_dict[f'{net_2}.{sta_2}'][1]])
                 except:
-                    print(f"Could not add {net_2}.{sta_2} to stationlist")
-
+                    print(f"Could not add {net_2}.{sta_2} to stationlist. Deleting correlation {file}..")
+                    # delete correlation files that are not in stationlist
+                    os.remove(file)
 
 
         # write new stationlist
