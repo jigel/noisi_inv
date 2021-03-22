@@ -263,7 +263,7 @@ if inv_args.download_data:
         ##### CHANGE STATIONLIST TO ONLY HAVE STATIONS WITH CROSS-CORRELATIONS #######
         # open stationlist
         
-        stationlist_var = read_csv(inv_args.stationlist)
+        stationlist_var = read_csv(inv_args.stationlist,keep_default_na=False)
         station_dict = dict()
 
         for sta_i in stationlist_var.iterrows():
