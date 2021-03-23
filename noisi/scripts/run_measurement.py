@@ -158,8 +158,9 @@ def measurement(comm,size,rank,source_config, mtype, step, ignore_net,
         adjt_func = am.get_adj_func(mtype)
         adjt, success = adjt_func(tr_o, tr_s, **options)
         
-        #scaling to avoid tiny numbers
-        adjt *= 1e25
+        #scaling to avoid tiny numbers for waveform measurements 
+        if mtype in ['square_envelope','full_waveform', 'windowed_waveform','envelope']:
+            adjt *= 1e25
         
         if not success:
             continue
