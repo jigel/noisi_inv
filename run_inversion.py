@@ -506,6 +506,7 @@ if rank==0:
     # time for corr copy
     t_4 = time.time()
     run_time.write(f"Copy correlations: {np.around((t_4-t_3)/60,4)} \n")
+    run_time.write(f"Number of correlations: {np.size(os.listdir(os.path.join(inv_args.source_model,"observed_correlations")))} \n")
     
     
     
