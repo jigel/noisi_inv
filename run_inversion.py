@@ -13,6 +13,7 @@ import matplotlib
 import obspy
 import csv
 from obspy import UTCDateTime
+from datetime import date
 matplotlib.use('agg')
 
 from noisi.util.setup_new import setup_proj
