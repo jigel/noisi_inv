@@ -16,6 +16,14 @@ import h5py
 import functools
 print = functools.partial(print, flush=True)
 
+try:
+    import cmasher as cmr
+    cmap = cmr.cosmic    # CMasher
+    cmap = plt.get_cmap('cmr.cosmic')   # MPL
+    cmash_import = True
+except:
+    cmash_import = False
+    
 
 def output_plot(args,output_path,only_ocean=False,triangulation=False):
     """
@@ -187,10 +195,19 @@ def output_plot(args,output_path,only_ocean=False,triangulation=False):
         
         if triangulation:
             triangles = tri.Triangulation(source_grid[0],source_grid[1])
-            plt.tripcolor(triangles,source_distr_norm,cmap=plt.get_cmap('RdBu_r'),linewidth=0.0,edgecolor='none',vmin=0,zorder=1,transform=ccrs.Geodetic())
+            
+            if cmash_import:
+                plt.tripcolor(triangles,source_distr_norm,cmap=cmap,linewidth=0.0,edgecolor='none',vmin=0,zorder=1,transform=ccrs.Geodetic())
+            else:
+                plt.tripcolor(triangles,source_distr_norm,cmap=plt.get_cmap('Blues_r'),linewidth=0.0,edgecolor='none',vmin=0,zorder=1,transform=ccrs.Geodetic())
 
         else:
-            plt.scatter(source_grid[0],source_grid[1],s=20,c=source_distr_norm,vmin=0,transform=ccrs.PlateCarree(),cmap='RdBu_r',zorder=3)
+            
+            if cmash_import:
+                plt.scatter(source_grid[0],source_grid[1],s=20,c=source_distr_norm,vmin=0,transform=ccrs.PlateCarree(),cmap=cmap,zorder=3)
+            else:
+                plt.scatter(source_grid[0],source_grid[1],s=20,c=source_distr_norm,vmin=0,transform=ccrs.PlateCarree(),cmap=plt.get_cmap('Blues_r'),zorder=3)
+                
 
         cbar = plt.colorbar(pad=0.01)
         cbar.ax.tick_params(labelsize=30) 
