@@ -16,6 +16,7 @@ from obspy import UTCDateTime
 from datetime import date
 matplotlib.use('agg')
 
+import noisi
 from noisi.util.setup_new import setup_proj
 from noisi.scripts.source_grid import setup_sourcegrid
 from noisi.scripts.run_sourcesetup import source_setup
@@ -35,7 +36,6 @@ from noisi.util.obspy_mass_download import obspy_mass_downloader
 from noisi.util.ants_crosscorrelate import ants_preprocess,ants_crosscorrelate
 from noisi.util.compress_files import sac_to_asdf
 from noisi.util.compress_files import npy_to_h5
-
 from noisi.scripts.run_wavefieldprep import precomp_wavefield
 
 def precompute_wavefield(args, comm, size, rank):
@@ -68,12 +68,6 @@ start_iter = 0
 
 t_0 = time.time()
 
-# change output folder
-try:
-    os.chdir(noisi_v2_path)
-except: 
-    pass
-
 
 ########################################################################
 # read in inversion_config.yml and load attributes
@@ -95,13 +89,14 @@ else:
     only_ocean = False
     
     
-    
-noisi_v2_path = os.getcwd()
+# get noisi folder
+noisi_inv_path = os.path.dirname(os.path.dirname(noisi.__file__))
+
 #if rank == 0:
-#    print(f"Current directory: {noisi_v2_path}")
+#    print(f"Current directory: {noisi_inv_path}")
 
     
-noisi_path = os.path.join(noisi_v2_path,'noisi')
+noisi_path = os.path.join(noisi_inv_path,'noisi')
 setattr(inv_args,'noisi_path',noisi_path)
 
 output_path = inv_args.output_folder
@@ -144,14 +139,14 @@ comm.barrier()
 if rank == 0:
 
     # copy inversion_config.yml to project
-    inv_conf_path = os.path.join(noisi_v2_path,sys.argv[1])
+    inv_conf_path = os.path.join(noisi_inv_path,sys.argv[1])
     print(f"Copying {inv_conf_path} to project folder")
     src = inv_conf_path
     dst = os.path.join(config_proj["project_path"],"inversion_config.yml")
     shutil.copy(src,dst)
     
     # try to copy batch file
-    for file in glob(os.path.join(noisi_v2_path,"run_inversion_batch.sbatch")):
+    for file in glob(os.path.join(noisi_inv_path,"run_inversion_batch.sbatch")):
         shutil.copy2(file,config_proj["project_path"])
     
     # update project config file

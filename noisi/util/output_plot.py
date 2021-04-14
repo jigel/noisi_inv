@@ -359,53 +359,53 @@ def output_plot(args,output_path,only_ocean=False,triangulation=False):
         
         
         # plot final model with sensitivity below 1% set to 0
-        sense_min = 0.01
+        #sense_min = 0.01
 
-        stat_sensitivity_cap = stat_sensitivity_norm.copy()
-        stat_sensitivity_cap[stat_sensitivity_norm<sense_min] = 0
-        stat_sensitivity_cap[stat_sensitivity_norm>sense_min] = 1
+        #stat_sensitivity_cap = stat_sensitivity_norm.copy()
+        #stat_sensitivity_cap[stat_sensitivity_norm<sense_min] = 0
+        #stat_sensitivity_cap[stat_sensitivity_norm>sense_min] = 1
 
-        model = sourcemodel_paths[-1]
+        #model = sourcemodel_paths[-1]
         
-        step = os.path.basename(model).split('_')[-1].split('.')[0]    
-        if step == 'sourcemodel':
-            step = 0
+        #step = os.path.basename(model).split('_')[-1].split('.')[0]    
+        #if step == 'sourcemodel':
+        #    step = 0
 
         #print(step)
-        source_distr_file = h5py.File(model,'r')
-        source_grid = np.asarray(source_distr_file['coordinates'])
-        source_distr = np.asarray(source_distr_file['model']).T[0]
-        source_distr_norm = source_distr/np.max(np.abs(source_distr))
+        #source_distr_file = h5py.File(model,'r')
+        #source_grid = np.asarray(source_distr_file['coordinates'])
+        #source_distr = np.asarray(source_distr_file['model']).T[0]
+        #source_distr_norm = source_distr/np.max(np.abs(source_distr))
 
-        plt.figure(figsize=(50,20))
-        ax = plt.axes(projection=ccrs.Robinson(central_longitude=0))
-        ax.set_global()
+        #plt.figure(figsize=(50,20))
+        #ax = plt.axes(projection=ccrs.Robinson(central_longitude=0))
+        #ax.set_global()
         
-        if only_ocean:
-            ax.add_feature(cfeature.NaturalEarthFeature('cultural', 'admin_0_countries', '50m', edgecolor='black', facecolor=cfeature.COLORS['land']),zorder=2)
-        else:
-            ax.coastlines()
+        #if only_ocean:
+        #    ax.add_feature(cfeature.NaturalEarthFeature('cultural', 'admin_0_countries', '50m', edgecolor='black', facecolor=cfeature.COLORS['land']),zorder=2)
+        #else:
+        #    ax.coastlines()
         
-        if triangulation:
-            triangles = tri.Triangulation(source_grid[0],source_grid[1])
-            plt.tripcolor(triangles,stat_sensitivity_cap*source_distr_norm,cmap=plt.get_cmap('RdBu_r'),vmin=0,linewidth=0.0,edgecolor='none',zorder=1,transform=ccrs.Geodetic())
+        #if triangulation:
+        #    triangles = tri.Triangulation(source_grid[0],source_grid[1])
+        #    plt.tripcolor(triangles,stat_sensitivity_cap*source_distr_norm,cmap=plt.get_cmap('RdBu_r'),vmin=0,linewidth=0.0,edgecolor='none',zorder=1,transform=ccrs.Geodetic())
 
-        else:
-            plt.scatter(source_grid[0],source_grid[1],s=20,c=stat_sensitivity_cap*source_distr_norm,vmin=0,transform=ccrs.Geodetic(),cmap='RdBu_r',zorder=3)
+        #else:
+        #    plt.scatter(source_grid[0],source_grid[1],s=20,c=stat_sensitivity_cap*source_distr_norm,vmin=0,transform=ccrs.Geodetic(),cmap='RdBu_r',zorder=3)
 
-        cbar = plt.colorbar(pad=0.01)
-        cbar.ax.tick_params(labelsize=30) 
-        cbar.set_label('Power Spectral Density',rotation=270,labelpad=40,fontsize=40)
+        #cbar = plt.colorbar(pad=0.01)
+        #cbar.ax.tick_params(labelsize=30) 
+        #cbar.set_label('Power Spectral Density',rotation=270,labelpad=40,fontsize=40)
 
-        try:
-            plt.title(f'Noise distribution for iteration {step} capped at {sense_min*100}% sensitivity with misfit {np.around(misfit_dict[int(step)],2)}',fontsize=50)
-        except:
-            plt.title(f'Noise distribution for iteration {step} capped at {sense_min*100}% sensitivity',fontsize=50)
+        #try:
+        #    plt.title(f'Noise distribution for iteration {step} capped at {sense_min*100}% sensitivity with misfit {np.around(misfit_dict[int(step)],2)}',fontsize=50)
+        #except:
+        #    plt.title(f'Noise distribution for iteration {step} capped at {sense_min*100}% sensitivity',fontsize=50)
 
-        plt.scatter(lon,lat,s=50,c='lawngreen',marker='^',edgecolor='k',linewidth=1,transform=ccrs.PlateCarree(),zorder=4)
-        plt.savefig(os.path.join(output_plots,f'iteration_{step}_2_noise_distribution_capped.png'),bbox_inches='tight')
+        #plt.scatter(lon,lat,s=50,c='lawngreen',marker='^',edgecolor='k',linewidth=1,transform=ccrs.PlateCarree(),zorder=4)
+        #plt.savefig(os.path.join(output_plots,f'iteration_{step}_2_noise_distribution_capped.png'),bbox_inches='tight')
         #plt.show()
-        plt.close()
+        #plt.close()
         
         
         
