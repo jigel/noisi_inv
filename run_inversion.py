@@ -274,6 +274,7 @@ if inv_args.download_data:
     
     if rank==0:
         
+
         ##### CHANGE STATIONLIST TO ONLY HAVE STATIONS WITH CROSS-CORRELATIONS #######
         # open stationlist
         
@@ -1267,6 +1268,20 @@ if rank == 0:
 
     if inv_args.output_plot:
         output_plot(inv_args,os.path.join(inv_args.project_path,"output"),only_ocean=only_ocean,triangulation=True)
+        
+        
+    # make a csv file with names of observed correlations
+    corr_name_file = os.path.join(inv_args.project_path,"output/obs_corr_names.csv")
+    
+    corr_name_list = [[file] for file in os.listdir(inv_args.observed_corr)]
+    
+    # write new stationlist
+    with open(corr_name_file, 'w') as csvFile:
+        writer = csv.writer(csvFile)
+        writer.writerows(corr_name_list)
+    csvFile.close()
+
+    
 
     if inv_args.compress_output_files == 'delete':
         print("Deleting correlation and kernel files..")
