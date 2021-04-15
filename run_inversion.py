@@ -1271,9 +1271,9 @@ if rank == 0:
         
         
     # make a csv file with names of observed correlations
-    corr_name_file = os.path.join(inv_args.project_path,"output/obs_corr_names.csv")
+    corr_name_file = os.path.join(inv_args.project_path,"output/used_obs_corr_list.csv")
     
-    corr_name_list = [[file] for file in os.listdir(inv_args.observed_corr)]
+    corr_name_list = [[file] for file in os.listdir(os.path.join(inv_args.source_model,'observed_correlations'))]
     
     # write new stationlist
     with open(corr_name_file, 'w') as csvFile:
