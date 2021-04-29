@@ -86,7 +86,7 @@ def ants_preprocess(args,comm,size,rank):
             5.2
         ],
         "instr_correction_unit": synt_data,
-        "instr_correction_waterlevel": 0.0,
+        "instr_correction_waterlevel": None,
         "locations": [
             "",
             "00",
