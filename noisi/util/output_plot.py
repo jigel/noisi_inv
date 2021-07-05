@@ -211,12 +211,14 @@ def output_plot(args,output_path,only_ocean=False,triangulation=False):
 
         cbar = plt.colorbar(pad=0.01)
         cbar.ax.tick_params(labelsize=30) 
-        cbar.set_label('Power Spectral Density',rotation=270,labelpad=40,fontsize=40)
+        cbar.set_label('Normalised Power Spectral Density',rotation=90,labelpad=50,fontsize=50)
+        
+        plt.title(f"{os.path.basename(args.project_path)}: iteration {step}",pad=30,fontsize=50)
 
-        try:
-            plt.title(f'Noise distribution for iteration {step} with misfit {np.around(misfit_dict[int(step)],2)}',fontsize=50)
-        except:
-            plt.title(f'Noise distribution for iteration {step}',fontsize=50)
+        #try:
+        #    plt.title(f'Noise distribution for iteration {step} with misfit {np.around(misfit_dict[int(step)],2)}',fontsize=50)
+        #except:
+        #    plt.title(f'Noise distribution for iteration {step}',fontsize=50)
 
         plt.scatter(lon,lat,s=50,c='lawngreen',marker='^',edgecolor='k',linewidth=1,transform=ccrs.PlateCarree(),zorder=4)
         plt.savefig(os.path.join(output_plots,f'iteration_{step}_1_noise_distribution.png'),bbox_inches='tight')
@@ -256,10 +258,10 @@ def output_plot(args,output_path,only_ocean=False,triangulation=False):
             cbar.set_label('Power Spectral Density',rotation=270,labelpad=40,fontsize=40)
 
             try:
-                plt.title(f'Gradient for iteration {step} with misfit {np.around(misfit_dict[int(step)],2)}',fontsize=50)
+                plt.title(f'Gradient for iteration {step} with misfit {np.around(misfit_dict[int(step)],2)}',pad=30,fontsize=50)
             except:
-                plt.title(f'Gradient for iteration {step}',fontsize=50
-                         )
+                plt.title(f'Gradient for iteration {step}',pad=30,fontsize=50)
+                         
             plt.scatter(lon,lat,s=50,c='lawngreen',marker='^',edgecolor='k',linewidth=1,transform=ccrs.PlateCarree(),zorder=3)
             plt.savefig(os.path.join(output_plots,f'iteration_{step}_2_gradient.png'),bbox_inches='tight')
             #plt.show() 
@@ -297,9 +299,9 @@ def output_plot(args,output_path,only_ocean=False,triangulation=False):
             cbar.set_label('Power Spectral Density',rotation=270,labelpad=40,fontsize=40)
 
             try:
-                plt.title(f'Smoothed gradient for iteration {step} with misfit {np.around(misfit_dict[int(step)],2)} and {grad_smoothing_dict[str(step)]}° smoothing',fontsize=50)
+                plt.title(f'Smoothed gradient for iteration {step} with misfit {np.around(misfit_dict[int(step)],2)} and {grad_smoothing_dict[str(step)]}° smoothing',pad=30,fontsize=50)
             except:
-                plt.title(f'Smoothed gradient for iteration {step}',fontsize=50
+                plt.title(f'Smoothed gradient for iteration {step}',pad=30,fontsize=50
                          )
             plt.scatter(lon,lat,s=50,c='lawngreen',marker='^',edgecolor='k',linewidth=1,transform=ccrs.PlateCarree(),zorder=3)
             plt.savefig(os.path.join(output_plots,f'iteration_{step}_3_gradient_smooth.png'),bbox_inches='tight')
@@ -337,7 +339,7 @@ def output_plot(args,output_path,only_ocean=False,triangulation=False):
         cbar.set_label('Normalised Sensitivity',rotation=270,labelpad=40,fontsize=40)
 
         #cbar.set_label('Power Spectral Density',rotation=270,labelpad=10)
-        plt.title(f'Station Sensitivity with vmax = {v}',fontsize=50)
+        plt.title(f'Station Sensitivity with vmax = {v}',pad=30,fontsize=50)
         plt.scatter(lon,lat,s=50,c='lawngreen',marker='^',edgecolor='k',linewidth=1,transform=ccrs.PlateCarree(),zorder=3)
         plt.savefig(os.path.join(output_plots,f'station_sensitivity.png'),bbox_inches='tight')
         #plt.show()
@@ -351,7 +353,7 @@ def output_plot(args,output_path,only_ocean=False,triangulation=False):
         ax.add_feature(cfeature.NaturalEarthFeature('cultural', 'admin_0_countries', '50m', edgecolor='black', facecolor=cfeature.COLORS['land']),zorder=2)
         plt.scatter(grid[0],grid[1],s=20,c='k',transform=ccrs.PlateCarree(),zorder=3)
         #cbar.set_label('Power Spectral Density',rotation=270,labelpad=10)
-        plt.title(f'Sourcegrid',fontsize=50)
+        plt.title(f'Sourcegrid',pad=30,fontsize=50)
         plt.scatter(lon,lat,s=50,c='lawngreen',marker='^',edgecolor='k',linewidth=1,transform=ccrs.PlateCarree(),zorder=3)
         plt.savefig(os.path.join(output_plots,f'sourcegrid.png'),bbox_inches='tight')
         #plt.show()
