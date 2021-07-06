@@ -12,6 +12,8 @@ import os
 from glob import glob
 from pandas import read_csv
 import h5py
+from obspy import UTCDateTime
+from datetime import date
 
 import functools
 print = functools.partial(print, flush=True)
@@ -213,8 +215,19 @@ def output_plot(args,output_path,only_ocean=False,triangulation=False):
         cbar.ax.tick_params(labelsize=30) 
         cbar.set_label('Normalised Power Spectral Density',rotation=90,labelpad=50,fontsize=50)
         
-        plt.title(f"{os.path.basename(args.project_path)}: iteration {step}",pad=30,fontsize=50)
+        
+        if args.download_data:
+                        # choose date for which data should be downloaded
+            if args.download_data_date == "yesterday":
+                t_inv = UTCDateTime(date.today())-60*60*24*args.download_data_days
+            else:
+                t_inv = UTCDateTime(args.download_data_date)
+            
+            
+            plt.title(f"Inversion for {str(t_inv).split('T')[0]}: iteration {step}",pad=30,fontsize=50)
 
+        else:
+            plt.title(f'Noise distribution for iteration {step}',pad=30,fontsize=50)
         #try:
         #    plt.title(f'Noise distribution for iteration {step} with misfit {np.around(misfit_dict[int(step)],2)}',fontsize=50)
         #except:
