@@ -92,18 +92,19 @@ def output_plot(args,output_path,only_ocean=False,triangulation=False):
 
     #### MISFIT PLOTS
     plt.figure(figsize=(15,8))
-    plt.plot(step,misfit,'k')
-    plt.scatter(step,misfit)
+    plt.plot(step,misfit,'k',marker='o',markerfacecolor='b',markersize=10)
     plt.grid()
-    plt.xlabel('Iterations')
-    plt.ylabel('Misfit')
-    plt.title(f'Misfit for {output_path} reduced by {np.around(mf_reduc,2)}%')
-    plt.savefig(os.path.join(output_plots,'misfit_vs_iterations.png'),bbox_inches='tight')
+    plt.xlabel('Iterations',fontsize=15)
+    plt.ylabel('Misfit',fontsize=15)
+    plt.xticks(fontsize=15)
+    plt.yticks(fontsize=15)
+    plt.title(f'Misfit reduced by {np.around(mf_reduc,2)}%',pad=20,fontsize=30)
+    plt.savefig(os.path.join(output_plots,'misfit_vs_iterations.png'),bbox_inches='tight',facecolor='white',dpi=72)
     #plt.show()
     plt.close()
 
 
-    ### plot steplength tests
+    ## plot steplength tests
     steplength_files = [os.path.join(i,'misfit_step_test.npy') for i in steps_avail_path if os.path.isfile(os.path.join(i,'misfit_step_test.npy'))]
     steplength_fit_files = [os.path.join(i,'misfit_step_test_fit.npy') for i in steps_avail_path if os.path.isfile(os.path.join(i,'misfit_step_test_fit.npy'))]
 
@@ -127,9 +128,13 @@ def output_plot(args,output_path,only_ocean=False,triangulation=False):
         plt.scatter(mf_final_step[0],misfit_dict[int(step)+1],c='b',s=100,marker='x',label='Actual misfit')
         plt.plot(mf_step_fit[0],mf_step_fit[1],c='b')
         plt.grid()
-        plt.title(f'Steplength test for iteration {step} with final step {np.around(mf_final_step[0],2)}. Predicted misfit: {np.around(mf_final_step[1],2)}. Actual misfit: {np.around(misfit_dict[int(step)+1],2)}')
+        plt.xlabel("Steplength",fontsize=15)
+        plt.ylabel("Misfit",fontsize=15)
+        plt.xticks(fontsize=15)
+        plt.yticks(fontsize=15)
+        plt.title(f'Steplength test for iteration {step} with final step {np.around(mf_final_step[0],2)}. Predicted misfit: {np.around(mf_final_step[1],2)}. Actual misfit: {np.around(misfit_dict[int(step)+1],2)}',pad=30,fontsize=20)
         plt.legend()
-        plt.savefig(os.path.join(output_plots,f'iteration_{step}_0_slt.png'),bbox_inches='tight')
+        plt.savefig(os.path.join(output_plots,f'iteration_{step}_0_slt.png'),bbox_inches='tight',facecolor='white',dpi=72)
         #plt.show()
         plt.close()
 
@@ -235,7 +240,7 @@ def output_plot(args,output_path,only_ocean=False,triangulation=False):
         #    plt.title(f'Noise distribution for iteration {step}',fontsize=50)
 
         plt.scatter(lon,lat,s=150,c='lawngreen',marker='^',edgecolor='k',linewidth=1,transform=ccrs.PlateCarree(),zorder=4)
-        plt.savefig(os.path.join(output_plots,f'iteration_{step}_1_noise_distribution.png'),bbox_inches='tight')
+        plt.savefig(os.path.join(output_plots,f'iteration_{step}_1_noise_distribution.png'),bbox_inches='tight',facecolor='white',dpi=50)
         #plt.show()
         plt.close()
 
@@ -278,7 +283,7 @@ def output_plot(args,output_path,only_ocean=False,triangulation=False):
                 plt.title(f'Gradient for iteration {step}',pad=30,fontsize=50)
                          
             plt.scatter(lon,lat,s=150,c='lawngreen',marker='^',edgecolor='k',linewidth=1,transform=ccrs.PlateCarree(),zorder=3)
-            plt.savefig(os.path.join(output_plots,f'iteration_{step}_2_gradient.png'),bbox_inches='tight')
+            plt.savefig(os.path.join(output_plots,f'iteration_{step}_2_gradient.png'),bbox_inches='tight',facecolor='white',dpi=50)
             #plt.show() 
             plt.close()
             
@@ -320,7 +325,7 @@ def output_plot(args,output_path,only_ocean=False,triangulation=False):
                 plt.title(f'Smoothed gradient for iteration {step}',pad=30,fontsize=50
                          )
             plt.scatter(lon,lat,s=150,c='lawngreen',marker='^',edgecolor='k',linewidth=1,transform=ccrs.PlateCarree(),zorder=3)
-            plt.savefig(os.path.join(output_plots,f'iteration_{step}_3_gradient_smooth.png'),bbox_inches='tight')
+            plt.savefig(os.path.join(output_plots,f'iteration_{step}_3_gradient_smooth.png'),bbox_inches='tight',facecolor='white',dpi=50)
             #plt.show()
             plt.close()
 
@@ -344,12 +349,29 @@ def output_plot(args,output_path,only_ocean=False,triangulation=False):
         else:
             ax.coastlines()
         
+        #if triangulation:
+        #    plt.tripcolor(triangles,stat_sensitivity_norm,cmap=plt.get_cmap('RdBu_r'),linewidth=0.0,edgecolor='none',vmax=v,zorder=1,transform=ccrs.Geodetic())
+        #else:
+        #    plt.scatter(grid[0],grid[1],s=20,c=stat_sensitivity_norm,transform=ccrs.Geodetic(),cmap='RdBu_r',vmax=v,zorder=3)
+        
         if triangulation:
-            plt.tripcolor(triangles,stat_sensitivity_norm,cmap=plt.get_cmap('RdBu_r'),linewidth=0.0,edgecolor='none',vmax=v,zorder=1,transform=ccrs.Geodetic())
+            triangles = tri.Triangulation(source_grid[0],source_grid[1])
+            
+            if cmash_import:
+                plt.tripcolor(triangles,stat_sensitivity_norm,cmap=cmap,linewidth=0.0,edgecolor='none',vmin=0,vmax=v,zorder=1,transform=ccrs.Geodetic())
+            else:
+                plt.tripcolor(triangles,stat_sensitivity_norm,cmap=plt.get_cmap('Blues_r'),linewidth=0.0,edgecolor='none',vmin=0,vmax=v,zorder=1,transform=ccrs.Geodetic())
+
         else:
-            plt.scatter(grid[0],grid[1],s=20,c=stat_sensitivity_norm,transform=ccrs.Geodetic(),cmap='RdBu_r',vmax=v,zorder=3)
+            
+            if cmash_import:
+                plt.scatter(source_grid[0],source_grid[1],s=20,c=stat_sensitivity_norm,vmin=0,vmax=v,transform=ccrs.PlateCarree(),cmap=cmap,zorder=3)
+            else:
+                plt.scatter(source_grid[0],source_grid[1],s=20,c=stat_sensitivity_norm,vmin=0,vmax=v,transform=ccrs.PlateCarree(),cmap=plt.get_cmap('Blues_r'),zorder=3)
+                
 
-
+            
+            
         cbar = plt.colorbar(pad=0.01)
         cbar.ax.tick_params(labelsize=30) 
         cbar.set_label('Normalised Sensitivity',rotation=270,labelpad=40,fontsize=40)
@@ -357,7 +379,7 @@ def output_plot(args,output_path,only_ocean=False,triangulation=False):
         #cbar.set_label('Power Spectral Density',rotation=270,labelpad=10)
         plt.title(f'Station Sensitivity with vmax = {v}',pad=30,fontsize=50)
         plt.scatter(lon,lat,s=150,c='lawngreen',marker='^',edgecolor='k',linewidth=1,transform=ccrs.PlateCarree(),zorder=3)
-        plt.savefig(os.path.join(output_plots,f'station_sensitivity.png'),bbox_inches='tight')
+        plt.savefig(os.path.join(output_plots,f'station_sensitivity.png'),bbox_inches='tight',facecolor='white',dpi=50)
         #plt.show()
         plt.close()
         
@@ -371,7 +393,7 @@ def output_plot(args,output_path,only_ocean=False,triangulation=False):
         #cbar.set_label('Power Spectral Density',rotation=270,labelpad=10)
         plt.title(f'Sourcegrid',pad=30,fontsize=50)
         plt.scatter(lon,lat,s=150,c='lawngreen',marker='^',edgecolor='k',linewidth=1,transform=ccrs.PlateCarree(),zorder=3)
-        plt.savefig(os.path.join(output_plots,f'sourcegrid.png'),bbox_inches='tight')
+        plt.savefig(os.path.join(output_plots,f'sourcegrid.png'),bbox_inches='tight',facecolor='white',dpi=50)
         #plt.show()
         plt.close()
         
@@ -421,7 +443,7 @@ def output_plot(args,output_path,only_ocean=False,triangulation=False):
         #    plt.title(f'Noise distribution for iteration {step} capped at {sense_min*100}% sensitivity',fontsize=50)
 
         #plt.scatter(lon,lat,s=150,c='lawngreen',marker='^',edgecolor='k',linewidth=1,transform=ccrs.PlateCarree(),zorder=4)
-        #plt.savefig(os.path.join(output_plots,f'iteration_{step}_2_noise_distribution_capped.png'),bbox_inches='tight')
+        #plt.savefig(os.path.join(output_plots,f'iteration_{step}_2_noise_distribution_capped.png'),bbox_inches='tight',facecolor='white')
         #plt.show()
         #plt.close()
         
@@ -436,8 +458,25 @@ def output_plot(args,output_path,only_ocean=False,triangulation=False):
     print("Plotting ray coverage for kernels..")
     
     try:
-        kern_path = os.path.join(args.project_path,'source_1/iteration_0/kern')
-        kern_files = glob(os.path.join(kern_path,'*.npy'))
+    #kern_path = os.path.join(args.project_path,'source_1/iteration_0/kern')
+    #kern_files = glob(os.path.join(kern_path,'*.npy'))
+
+    # if kern_files empty, try getting used_obs_corr_list.csv
+    #if kern_files == []:
+        sta_pair_used_file = glob(os.path.join(output_path,'used_obs_corr_list.csv'))
+
+        if sta_pair_used_file != []:
+
+            sta_pair = read_csv(sta_pair_used_file[0],header=None)
+
+            kern_pairs = [f"{i[1][0].split('--')[0].split('.')[0]}.{i[1][0].split('--')[0].split('.')[1]}--{i[1][0].split('--')[1].split('.')[0]}.{i[1][0].split('--')[1].split('.')[1]}" for i in sta_pair.iterrows()]
+
+        else:
+            pass
+
+        #else:
+        #    kern_pairs = [f"{os.path.basename(i).split('--')[0].split('.')[0]}.{os.path.basename(i).split('--')[0].split('.')[1]}--{os.path.basename(i).split('--')[1].split('.')[0]}.{os.path.basename(i).split('--')[1].split('.')[1]}" for i in kern_files]
+
 
         station_dict = dict()
         station_anti_dict = dict()
@@ -451,8 +490,6 @@ def output_plot(args,output_path,only_ocean=False,triangulation=False):
             elif sta['lon'] >= 0:
                 station_anti_dict.update({f"{sta['net']}.{sta['sta']}":[-sta['lat'],sta['lon']-180]})
 
-
-        kern_pairs = [f"{os.path.basename(i).split('--')[0].split('.')[0]}.{os.path.basename(i).split('--')[0].split('.')[1]}--{os.path.basename(i).split('--')[1].split('.')[0]}.{os.path.basename(i).split('--')[1].split('.')[1]}" for i in kern_files]
 
         kern_stat_dict = {}
         n_rays = 0
@@ -481,8 +518,8 @@ def output_plot(args,output_path,only_ocean=False,triangulation=False):
 
         plt.scatter(stat_lon,stat_lat,s=150,c='lawngreen',marker='^',edgecolor='k',linewidth=1,transform=ccrs.PlateCarree(),zorder=3)
 
-        plt.title(f"Ray coverage for {kern_path} with {n_rays} rays",pad=10,fontsize=30)
-        plt.savefig(os.path.join(output_plots,f'kernel_ray_coverage.png'),bbox_inches='tight')
+        plt.title(f"Ray coverage with {n_rays} rays",pad=30,fontsize=50)
+        plt.savefig(os.path.join(output_plots,f'kernel_ray_coverage.png'),bbox_inches='tight',facecolor='white',dpi=50)
 
         plt.close()
             
