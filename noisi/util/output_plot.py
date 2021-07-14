@@ -88,6 +88,7 @@ def output_plot(args,output_path,only_ocean=False,triangulation=False):
 
     step,misfit = zip(*sorted(zip(step,misfit)))
 
+    mf_reduc = (1-misfit[-1]/misfit[0])*100
 
     #### MISFIT PLOTS
     plt.figure(figsize=(15,8))
@@ -96,7 +97,7 @@ def output_plot(args,output_path,only_ocean=False,triangulation=False):
     plt.grid()
     plt.xlabel('Iterations')
     plt.ylabel('Misfit')
-    plt.title(f'Misfit for {output_path}')
+    plt.title(f'Misfit for {output_path} reduced by {np.around(mf_reduc,2)}%')
     plt.savefig(os.path.join(output_plots,'misfit_vs_iterations.png'),bbox_inches='tight')
     #plt.show()
     plt.close()
@@ -199,14 +200,14 @@ def output_plot(args,output_path,only_ocean=False,triangulation=False):
             triangles = tri.Triangulation(source_grid[0],source_grid[1])
             
             if cmash_import:
-                plt.tripcolor(triangles,source_distr_norm,cmap=cmap,linewidth=0.0,edgecolor='none',vmin=0,zorder=1,transform=ccrs.Geodetic())
+                plt.tripcolor(triangles,source_distr_norm,cmap=cmap,linewidth=0.0,edgecolor='none',vmin=0,vmax=1,zorder=1,transform=ccrs.Geodetic())
             else:
-                plt.tripcolor(triangles,source_distr_norm,cmap=plt.get_cmap('Blues_r'),linewidth=0.0,edgecolor='none',vmin=0,zorder=1,transform=ccrs.Geodetic())
+                plt.tripcolor(triangles,source_distr_norm,cmap=plt.get_cmap('Blues_r'),linewidth=0.0,edgecolor='none',vmin=0,vmax=1,zorder=1,transform=ccrs.Geodetic())
 
         else:
             
             if cmash_import:
-                plt.scatter(source_grid[0],source_grid[1],s=20,c=source_distr_norm,vmin=0,transform=ccrs.PlateCarree(),cmap=cmap,zorder=3)
+                plt.scatter(source_grid[0],source_grid[1],s=20,c=source_distr_norm,vmin=0,vmax=1,transform=ccrs.PlateCarree(),cmap=cmap,zorder=3)
             else:
                 plt.scatter(source_grid[0],source_grid[1],s=20,c=source_distr_norm,vmin=0,transform=ccrs.PlateCarree(),cmap=plt.get_cmap('Blues_r'),zorder=3)
                 
@@ -233,7 +234,7 @@ def output_plot(args,output_path,only_ocean=False,triangulation=False):
         #except:
         #    plt.title(f'Noise distribution for iteration {step}',fontsize=50)
 
-        plt.scatter(lon,lat,s=50,c='lawngreen',marker='^',edgecolor='k',linewidth=1,transform=ccrs.PlateCarree(),zorder=4)
+        plt.scatter(lon,lat,s=150,c='lawngreen',marker='^',edgecolor='k',linewidth=1,transform=ccrs.PlateCarree(),zorder=4)
         plt.savefig(os.path.join(output_plots,f'iteration_{step}_1_noise_distribution.png'),bbox_inches='tight')
         #plt.show()
         plt.close()
@@ -267,6 +268,7 @@ def output_plot(args,output_path,only_ocean=False,triangulation=False):
                 plt.scatter(grid[0],grid[1],s=20,c=grad,transform=ccrs.Geodetic(),cmap='seismic',vmin=-v,vmax=v,zorder=3)
 
             cbar = plt.colorbar(pad=0.01)
+            cbar.formatter.set_powerlimits((0, 0))
             cbar.ax.tick_params(labelsize=30) 
             cbar.set_label('Power Spectral Density',rotation=270,labelpad=40,fontsize=40)
 
@@ -275,7 +277,7 @@ def output_plot(args,output_path,only_ocean=False,triangulation=False):
             except:
                 plt.title(f'Gradient for iteration {step}',pad=30,fontsize=50)
                          
-            plt.scatter(lon,lat,s=50,c='lawngreen',marker='^',edgecolor='k',linewidth=1,transform=ccrs.PlateCarree(),zorder=3)
+            plt.scatter(lon,lat,s=150,c='lawngreen',marker='^',edgecolor='k',linewidth=1,transform=ccrs.PlateCarree(),zorder=3)
             plt.savefig(os.path.join(output_plots,f'iteration_{step}_2_gradient.png'),bbox_inches='tight')
             #plt.show() 
             plt.close()
@@ -308,6 +310,7 @@ def output_plot(args,output_path,only_ocean=False,triangulation=False):
                 plt.scatter(grid[0],grid[1],s=20,c=grad,transform=ccrs.Geodetic(),cmap='seismic',vmin=-v,vmax=v,zorder=3)
 
             cbar = plt.colorbar(pad=0.01)
+            cbar.formatter.set_powerlimits((0, 0))
             cbar.ax.tick_params(labelsize=30) 
             cbar.set_label('Power Spectral Density',rotation=270,labelpad=40,fontsize=40)
 
@@ -316,7 +319,7 @@ def output_plot(args,output_path,only_ocean=False,triangulation=False):
             except:
                 plt.title(f'Smoothed gradient for iteration {step}',pad=30,fontsize=50
                          )
-            plt.scatter(lon,lat,s=50,c='lawngreen',marker='^',edgecolor='k',linewidth=1,transform=ccrs.PlateCarree(),zorder=3)
+            plt.scatter(lon,lat,s=150,c='lawngreen',marker='^',edgecolor='k',linewidth=1,transform=ccrs.PlateCarree(),zorder=3)
             plt.savefig(os.path.join(output_plots,f'iteration_{step}_3_gradient_smooth.png'),bbox_inches='tight')
             #plt.show()
             plt.close()
@@ -353,7 +356,7 @@ def output_plot(args,output_path,only_ocean=False,triangulation=False):
 
         #cbar.set_label('Power Spectral Density',rotation=270,labelpad=10)
         plt.title(f'Station Sensitivity with vmax = {v}',pad=30,fontsize=50)
-        plt.scatter(lon,lat,s=50,c='lawngreen',marker='^',edgecolor='k',linewidth=1,transform=ccrs.PlateCarree(),zorder=3)
+        plt.scatter(lon,lat,s=150,c='lawngreen',marker='^',edgecolor='k',linewidth=1,transform=ccrs.PlateCarree(),zorder=3)
         plt.savefig(os.path.join(output_plots,f'station_sensitivity.png'),bbox_inches='tight')
         #plt.show()
         plt.close()
@@ -367,7 +370,7 @@ def output_plot(args,output_path,only_ocean=False,triangulation=False):
         plt.scatter(grid[0],grid[1],s=20,c='k',transform=ccrs.PlateCarree(),zorder=3)
         #cbar.set_label('Power Spectral Density',rotation=270,labelpad=10)
         plt.title(f'Sourcegrid',pad=30,fontsize=50)
-        plt.scatter(lon,lat,s=50,c='lawngreen',marker='^',edgecolor='k',linewidth=1,transform=ccrs.PlateCarree(),zorder=3)
+        plt.scatter(lon,lat,s=150,c='lawngreen',marker='^',edgecolor='k',linewidth=1,transform=ccrs.PlateCarree(),zorder=3)
         plt.savefig(os.path.join(output_plots,f'sourcegrid.png'),bbox_inches='tight')
         #plt.show()
         plt.close()
@@ -417,7 +420,7 @@ def output_plot(args,output_path,only_ocean=False,triangulation=False):
         #except:
         #    plt.title(f'Noise distribution for iteration {step} capped at {sense_min*100}% sensitivity',fontsize=50)
 
-        #plt.scatter(lon,lat,s=50,c='lawngreen',marker='^',edgecolor='k',linewidth=1,transform=ccrs.PlateCarree(),zorder=4)
+        #plt.scatter(lon,lat,s=150,c='lawngreen',marker='^',edgecolor='k',linewidth=1,transform=ccrs.PlateCarree(),zorder=4)
         #plt.savefig(os.path.join(output_plots,f'iteration_{step}_2_noise_distribution_capped.png'),bbox_inches='tight')
         #plt.show()
         #plt.close()
@@ -476,7 +479,7 @@ def output_plot(args,output_path,only_ocean=False,triangulation=False):
         stat_lat = np.asarray(list(kern_stat_dict.values())).T[0]
         stat_lon = np.asarray(list(kern_stat_dict.values())).T[1]
 
-        plt.scatter(stat_lon,stat_lat,marker='^',s=250,c='k',edgecolors='w',linewidths=2,transform=ccrs.PlateCarree(),zorder=3)
+        plt.scatter(stat_lon,stat_lat,s=150,c='lawngreen',marker='^',edgecolor='k',linewidth=1,transform=ccrs.PlateCarree(),zorder=3)
 
         plt.title(f"Ray coverage for {kern_path} with {n_rays} rays",pad=10,fontsize=30)
         plt.savefig(os.path.join(output_plots,f'kernel_ray_coverage.png'),bbox_inches='tight')
