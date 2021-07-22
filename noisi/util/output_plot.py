@@ -463,7 +463,7 @@ def output_plot(args,output_path,only_ocean=False,triangulation=False):
 
     # if kern_files empty, try getting used_obs_corr_list.csv
     #if kern_files == []:
-        #sta_pair_used_file = glob(os.path.join(output_path,'used_obs_corr_list.csv'))
+        sta_pair_used_file = glob(os.path.join(output_path,'used_obs_corr_list.csv'))
 
         if sta_pair_used_file != []:
 
