@@ -458,24 +458,24 @@ def output_plot(args,output_path,only_ocean=False,triangulation=False):
     print("Plotting ray coverage for kernels..")
     
     try:
-    #kern_path = os.path.join(args.project_path,'source_1/iteration_0/kern')
-    #kern_files = glob(os.path.join(kern_path,'*.npy'))
+        kern_path = os.path.join(args.project_path,'source_1/iteration_0/kern')
+        kern_files = glob(os.path.join(kern_path,'*.npy'))
 
-    # if kern_files empty, try getting used_obs_corr_list.csv
-    #if kern_files == []:
-        sta_pair_used_file = glob(os.path.join(output_path,'used_obs_corr_list.csv'))
+        # if kern_files empty, try getting used_obs_corr_list.csv
+        if kern_files == []:
+            sta_pair_used_file = glob(os.path.join(output_path,'used_obs_corr_list.csv'))
 
-        if sta_pair_used_file != []:
+            if sta_pair_used_file != []:
 
-            sta_pair = read_csv(sta_pair_used_file[0],header=None)
+                sta_pair = read_csv(sta_pair_used_file[0],header=None)
 
-            kern_pairs = [f"{i[1][0].split('--')[0].split('.')[0]}.{i[1][0].split('--')[0].split('.')[1]}--{i[1][0].split('--')[1].split('.')[0]}.{i[1][0].split('--')[1].split('.')[1]}" for i in sta_pair.iterrows()]
+                kern_pairs = [f"{i[1][0].split('--')[0].split('.')[0]}.{i[1][0].split('--')[0].split('.')[1]}--{i[1][0].split('--')[1].split('.')[0]}.{i[1][0].split('--')[1].split('.')[1]}" for i in sta_pair.iterrows()]
+
+            else:
+                pass
 
         else:
-            pass
-
-        #else:
-        #    kern_pairs = [f"{os.path.basename(i).split('--')[0].split('.')[0]}.{os.path.basename(i).split('--')[0].split('.')[1]}--{os.path.basename(i).split('--')[1].split('.')[0]}.{os.path.basename(i).split('--')[1].split('.')[1]}" for i in kern_files]
+            kern_pairs = [f"{os.path.basename(i).split('--')[0].split('.')[0]}.{os.path.basename(i).split('--')[0].split('.')[1]}--{os.path.basename(i).split('--')[1].split('.')[0]}.{os.path.basename(i).split('--')[1].split('.')[1]}" for i in kern_files]
 
 
         station_dict = dict()
