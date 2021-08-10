@@ -7,6 +7,8 @@ kernels in noisi
     GNU Lesser General Public License, Version 3 and later
     (https://www.gnu.org/copyleft/lesser.html)
 """
+
+
 import numpy as np
 from noisi.util import windows as wn
 from scipy.signal import hilbert
@@ -23,7 +25,7 @@ def log_en_ratio_adj(corr_o, corr_s, g_speed, window_params):
 
     if window[2]:
         
-        wl = window_params['waterlevel_perc']
+        #wl = window_params['waterlevel_perc']
 
         sig_c = corr_s.data * win
         sig_a = corr_s.data * win[::-1]
@@ -35,8 +37,8 @@ def log_en_ratio_adj(corr_o, corr_s, g_speed, window_params):
         # to win**2
         u_plus = sig_c * win
         u_minus = sig_a * win[::-1]
-        #adjt_src = 2. * (u_plus / E_plus - u_minus / (E_minus+wl))
-        adjt_src = 2. * (u_plus/E_plus - (u_minus+wl*u_plus)/(E_minus+wl*E_plus))
+        adjt_src = 2. * (u_plus / E_plus - u_minus / (E_minus))
+        #adjt_src = 2. * (u_plus/E_plus - (u_minus+wl*u_plus)/(E_minus+wl*E_plus))
         
         #if E_plus >= E_minus:
         #    adjt_src = 2. * (u_plus/E_plus - (u_minus+wl*u_plus)/(E_minus+wl*E_plus))
@@ -59,7 +61,7 @@ def log_en_ratio_sqr_adj(corr_o, corr_s, g_speed, window_params):
 
     if window[2]:
         
-        wl = window_params['waterlevel_perc']
+        #wl = window_params['waterlevel_perc']
 
         sig_c = corr_s.data * win
         sig_a = corr_s.data * win[::-1]
@@ -71,8 +73,8 @@ def log_en_ratio_sqr_adj(corr_o, corr_s, g_speed, window_params):
         # to win**2
         u_plus = sig_c * win
         u_minus = sig_a * win[::-1]                           
-        #adjt_src = 2. * (u_plus / E_plus - u_minus / (E_minus+wl))
-        adjt_src = 2. * (2.*log(E_plus/E_minus)) * (u_plus/E_plus - (u_minus+wl*u_plus)/(E_minus+wl*E_plus))
+        adjt_src = 2. * (u_plus / E_plus - u_minus / (E_minus))
+        #adjt_src = 2. * (2.*log(E_plus/E_minus)) * (u_plus/E_plus - (u_minus+wl*u_plus)/(E_minus+wl*E_plus))
         
         #if E_plus >= E_minus:
         #    adjt_src = 2. * (u_plus/E_plus - (u_minus+wl*u_plus)/(E_minus+wl*E_plus))
@@ -155,12 +157,24 @@ def square_envelope(corr_o, corr_s, g_speed,
     d_env_1 = corr_s.data
     d_env_2 = (np.imag(hilbert(corr_s.data)))
 
-    u1 = (env_s - env_o) * d_env_1
-    u2 = np.imag(hilbert((env_s - env_o) * d_env_2))
+    msr = (env_s - env_o)
+        
+    u1 = msr * d_env_1
+    u2 = np.imag(hilbert(msr * d_env_2))
 
     adjt_src = 2 * (u1 - u2)
 
     success = True
+    
+    if 'envelope_norm' in window_params and window_params['envelope_norm'] == 'energy':
+        adjt_src = 2 * (u1 - u2)
+        success = True
+        
+    else:
+        adjt_src = 2 * (u1 - u2)
+        success = True
+        
+        
     return adjt_src, success
 
 
@@ -194,15 +208,26 @@ def envelope_difference(corr_o, corr_s, g_speed, window_params):
     d_env_2 = np.imag(hilbert(corr_s.data))
 
     # compute measurement
-    msr = env_s - env_o
-    
-    u1 = msr / env_s * d_env_1
-    u2 = np.imag(hilbert(msr / env_s * d_env_2))
-    
-    adjt_src = (u1 - u2)
+    if 'envelope_norm' in window_params and window_params['envelope_norm'] == 'energy':
+        print("Using envelope energy to normalise")
+        msr = (env_s - env_o)/np.sqrt(np.trapz(np.power(env_o,2)))
+        
+        u1 = msr / env_s * d_env_1
+        u2 = np.imag(hilbert(msr / env_s * d_env_2))
+        
+        adjt_src = (u1 - u2) #/np.trapz(np.power(env_o,2))
+        
+    else:
+        msr = env_s - env_o
+
+        u1 = msr / env_s * d_env_1
+        u2 = np.imag(hilbert(msr / env_s * d_env_2))
+        
+        adjt_src = (u1 - u2)    
+
         
     success = True
-    
+
     return adjt_src, success
 
 

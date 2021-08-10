@@ -1,5 +1,6 @@
 """
-Collection of correlation functions for noisi
+Source distribution setup for modelling 
+
 :copyright:
     noisi development team
 :license:

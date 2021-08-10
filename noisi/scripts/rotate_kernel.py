@@ -1,3 +1,13 @@
+"""
+Kernel rotation for multiple components
+
+:copyright:
+    noisi development team
+:license:
+    GNU Lesser General Public License, Version 3 and later
+    (https://www.gnu.org/copyleft/lesser.html)
+"""
+
 import numpy as np
 import h5py
 from math import radians, cos, sin

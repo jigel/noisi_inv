@@ -1,5 +1,6 @@
 """
-Collection of correlation functions for noisi
+Sourcegrid computation
+
 :copyright:
     noisi development team
 :license:

@@ -2,16 +2,14 @@
 
 from setuptools import setup, find_packages
 
-
 setup(
-    name = 'noisi',
+    name = 'noisi_inv',
     version = '0.0.0a0',
-    description = 'Package to calculate noise correlations from precomputed\
- seismic wavefields',
+    description = 'Package to perform ambient noise source inversions',
     #long_description =
     # url = 
-    author = 'L. Ermert, J. Igel, A. Fichtner',
-    author_email  = 'laura.ermert@earth.ox.ac.uk, jigel@student.ethz.ch',
+    author = 'J. Igel,L. Ermert,  A. Fichtner',
+    author_email  = 'jonas.igel@erdw.ethz.ch, laura.ermert@earth.ox.ac.uk, andreas.fichtner@erdw.ethz.ch',
     # license
     classifiers = [
         'Development Status :: 3 - Alpha',

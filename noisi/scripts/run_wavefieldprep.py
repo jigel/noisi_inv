@@ -1,5 +1,6 @@
 """
-Collection of correlation functions for noisi
+Wavefield preparation for inversion
+
 :copyright:
     noisi development team
 :license:

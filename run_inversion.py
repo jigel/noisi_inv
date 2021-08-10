@@ -1,3 +1,13 @@
+"""
+Main code for inverting for the ambient noise source distribution
+
+:copyright:
+    noisi development team
+:license:
+    GNU Lesser General Public License, Version 3 and later
+    (https://www.gnu.org/copyleft/lesser.html)
+"""
+
 # # Gradient-based iterative Inversion
 import yaml
 import os

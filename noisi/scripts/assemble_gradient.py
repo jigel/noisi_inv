@@ -1,6 +1,6 @@
 """
-Adjoint sources for computing noise source sensitivity
-kernels in noisi
+Gradient compilation for noise source inversion
+
 :copyright:
     noisi development team
 :license:

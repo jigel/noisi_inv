@@ -1,5 +1,6 @@
 """
-Collection of correlation functions for noisi
+Measurements for the inversion
+
 :copyright:
     noisi development team
 :license:
