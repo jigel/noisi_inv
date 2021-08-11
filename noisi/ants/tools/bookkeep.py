@@ -1,3 +1,15 @@
+"""
+This code is from the ants package: https://github.com/lermert/ants_2.
+
+:copyright:
+    noisi development team
+:license:
+    GNU Lesser General Public License, Version 3 and later
+    (https://www.gnu.org/copyleft/lesser.html)
+
+"""
+
+
 import os
 from glob import glob
 from obspy import UTCDateTime

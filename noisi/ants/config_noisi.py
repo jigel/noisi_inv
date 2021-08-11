@@ -1,3 +1,14 @@
+"""
+Setup config files for ants processing and correlating
+
+:copyright:
+    noisi development team
+:license:
+    GNU Lesser General Public License, Version 3 and later
+    (https://www.gnu.org/copyleft/lesser.html)
+"""
+
+
 import io
 import json
 import os

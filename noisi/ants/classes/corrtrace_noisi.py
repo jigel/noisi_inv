@@ -1,3 +1,14 @@
+"""
+This code is from the ants package: https://github.com/lermert/ants_2.
+
+:copyright:
+    noisi development team
+:license:
+    GNU Lesser General Public License, Version 3 and later
+    (https://www.gnu.org/copyleft/lesser.html)
+
+"""
+
 from noisi.ants.tools.util_noisi import get_geoinf
 # from ants_2.tools.bookkeep import name_correlation_file
 from obspy import Trace

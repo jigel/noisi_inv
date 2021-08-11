@@ -1,3 +1,15 @@
+"""
+This code is from the ants package: https://github.com/lermert/ants_2.
+
+:copyright:
+    noisi development team
+:license:
+    GNU Lesser General Public License, Version 3 and later
+    (https://www.gnu.org/copyleft/lesser.html)
+
+"""
+
+
 # A script to process ambient vibration records
 from __future__ import print_function
 # Use the print function to be able to switch easily between stdout and a file

@@ -1,3 +1,14 @@
+"""
+This code is from the ants package: https://github.com/lermert/ants_2.
+
+:copyright:
+    noisi development team
+:license:
+    GNU Lesser General Public License, Version 3 and later
+    (https://www.gnu.org/copyleft/lesser.html)
+
+"""
+
 # Re-vamped correlation script
 from __future__ import print_function
 from mpi4py import MPI

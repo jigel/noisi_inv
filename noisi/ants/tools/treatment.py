@@ -1,3 +1,14 @@
+"""
+This code is from the ants package: https://github.com/lermert/ants_2.
+
+:copyright:
+    noisi development team
+:license:
+    GNU Lesser General Public License, Version 3 and later
+    (https://www.gnu.org/copyleft/lesser.html)
+
+"""
+
 import numpy as np
 from obspy.signal.filter import envelope
 from obspy.signal.util import next_pow_2
