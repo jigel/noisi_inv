@@ -1,3 +1,13 @@
+"""
+Sourcegrid code, same as noisi one
+
+:copyright:
+    noisi development team
+:license:
+    GNU Lesser General Public License, Version 3 and later
+    (https://www.gnu.org/copyleft/lesser.html)
+"""
+
 import numpy as np
 import matplotlib.pyplot as plt
 import cartopy.crs as ccrs

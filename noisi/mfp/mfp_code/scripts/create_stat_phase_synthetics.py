@@ -1,3 +1,16 @@
+"""
+!!!!! NOT NEEDED FOR NOISI !!!!!
+
+Create synthetic data for stationary phase analysis
+
+:copyright:
+    noisi development team
+:license:
+    GNU Lesser General Public License, Version 3 and later
+    (https://www.gnu.org/copyleft/lesser.html)
+"""
+
+
 from obspy.geodetics import gps2dist_azimuth
 from obspy.geodetics import kilometers2degrees
 from obspy.taup import TauPyModel

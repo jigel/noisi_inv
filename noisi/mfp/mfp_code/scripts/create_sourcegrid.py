@@ -1,3 +1,13 @@
+"""
+Create a sourcegrid
+
+:copyright:
+    noisi development team
+:license:
+    GNU Lesser General Public License, Version 3 and later
+    (https://www.gnu.org/copyleft/lesser.html)
+"""
+
 from noisi.mfp.mfp_code.util.source_grid_svp import svp_grid
 
 

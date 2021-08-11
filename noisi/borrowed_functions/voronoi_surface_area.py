@@ -1,4 +1,13 @@
-# Code from https://github.com/tylerjereddy/spherical-SA-docker-demo/blob/master/docker_build/demonstration.py
+"""
+Voronoi cell computation for surface areas
+Code from https://github.com/tylerjereddy/spherical-SA-docker-demo/blob/master/docker_build/demonstration.py
+
+:copyright:
+    noisi development team
+:license:
+    GNU Lesser General Public License, Version 3 and later
+    (https://www.gnu.org/copyleft/lesser.html)
+"""
 
 
 import matplotlib

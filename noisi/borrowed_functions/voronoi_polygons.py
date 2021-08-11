@@ -1,3 +1,13 @@
+"""
+Voronoi cell computation for surface areas
+
+:copyright:
+    noisi development team
+:license:
+    GNU Lesser General Public License, Version 3 and later
+    (https://www.gnu.org/copyleft/lesser.html)
+"""
+
 # The MIT License (MIT)
 # Copyright (c) 2017 Massachusetts Institute of Technology
 #
