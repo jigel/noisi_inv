@@ -1,3 +1,13 @@
+"""
+Copy cross-correlations based on signal-to-noise ratio
+
+:copyright:
+    noisi development team
+:license:
+    GNU Lesser General Public License, Version 3 and later
+    (https://www.gnu.org/copyleft/lesser.html)
+"""
+
 import numpy as np
 import os
 from pandas import read_csv

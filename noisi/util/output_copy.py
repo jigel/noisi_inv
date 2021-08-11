@@ -1,3 +1,13 @@
+"""
+Copy essential files to output folder
+
+:copyright:
+    noisi development team
+:license:
+    GNU Lesser General Public License, Version 3 and later
+    (https://www.gnu.org/copyleft/lesser.html)
+"""
+
 import numpy as np
 from shutil import copy2
 from shutil import copytree

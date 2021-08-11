@@ -3,7 +3,7 @@
 from setuptools import setup, find_packages
 
 setup(
-    name = 'noisi_inv',
+    name = 'noisi',
     version = '0.0.0a0',
     description = 'Package to perform ambient noise source inversions',
     #long_description =

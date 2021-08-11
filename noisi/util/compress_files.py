@@ -1,3 +1,14 @@
+"""
+Convert sac to asdf and npy to hdf5 files to reduce number of files
+
+:copyright:
+    noisi development team
+:license:
+    GNU Lesser General Public License, Version 3 and later
+    (https://www.gnu.org/copyleft/lesser.html)
+"""
+
+
 # convert sac to asdf and asdf to obspy Stream
 import obspy
 import pyasdf

@@ -1,3 +1,14 @@
+"""
+Steplength test for the inversion
+
+:copyright:
+    noisi development team
+:license:
+    GNU Lesser General Public License, Version 3 and later
+    (https://www.gnu.org/copyleft/lesser.html)
+"""
+
+
 import numpy as np
 import os
 import yaml

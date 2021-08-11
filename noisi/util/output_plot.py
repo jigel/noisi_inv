@@ -1,3 +1,14 @@
+"""
+Plot essential files in the output folder
+
+:copyright:
+    noisi development team
+:license:
+    GNU Lesser General Public License, Version 3 and later
+    (https://www.gnu.org/copyleft/lesser.html)
+"""
+
+
 import matplotlib
 matplotlib.use('Agg')
 

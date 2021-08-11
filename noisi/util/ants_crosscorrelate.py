@@ -1,6 +1,13 @@
 """
 This script uses functions from the ants module: https://github.com/lermert/ants_2.
 Previously downloaded data is processed and cross-correlated.
+
+:copyright:
+    noisi development team
+:license:
+    GNU Lesser General Public License, Version 3 and later
+    (https://www.gnu.org/copyleft/lesser.html)
+
 """
 
 import numpy as np

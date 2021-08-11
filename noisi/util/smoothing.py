@@ -1,5 +1,6 @@
 """
 Smoothing routine for noisi
+
 :copyright:
     noisi development team
 :license:

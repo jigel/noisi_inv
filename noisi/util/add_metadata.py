@@ -1,3 +1,13 @@
+"""
+Add metadata to cross-correlations
+
+:copyright:
+    noisi development team
+:license:
+    GNU Lesser General Public License, Version 3 and later
+    (https://www.gnu.org/copyleft/lesser.html)
+"""
+
 import pandas as pd
 from obspy import read
 from obspy.geodetics import gps2dist_azimuth

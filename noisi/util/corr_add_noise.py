@@ -1,3 +1,14 @@
+"""
+Add random noise to the synthetic cross-correlations
+
+:copyright:
+    noisi development team
+:license:
+    GNU Lesser General Public License, Version 3 and later
+    (https://www.gnu.org/copyleft/lesser.html)
+"""
+
+
 import obspy
 import numpy as np
 from glob import glob

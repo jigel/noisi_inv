@@ -1,3 +1,14 @@
+"""
+Functions to rotate horizontal components 
+
+:copyright:
+    noisi development team
+:license:
+    GNU Lesser General Public License, Version 3 and later
+    (https://www.gnu.org/copyleft/lesser.html)
+"""
+
+
 from obspy.geodetics import gps2dist_azimuth
 from math import sin, cos, radians
 from obspy import read

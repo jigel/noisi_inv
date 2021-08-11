@@ -1,3 +1,14 @@
+"""
+Automatically setup a spatially variable grid using initial data
+
+:copyright:
+    noisi development team
+:license:
+    GNU Lesser General Public License, Version 3 and later
+    (https://www.gnu.org/copyleft/lesser.html)
+"""
+
+
 # automatically setup spatially variable grid
 
 import numpy as np

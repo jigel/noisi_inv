@@ -1,3 +1,13 @@
+"""
+Geographical functions to compute distances, surface areas and more
+
+:copyright:
+    noisi development team
+:license:
+    GNU Lesser General Public License, Version 3 and later
+    (https://www.gnu.org/copyleft/lesser.html)
+"""
+
 import numpy as np
 from math import pi, sin, cos, sqrt
 import pandas as pd

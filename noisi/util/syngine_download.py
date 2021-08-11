@@ -1,3 +1,14 @@
+"""
+Download pre-computed wavefields from syngine
+
+:copyright:
+    noisi development team
+:license:
+    GNU Lesser General Public License, Version 3 and later
+    (https://www.gnu.org/copyleft/lesser.html)
+"""
+
+
 # script to download pre-computed wavefields from Syngine: http://ds.iris.edu/ds/products/syngine/
 # best wavefields for local computation:
 # prem_a_20s = 0.9GB
