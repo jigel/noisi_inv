@@ -18,16 +18,20 @@ from noisi.scripts import adjnt_functs as af
 # input:
 # *********************************************
 steps = np.arange(-14, 0, 0.1)
-mtype = 'full_waveform'
+mtype = 'envelope'
 sacdict = {'dist': 1e6}
 g_speed = 3700.
 window_params = {}
 window_params['hw'] = 200
+window_params['hw_variable'] = None
 window_params['sep_noise'] = 1.
 window_params['win_overlap'] = False
 window_params['wtype'] = 'hann'
 window_params['causal_side'] = False
 window_params['plot'] = False
+window_params['waterlevel_perc'] = 0
+#window_params['envelope_norm'] = 'energy'
+
 # *********************************************
 # *********************************************
 
@@ -54,6 +58,7 @@ c_syn.stats.sac = sacdict
 msr_o = m_func(c_obs, **m_a_options)
 msr_s = m_func(c_syn, **m_a_options)
 data, success = a_func(c_obs, c_syn, **m_a_options)
+data *= 1e10
 
 
 if mtype == 'energy_diff':
@@ -62,16 +67,16 @@ if mtype == 'energy_diff':
     msr_o = msr_o[0] + msr_o[1]
     data *= (msr_s - msr_o)
 
-elif mtype == 'ln_energy_ratio':
+elif mtype in ['ln_energy_ratio','ln_energy_ratio_sqr','ln_energy_ratio_cube']:
     data *= (msr_s - msr_o)
 
-elif mtype in ['windowed_waveform', 'full_waveform']:
+elif mtype in ['windowed_waveform', 'full_waveform','envelope']:
     pass
 
-if mtype in ['ln_energy_ratio', 'energy_diff']:
+if mtype in ['ln_energy_ratio', 'energy_diff','ln_energy_ratio_sqr','ln_energy_ratio_cube']:
     j = 0.5 * (msr_s - msr_o)**2
 elif mtype in ['full_waveform', 'windowed_waveform', 'square_envelope', 'envelope']:
-    j = 0.5 * np.sum(np.power((msr_s - msr_o), 2))
+    j = 0.5 * np.sum(np.power((msr_s - msr_o), 2)) * 1e10
 
 # left hand side of test 1:
 # adjt source time function * du = change of misfit wrt u
@@ -91,7 +96,7 @@ for step in steps:
 
     jh = 0.5 * (msr_sh - msr_o)**2
     if mtype in ['full_waveform', 'windowed_waveform', 'envelope', 'square_envelope']:
-        jh = 0.5 * np.sum(np.power((msr_sh - msr_o), 2))
+        jh = 0.5 * np.sum(np.power((msr_sh - msr_o), 2)) * 1e10
 
     djdch = (jh - j) / (10.**step)
     dcheck.append(abs(djdc - djdch) / abs(djdc))
