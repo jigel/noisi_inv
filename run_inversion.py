@@ -621,7 +621,7 @@ if 'weight_test' in list(config_sourcesetup.keys()) and config_sourcesetup['weig
 
         model_weight = model_ones * weights_min
         
-        with h5py.File(os.path.join(inv_args.source_model,f'iteration_0','starting_model.h5')) as fh:
+        with h5py.File(os.path.join(inv_args.source_model,f'iteration_0','starting_model.h5'),'r+') as fh:
             del fh['model']
             fh.create_dataset('model',data=model_weight.astype(np.float32))
             fh.close() 
@@ -1070,7 +1070,7 @@ for iter_nr in range(start_iter, inv_args.nr_iterations):
         shutil.copy2(source_distr_path,sourcemodel_new)
             
         
-        with h5py.File(sourcemodel_new) as fh:
+        with h5py.File(sourcemodel_new,'r+') as fh:
             del fh['model']
             fh.create_dataset('model',data=distr_update.astype(np.float32))
                 

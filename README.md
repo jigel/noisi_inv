@@ -15,8 +15,10 @@ Install requirements (easiest done with anaconda)
 - jupyter
 - pytest
 - pyasdf
+- psutil
 
-Additionally, install [instaseis](http://instaseis.net/), if you plan to use it for Green's functions.
+Additionally, install [instaseis](http://instaseis.net/), if you plan to use it for Green's functions (`pip install instaseis`). Currently it requires Python <= 3.8.
+
 Install jupyter notebook if you intend to run the tutorial (see below).
 
 If you encounter problems with mpi4py, try removing it and reinstalling it using pip (`pip install mpi4py`).

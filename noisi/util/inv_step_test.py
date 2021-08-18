@@ -107,7 +107,7 @@ def steplengthtest(args,comm,size,rank,mf_dict,gradient_path,grad_smooth_path,so
             sourcemodel_new = os.path.join(args.source_model,f'iteration_{args.step}','step_length_tests',f'sourcemodel_slt_{args.step}_{slt_step_count}.h5')
             copy2(source_distr_path,sourcemodel_new)    
     
-            with h5py.File(sourcemodel_new) as fh:
+            with h5py.File(sourcemodel_new,'r+') as fh:
                 del fh['model']
                 fh.create_dataset('model',data=distr_update.astype(np.float32))
                 fh.close() 

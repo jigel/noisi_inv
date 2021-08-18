@@ -150,7 +150,9 @@ def create_sourcegrid(config,stationlist_path=None):
                         grid_true[k] = False    
 
             grid = grid.T[grid_true].T
-            surf_areas = surf_areas[grid_true]            
+            
+            if 'svp_voronoi_area' in config and  config['svp_voronoi_area']:
+                surf_areas = surf_areas[grid_true]            
             
         if config['svp_voronoi_area']:
             np.save(os.path.join(config['project_path'],'sourcegrid_voronoi.npy'),[grid[0],grid[1],surf_areas])
