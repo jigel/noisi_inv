@@ -76,6 +76,10 @@ class config_params(object):
         if self.config['wavefield_channel'] == "all":
             self.output_channels = ["ZZ", "ZN", "ZE", "NZ", "NN", "NE",
                                     "EZ", "EN", "EE"]
+
+        # if wavefield_channel is a list of output channel pairs, use that
+        elif isinstance(self.config['wavefield_channel'],list):
+            self.output_channels = self.config['wavefield_channel']
         else:
             self.output_channels = [2 * self.config["wavefield_channel"]]
 

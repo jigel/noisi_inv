@@ -47,10 +47,18 @@ def define_correlationpairs(proj_dir, auto_corr=False,
     
     if conf['wavefield_channel'] == 'all':
         channel = ['??Z','??E','??N']
+        channel_list = False
+    # Added if wavefield_channel is a list of pairs
+    elif isinstance(conf['wavefield_channel'],list):
+        channels_flipped = [i[::-1] for i in conf['wavefield_channel'] if i[0] != i[1]] # making sure both directions are in there
+        conf['wavefield_channel'] = list(set(conf['wavefield_channel'] + channels_flipped))
+        channel = ['??Z','??E','??N']
+        channel_list = True
     else:
         channel = conf['wavefield_channel']
         channel = ['??' + channel[-1]]
-        
+        channel_list = False
+
     #print(channel)
     
     while i < len(stations):
@@ -67,6 +75,13 @@ def define_correlationpairs(proj_dir, auto_corr=False,
 
                     if '' in [sta_0, sta]:
                         continue
+                        
+                    if channel_list:
+                        if not f"{cha1.split('?')[-1]}{cha2.split('?')[-1]}" in conf['wavefield_channel']:
+                            continue
+                        if not f"{cha2.split('?')[-1]}{cha1.split('?')[-1]}" in conf['wavefield_channel']:
+                            continue 
+                            
                     corr_pairs.append([str(sta_0)+' '+str(cha1), str(sta)+ ' '+str(cha2)])
                     
         i += 1

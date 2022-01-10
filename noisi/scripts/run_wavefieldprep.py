@@ -86,6 +86,9 @@ class precomp_wavefield(object):
         channel = self.config['wavefield_channel']
         if channel == "all":
             channels = ['E', 'N', 'Z']
+        # if wavefield_channel is a list of pairs, get all individual channels
+        elif isinstance(channel,list):
+            channels = list(set(''.join(channel)))
         else:
             channels = [channel]
         for i, station in stations[self.rank: len(self.stations): self.size]:
