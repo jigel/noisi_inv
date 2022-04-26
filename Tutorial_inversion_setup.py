@@ -35,7 +35,7 @@ main = {
     # can be left empty if a region is set in the data download parameter
     #'stationlist': None,
     'stationlist': os.path.abspath('./noisi/examples_inv/stationlist_swiss_6.csv'),
-    
+
     # metadata can be added to the synthetic correlations
     # useful when synthetic data is computed and then used for synthetic inversions
     'add_metadata': False,
@@ -49,6 +49,7 @@ main = {
 }
 
 #pp.pprint(main)
+
 
 
 project_config = {
@@ -152,7 +153,7 @@ if main['stationlist'] != None and os.path.isfile(main['stationlist']):
 else:
     stationlist = False
     
-    plt.figure(figsize=(30,30))
+    plt.figure(figsize=(50,20))
     ax = plt.axes(projection=ccrs.Robinson())
     ax.add_feature(cfeature.NaturalEarthFeature('cultural', 'admin_0_countries', '50m', edgecolor='black', facecolor=cfeature.COLORS['land']),zorder=2)
     ax.set_global()
@@ -180,13 +181,14 @@ else:
     
     
     
+    
 ### Inversion parameters
 # We now set some of the parameters for the inversion. 
 
 inversion_config = {
     
     # If you already have cross-correlations you can set the path here
-    # if you are downloading data using the previously set parameters, set it to None
+    # If you are downloading data using the previously set parameters, set it to None
     'observed_corr': None,
     
     # If you have a list of stationpairs as csv file (format: NET.STA.LOC.CHA--NET.STA.LOC.CHA)
@@ -201,13 +203,13 @@ inversion_config = {
     'corr_max_dist': None,
     
     # Number of iterations for the inversion
-    'nr_iterations': 5,
+    'nr_iterations': 2,
     
     # Number of step tests in each iteration
     'nr_step_tests': 5,
     
     # If this is set to True it tests different smoothing paramaters during the step length test
-    # if the step tests do not decrease the misfit
+    # If the step tests do not decrease the misfit
     'step_test_smoothing': False,
     
     # what fraction of the correlations should be used for the step length test
@@ -232,6 +234,8 @@ inversion_config = {
 
 #pp.pprint(inversion_config)
 
+#pp.pprint(inversion_config)
+
 
 
 
@@ -253,6 +257,7 @@ svp_grid_config = {
     'svp_only_ocean': True,
     
     # set to True if voronoi surface areas should be used
+    # Should usually be True as they are needed to scale the noise source correctly
     'svp_voronoi_area': True,
     
     # Remove station pairs in a radius (degrees) around the stations
@@ -356,11 +361,14 @@ grid_dict.update(project_config)
 # set to false to check the grid
 grid_dict['svp_voronoi_area'] = False
 
-sourcegrid = create_sourcegrid(grid_dict,stationlist_path=main['stationlist'])
+if main['stationlist']:
+    sourcegrid = create_sourcegrid(grid_dict,stationlist_path=main['stationlist'])
+else:    
+    sourcegrid = create_sourcegrid(grid_dict,stationlist_path=None)
 
-plt.figure(figsize=(30,30))
+plt.figure(figsize=(50,20))
 ax = plt.axes(projection=ccrs.Robinson())
-plt.scatter(sourcegrid[0],sourcegrid[1],s=5,c='k',transform=ccrs.PlateCarree(),zorder=4)
+plt.scatter(sourcegrid[0],sourcegrid[1],s=15,c='k',transform=ccrs.PlateCarree(),zorder=4)
 ax.coastlines(color='white',linewidth=3)
 ax.coastlines(color='black',linewidth=1)
 ax.set_global()
@@ -370,8 +378,12 @@ plt.show()
 
 
 ### Wavefield parameters
-# To model the cross-correlations we need to set wavefield parameters
 
+# To model the cross-correlations we need to set wavefield parameters. 
+# For our example we set the wavefield_type to 'analytic'. 
+# To use proper pre-computed wavefields you can download some here: http://ds.iris.edu/ds/products/syngine/ 
+# and then change the wavefield_type to 'instaseis' and provide the wavefield_path. 
+        
 wavefield_config = {
     
     # channels can be either a list or a string of E, N, Z
@@ -381,7 +393,7 @@ wavefield_config = {
     # wavefield domain either time or fourier, default to time
     'wavefield_domain': 'time',
     
-    # duration of the wavefield
+    # duration of the wavefield in seconds
     'wavefield_duration': 5000.0,
     
     # wavefield bandpass filter can be set here
@@ -390,7 +402,7 @@ wavefield_config = {
     # Wavefield path to a pre-computed wavefield like AxiSEM/SpecFEM 
     # or a folder with already converted Green's functions
     # AxiSEM wavefields can be downloaded from Syngine: http://ds.iris.edu/ds/products/syngine/
-    'wavefield_path': '/Users/jigel/noisi/wavefields/Noisi_10s_repacked/', 
+    'wavefield_path': './wavefields/Noisi_10s_repacked/', 
     
     # Wavefield type, set to 'greens' if a folder to already converted Green's functions is given
     # or to 'instaseis' if path to wavefield is given
@@ -438,14 +450,13 @@ source_config = {
 
 # We now set the initial model for the inversion. This can be a homogeneous distribution everywhere, in the ocean, a distribution with gaussian blobs, or created using the Matched-Field Processing method. 
 
-
 # list of initial model
 # for the inversion only one initial model should be set
 # this could either be 'mfp' for Matched-Field Processing
 source_setup_config = [{
     
     # set initial distribution, one of: mfp, homogeneous, ocean, gaussian_blob
-    'distribution': 'homogeneous', # 'mfp', 'ocean', 'gaussian_blob'
+    'distribution': 'gaussian_blob', # 'mfp', 'ocean', 'gaussian_blob'
     
     # set smoothing (in degrees) if mfp is the distribution
     'mfp_smooth': 4,
@@ -476,8 +487,8 @@ source_setup_config = [{
 
 
 
-### Plot gaussian blob source distribution
-# You can check your gaussian blob distribution here.
+### Plot gaussian blob or homogeneous source distribution
+# You can check your gaussian blob or homogeneous distribution here.
 
 if source_setup_config[0]['distribution'] == 'gaussian_blob':
     
@@ -523,15 +534,40 @@ if source_setup_config[0]['distribution'] == 'gaussian_blob':
 
     blob_dist *= parameters['weight']
     
+    source_dist = blob_dist
     
-    plt.figure(figsize=(30,30))
-    ax = plt.axes(projection=ccrs.Robinson())
-    plt.scatter(sourcegrid[0],sourcegrid[1],s=50,c=blob_dist,transform=ccrs.PlateCarree(),zorder=4)
-    ax.coastlines(color='white',linewidth=3)
-    ax.coastlines(color='black',linewidth=1)
-    ax.set_global()
-    plt.title(f"Spatially variable grid with {np.size(sourcegrid[0])} gridpoints.",fontsize=30,pad=15)
-    plt.show()
+if source_setup_config[0]['distribution'] == 'homogeneous':
+    grd = sourcegrid
+    
+    source_dist = np.ones(np.shape(grd)[-1])
+    
+    
+# set triangulate to true to triangulate and plot distribution
+triangulate = True
+
+if triangulate:
+    triangles = tri.Triangulation(grd[0],grd[1])
+    
+    
+plt.figure(figsize=(50,20))
+ax = plt.axes(projection=ccrs.Robinson())
+
+if triangulate:
+    plt.tripcolor(triangles,source_dist,cmap=plt.get_cmap('Blues_r'),linewidth=0.0,edgecolor='none',vmin=0,vmax=1,zorder=1,transform=ccrs.Geodetic())
+    if source_setup_config[0]['only_in_the_ocean']:
+        ax.add_feature(cfeature.NaturalEarthFeature('cultural', 'admin_0_countries', '50m', edgecolor='black', facecolor=cfeature.COLORS['land']),zorder=4)
+        
+else:
+    plt.scatter(sourcegrid[0],sourcegrid[1],s=50,c=source_dist,cmap=plt.get_cmap('Blues_r'),transform=ccrs.PlateCarree(),zorder=1)
+    
+ax.coastlines(color='white',linewidth=3,zorder=2)
+ax.coastlines(color='black',linewidth=1,zorder=2)
+ax.set_global()
+cbar = plt.colorbar(pad=0.01)
+cbar.ax.tick_params(labelsize=30) 
+cbar.set_label('Source strength',rotation=90,labelpad=50,fontsize=50)
+plt.title(f"Source distribution",fontsize=50,pad=15)
+plt.show()
     
     
 ### Measurement parameters
@@ -582,6 +618,7 @@ measr_config = {
 }
 
 
+
 ### Create inversion_config.yml file
 # Now that have a set all parameters, we create the config file which is then used to perform the inversion. 
 
@@ -600,17 +637,18 @@ inv_config = {
     'measr_config': measr_config
 }
 
-with open('./inversion_config_example.yml',"w") as f:
+with open('./inversion_config_tutorial_example.yml',"w") as f:
     yaml.safe_dump(inv_config,f,sort_keys=False,indent=4)
 
+print("Inversion config file saved as inversion_config_tutorial_example.yml")
 #pp.pprint(inv_config)
 
 
 ### Running inversion
 # Now that we have the inversion config file we can run it by using the following command for one core:
 
-# python run_inversion.py inversion_config_example.yml 
+# python run_inversion.py inversion_config_tutorial_example.yml
 
 # Or the following if you have mpi installed where N_CORES is the number of cores you want to run it on: 
 
-# mpirun -np N_CORES python run_inversion.py inversion_config_example.yml
+# mpirun -np N_CORES python run_inversion.py inversion_config_tutorial_example.yml
