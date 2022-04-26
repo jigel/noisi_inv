@@ -242,7 +242,7 @@ precompute_wavefield first.')
             # plotting is not necessarily done to make sure code runs on clusters
             if create_plot:
                 fig1 = plt.figure()
-                ax = fig1.add_subplot('111')
+                ax = fig1.add_subplot(1,1,1)
                 for i in range(n_distr):
                     ax.plot(freq, spectra[i, :] / spectra.max(),
                             color=colors[i%len(colors_cmaps)])
@@ -429,7 +429,7 @@ precompute_wavefield first.')
         # nearest neighbour for interpolation
         for k in range(np.size(grd[1])):
             
-            dist_var = np.sqrt((grd_data[0]-grd[0][k])**2+(grd_data[0]-grd[0][k])**2)
+            dist_var = np.sqrt((grd_data[0]-grd[0][k])**2+(grd_data[1]-grd[1][k])**2)
 
             # Append interpolated grid to new variables
             lat_dist.append(grd[1][k])
