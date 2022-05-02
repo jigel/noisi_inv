@@ -34,7 +34,7 @@ Create a new environment and activate it:
 `conda create -n noisi_inv`  
 `conda activate noisi_inv`
 
-Install a few necessary packages:
+Install a few necessary packages:  
 `conda install proj geos mpi4py h5py instaseis --yes`  
 
 Install noisi_inv (in the noisi_inv directory) which should install all other packages.
@@ -43,6 +43,12 @@ Change into the `noisi_inv/` directory. Call `pip install .` here, or call `pip 
 After installation, change to the `noisi_inv/noisi` directory and run `pytest`. If you encounter any errors (warnings are o.k.), we'll be grateful if you let us know. 
 
 ### Getting started
+
+Noisi_inv is slightly different to noisi as it includes a complete inversion workflow. This is all setup in the run_inversion.py file. 
+To do a little test inversion and check if it was installed correctly you can run the following command:  
+`python run_inversion.py inversion_config.yml`
+
+
 To see an overview of the tool, type `noisi --help`.
 A step-by-step tutorial for jupyter notebook can be found in the `noisi_inv/noisi` directory.
 Examples on how to set up an inversion and how to import a wavefield from axisem3d are found in the noisi/examples directory.
