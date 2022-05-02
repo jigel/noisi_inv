@@ -28,9 +28,9 @@ setup(
                   'config/data_sac_headers.txt',
                   'config/source_config_comments.txt']},
     install_requires = [
-        "numpy=1.21.0",
+        "numpy==1.21.0",
         "scipy",
-        "obspy=1.2.2",
+        "obspy==1.2.2",
         "geographiclib",
         "mpi4py>=2.0.0",
         "pandas",
