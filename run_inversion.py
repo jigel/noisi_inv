@@ -99,6 +99,9 @@ else:
     only_ocean = False
     
     
+# stationlist absolute path
+inv_args.stationlist = os.path.abspath(inv_args.stationlist)
+
 # get noisi folder
 noisi_inv_path = os.path.dirname(os.path.dirname(noisi.__file__))
 
