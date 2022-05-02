@@ -30,18 +30,6 @@ If you encounter problems with mpi4py, try removing it and reinstalling it using
 Clone the repository with git:  
 `git clone https://github.com/jigel/noisi_inv.git`
 
-#### Option 1
-
-A quick way to install it is to create a conda environment with the provided environment file `noisi_inv.yml`. To do so, make your way to the noisi_inv directory and use the following command:  
-`conda env create -f noisi_inv.yml`  
-
-Afterwards, activate the environment and install the noisi package:  
-`conda activate noisi_inv`  
-`pip install -v -e .`  
-
-
-#### Option 2
-
 Create a new environment and activate it:  
 `conda create -n noisi_inv`  
 `conda activate noisi_inv`
