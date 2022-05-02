@@ -76,6 +76,10 @@ class config_params(object):
         if self.config['wavefield_channel'] == "all":
             self.output_channels = ["ZZ", "ZN", "ZE", "NZ", "NN", "NE",
                                     "EZ", "EN", "EE"]
+
+        # if wavefield_channel is a list of output channel pairs, use that
+        elif isinstance(self.config['wavefield_channel'],list):
+            self.output_channels = self.config['wavefield_channel']
         else:
             self.output_channels = [2 * self.config["wavefield_channel"]]
 
@@ -335,6 +339,7 @@ def compute_correlation(input_files, all_conf, nsrc, all_ns, taper,
         station1 = wf1.stats['reference_station']
         station2 = wf2.stats['reference_station']
 
+
         # Make sure all is consistent
         if False in (wf1.sourcegrid[1, 0:10] == wf2.sourcegrid[1, 0:10]):
             raise ValueError("Wave fields not consistent.")
@@ -342,7 +347,9 @@ def compute_correlation(input_files, all_conf, nsrc, all_ns, taper,
         if False in (wf1.sourcegrid[1, -10:] == wf2.sourcegrid[1, -10:]):
             raise ValueError("Wave fields not consistent.")
 
-        if False in (wf1.sourcegrid[0, -10:] == nsrc.src_loc[0, -10:]):
+        # rounding it to keep it from not working
+        # 5 decimals means meter accuracy
+        if False in (np.around(wf1.sourcegrid[0, -10:],5) == np.around(nsrc.src_loc[0, -10:],5)):
             raise ValueError("Wave field and source not consistent.")
 
     # Loop over source locations
