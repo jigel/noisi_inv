@@ -130,7 +130,6 @@ def create_sourcegrid(config,stationlist_path=None):
             # reassign grid to make sure it's in the right order
             grid = grd
             
-        
         if 'svp_station_remove' in config and config['svp_station_remove'] is not None and stationlist_path is not None:
             
             print(f'Removing gridpoints in {config["svp_station_remove"]} radius of stations..')
@@ -183,7 +182,13 @@ def setup_sourcegrid(args, comm, size, rank):
         config = yaml.safe_load(fh)
 
     grid_filename = os.path.join(config['project_path'], 'sourcegrid.npy')
-    sourcegrid = create_sourcegrid(config)
+
+    print(args.stationlist)
+
+    if args.stationlist is None:
+        sourcegrid = create_sourcegrid(config)
+    else:
+        sourcegrid = create_sourcegrid(config,stationlist_path=args.stationlist)
 
     # plot
     try:
