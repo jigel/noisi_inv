@@ -78,7 +78,6 @@ class source_setup(object):
                 conf['source_path'] = os.path.abspath(source_model)
                 conf['source_setup_file'] = os.path.join(conf['source_path'],
                                                   'source_setup_parameters.yml')
-                conf['wavefield_path'] = args.wavefield_path
 
             with io.open(os.path.join(noisi_path,
                                       'config',
@@ -183,8 +182,7 @@ class source_setup(object):
 
                 
         # get the relevant array sizes
-        #wfs = glob(os.path.join(conf['project_path'], 'greens', '*.h5'))
-        wfs = glob(os.path.join(conf['wavefield_path'],'*.h5'))
+        wfs = glob(os.path.join(conf['project_path'], 'greens', '*.h5'))
         
         if wfs != []:
             if conf['verbose'] and rank == 0:
