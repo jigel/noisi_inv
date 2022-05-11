@@ -182,8 +182,9 @@ class source_setup(object):
 
                 
         # get the relevant array sizes
-        wfs = glob(os.path.join(conf['project_path'], 'greens', '*.h5'))
-        
+        #wfs = glob(os.path.join(conf['project_path'], 'greens', '*.h5'))
+        wfs = glob(os.path.join(args.wavefield_path,'*.h5'))
+
         if wfs != []:
             if conf['verbose'] and rank == 0:
                 print('Found wavefield stats.')

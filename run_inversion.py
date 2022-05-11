@@ -404,8 +404,8 @@ if rank == 0:
 if inv_args.wavefield_type == 'greens':
 
     if hasattr(inv_args, 'wavefield_greens_copy') and not inv_args.wavefield_greens_copy:
-
-        print(f"Not copying already prepared wavefield. Path: {inv_args.wavefield_path}")
+        if rank == 0:
+            print(f"Not copying already prepared wavefield. Path: {inv_args.wavefield_path}")
 
     else:
         # copy greens folder to project
