@@ -402,23 +402,38 @@ if rank == 0:
     print("Converting wavefield..")
     
 if inv_args.wavefield_type == 'greens':
-    # copy greens folder to project
-    wf_path = os.path.join(inv_args.project_path, 'greens')
-    
-    if rank == 0:
-        print(f"Copying already prepared wavefield from {inv_config['wavefield_config']['wavefield_path']}")
-        if os.path.exists(wf_path):
-            shutil.rmtree(wf_path)
-        shutil.copytree(inv_args.wavefield_path,wf_path)
-        print("Copying done.")
+
+    if hasattr(inv_args, 'wavefield_greens_copy') and not inv_args.wavefield_greens_copy:
+
+        print(f"Not copying already prepared wavefield. Path: {inv_args.wavefield_path}")
+
+    else:
+        # copy greens folder to project
+        wf_path = os.path.join(inv_args.project_path, 'greens')
+        
+        if rank == 0:
+            print(f"Copying already prepared wavefield from {inv_config['wavefield_config']['wavefield_path']}")
+            if os.path.exists(wf_path):
+                shutil.rmtree(wf_path)
+            shutil.copytree(inv_args.wavefield_path,wf_path)
+            print("Copying done.")
+
+        inv_args.wavefield_path = wf_path
+
+
     comm.barrier()
 
     # should check here if wavefield are the same
 else:
     precompute_wavefield(inv_args, comm, size, rank)
+
+    wf_path = os.path.join(inv_args.project_path, 'greens')
+    inv_args.wavefield_path = wf_path
     #pass
     
 comm.barrier()
+
+
 
 if rank==0:
     # time for wavefield

@@ -120,7 +120,8 @@ def add_input_files(cp, all_conf, insta=False):
     # Wavefield files
     if not insta:
 
-        dir = os.path.join(all_conf.config['project_path'], 'greens')
+        #dir = os.path.join(all_conf.config['project_path'], 'greens')
+        dir = all_conf.wavefield_path
         wf1 = glob(os.path.join(dir, sta1 + '.h5'))[0]
         wf2 = glob(os.path.join(dir, sta2 + '.h5'))[0]
 
@@ -277,8 +278,9 @@ def get_ns(all_conf, insta=False):
         nt = stest.stats.npts
         Fs = stest.stats.sampling_rate
     else:
-        any_wavefield = glob(os.path.join(all_conf.config['project_path'],
-                                          'greens', '*.h5'))[-1]
+        #any_wavefield = glob(os.path.join(all_conf.config['project_path'],'greens', '*.h5'))[-1]
+        any_wavefield = glob(os.path.join(all_conf.wavefield_path,'*.h5'))[-1]
+        
         with WaveField(any_wavefield) as wf1:
             nt = int(wf1.stats['nt'])
             Fs = round(wf1.stats['Fs'], 8)
@@ -451,6 +453,11 @@ def add_metadata_and_write(correlation, sta1, sta2, output_file, Fs):
 def run_corr(args, comm, size, rank):
 
     all_conf = config_params(args, comm, size, rank)
+
+    # wavefield path
+    setattr(all_conf,'wavefield_path',args.wavefield_path)
+
+
     # Distributing the tasks
     correlation_tasks, n_p_p, n_p = define_correlation_tasks(all_conf,
                                                              comm, size, rank)

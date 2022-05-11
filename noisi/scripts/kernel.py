@@ -57,7 +57,8 @@ def add_input_files(kp, all_conf, insta=False):
 
     # Wavefield files
     if not insta:
-        dir = os.path.join(all_conf.config['project_path'], 'greens')
+        #dir = os.path.join(all_conf.config['project_path'], 'greens')
+        dir = all_conf.wavefield_path
         wf1 = glob(os.path.join(dir, sta1 + '.h5'))[0]
         wf2 = glob(os.path.join(dir, sta2 + '.h5'))[0]
     else:
@@ -376,6 +377,11 @@ def run_kern(args, comm, size, rank):
 
     args.steplengthrun = False  # by default
     all_conf = config_params(args, comm, size, rank)
+
+    # wavefield path
+    setattr(all_conf,'wavefield_path',args.wavefield_path)
+
+
 
     kernel_tasks, n_p_p, n_p = define_kernel_tasks(all_conf, comm, size, rank)
     
