@@ -5,7 +5,7 @@ This tool can be used to simulate noise cross-correlations and sensitivity kerne
 ### Installation requirements
 
 Install requirements (easiest done with anaconda)
-- [obspy](https://docs.obspy.org/) (<=1.2.2)
+- [obspy](https://docs.obspy.org/) 
 - PyYaml
 - pandas
 - mpi4py

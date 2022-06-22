@@ -11,7 +11,7 @@ This code is from the ants package: https://github.com/lermert/ants_2.
 
 import numpy as np
 from math import sqrt, isnan
-from obspy.signal.cross_correlation import xcorr
+from obspy.signal.cross_correlation import xcorr_3c
 from scipy.signal import hilbert, correlate
 from scipy.fftpack import next_fast_len
 import warnings
@@ -39,8 +39,8 @@ def running_mean(x, N):
 
 def obspy_xcorr(trace1, trace2, max_lag_samples):
 
-    x_corr = xcorr(trace1.data, trace2.data,
-                   max_lag_samples, True)[2]
+    x_corr = xcorr_3c(trace1.data, trace2.data,
+                   max_lag_samples, components=['Z'], full_xcorr=True)[2]
 
     return x_corr
 
