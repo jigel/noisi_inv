@@ -12,6 +12,7 @@ import numpy as np
 import yaml
 import os
 import io
+import sys
 from noisi.util.geo import points_on_ell
 from noisi.util.source_grid_svp import svp_grid
 from noisi.util.source_grid_svp import spherical_distance_degrees
@@ -106,56 +107,69 @@ def create_sourcegrid(config,stationlist_path=None):
 
     
     elif 'svp_grid' in config and config['svp_grid']:
-        
-        sigma,beta,phi_min,phi_max,lat_0,lon_0,gamma = config['svp_sigma'],config['svp_beta'],config['svp_phi_min'],config['svp_phi_max'],config['svp_lat_0'],config['svp_lon_0'],config['svp_gamma']
-        
-        grid = svp_grid(sigma=sigma,
-                          beta=beta,
-                          phi_min=phi_min,
-                          phi_max=phi_max,
-                          lat_0=lat_0,
-                          lon_0=lon_0,
-                          gamma=gamma,
-                          plot=config['svp_plot'],
-                          dense_antipole=config['svp_dense_antipole'],
-                          only_ocean=config['svp_only_ocean'])
-        
-        
-        # compute and save voronoi cell surface area if set to true
-        if 'svp_voronoi_area' in config and  config['svp_voronoi_area']:
-            from noisi.util.geo import get_voronoi_surface_area
-            
-            grd,surf_areas = get_voronoi_surface_area(grid,config,sigma,beta,phi_min,phi_max,lat_0,lon_0,gamma,output="project")
-            
-            # reassign grid to make sure it's in the right order
-            grid = grd
-            
-        if 'svp_station_remove' in config and config['svp_station_remove'] is not None and stationlist_path is not None:
-            
-            print(f'Removing gridpoints in {config["svp_station_remove"]} radius of stations..')
-            
-            stationlist = read_csv(stationlist_path)
-            lat = stationlist['lat']
-            lon = stationlist['lon']            
 
-            grid_true = np.ones(np.size(grid[0]),dtype=bool)
-            grid = np.asarray(grid)
+        # If a npy file is given it has to have voronoi cells
+        if os.path.isfile(config['svp_grid']):
 
+            grid = np.load(config['svp_grid'])
 
-            for i,j in zip(lat,lon):   
-                for k,(grd_lon,grd_lat) in enumerate(zip(grid[0],grid[1])):
-                    dist_var = spherical_distance_degrees(i,j,grd_lat,grd_lon)        
-                    if dist_var < config['svp_station_remove']:
-                        grid_true[k] = False    
+            if np.shape(grid)[0] == 2:
+                print(f"Voronoi cells missing from {config['svp_grid']} file")
+                sys.exit()
+            else:
+                np.save(os.path.join(config['project_path'],'sourcegrid_voronoi.npy'),[grid[0],grid[1],grid[2]])
 
-            grid = grid.T[grid_true].T
+        else:
+
+            sigma,beta,phi_min,phi_max,lat_0,lon_0,gamma = config['svp_sigma'],config['svp_beta'],config['svp_phi_min'],config['svp_phi_max'],config['svp_lat_0'],config['svp_lon_0'],config['svp_gamma']
+
+            grid = svp_grid(sigma=sigma,
+                            beta=beta,
+                            phi_min=phi_min,
+                            phi_max=phi_max,
+                            lat_0=lat_0,
+                            lon_0=lon_0,
+                            gamma=gamma,
+                            plot=config['svp_plot'],
+                            dense_antipole=config['svp_dense_antipole'],
+                            only_ocean=config['svp_only_ocean'])
             
+        
+            # compute and save voronoi cell surface area if set to true
             if 'svp_voronoi_area' in config and  config['svp_voronoi_area']:
-                surf_areas = surf_areas[grid_true]            
-            
-        if config['svp_voronoi_area']:
-            np.save(os.path.join(config['project_path'],'sourcegrid_voronoi.npy'),[grid[0],grid[1],surf_areas])
-            print('Voronoi Areas saved as sourcegrid_voronoi.npy')
+                from noisi.util.geo import get_voronoi_surface_area
+                
+                grd,surf_areas = get_voronoi_surface_area(grid,config,sigma,beta,phi_min,phi_max,lat_0,lon_0,gamma,output="project")
+                
+                # reassign grid to make sure it's in the right order
+                grid = grd
+                
+            if 'svp_station_remove' in config and config['svp_station_remove'] is not None and stationlist_path is not None and not os.path.isfile(config['svp_grid']):
+                
+                print(f'Removing gridpoints in {config["svp_station_remove"]} radius of stations..')
+                
+                stationlist = read_csv(stationlist_path)
+                lat = stationlist['lat']
+                lon = stationlist['lon']            
+
+                grid_true = np.ones(np.size(grid[0]),dtype=bool)
+                grid = np.asarray(grid)
+
+
+                for i,j in zip(lat,lon):   
+                    for k,(grd_lon,grd_lat) in enumerate(zip(grid[0],grid[1])):
+                        dist_var = spherical_distance_degrees(i,j,grd_lat,grd_lon)        
+                        if dist_var < config['svp_station_remove']:
+                            grid_true[k] = False    
+
+                grid = grid.T[grid_true].T
+                
+                if 'svp_voronoi_area' in config and  config['svp_voronoi_area']:
+                    surf_areas = surf_areas[grid_true]            
+                
+            if config['svp_voronoi_area']:
+                np.save(os.path.join(config['project_path'],'sourcegrid_voronoi.npy'),[grid[0],grid[1],surf_areas])
+                print('Voronoi Areas saved as sourcegrid_voronoi.npy')
                 
             
             
@@ -167,7 +181,7 @@ def create_sourcegrid(config,stationlist_path=None):
                              ymax=config['grid_lat_max'])
     
     sources = np.zeros((2, len(grid[0])))
-    sources[0:2, :] = grid
+    sources[0:2, :] = grid[0:2]
 
     #if config['verbose']:
     print('Number of gridpoints: ', sources.shape[-1])
