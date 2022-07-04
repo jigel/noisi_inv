@@ -111,12 +111,14 @@ def create_sourcegrid(config,stationlist_path=None):
         # If a npy file is given it has to have voronoi cells
         if os.path.isfile(config['svp_grid']):
 
+                
             grid = np.load(config['svp_grid'])
 
             if np.shape(grid)[0] == 2:
                 print(f"Voronoi cells missing from {config['svp_grid']} file")
                 sys.exit()
             else:
+                print(f"Using {config['svp_grid']} file for the sourcegrid..")
                 np.save(os.path.join(config['project_path'],'sourcegrid_voronoi.npy'),[grid[0],grid[1],grid[2]])
 
         else:
