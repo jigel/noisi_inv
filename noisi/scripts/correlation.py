@@ -120,8 +120,11 @@ def add_input_files(cp, all_conf, insta=False):
     # Wavefield files
     if not insta:
 
-        #dir = os.path.join(all_conf.config['project_path'], 'greens')
-        dir = all_conf.wavefield_path
+        if hasattr(all_conf,'wavefield_path'):
+            dir = all_conf.wavefield_path
+        else:
+            dir = os.path.join(all_conf.config['project_path'], 'greens')
+
         wf1 = glob(os.path.join(dir, sta1 + '.h5'))[0]
         wf2 = glob(os.path.join(dir, sta2 + '.h5'))[0]
 
@@ -279,8 +282,12 @@ def get_ns(all_conf, insta=False):
         Fs = stest.stats.sampling_rate
     else:
         #any_wavefield = glob(os.path.join(all_conf.config['project_path'],'greens', '*.h5'))[-1]
-        any_wavefield = glob(os.path.join(all_conf.wavefield_path,'*.h5'))[-1]
         
+        if hasattr(all_conf,'wavefield_path'):
+            any_wavefield = glob(os.path.join(all_conf.wavefield_path,'*.h5'))[-1]
+        else:
+            any_wavefield = glob(os.path.join(all_conf.config['project_path'],'greens', '*.h5'))[-1]
+
         with WaveField(any_wavefield) as wf1:
             nt = int(wf1.stats['nt'])
             Fs = round(wf1.stats['Fs'], 8)

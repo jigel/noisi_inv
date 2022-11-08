@@ -57,8 +57,12 @@ def add_input_files(kp, all_conf, insta=False):
 
     # Wavefield files
     if not insta:
-        #dir = os.path.join(all_conf.config['project_path'], 'greens')
-        dir = all_conf.wavefield_path
+
+        if hasattr(all_conf,'wavefield_path'):
+            dir = all_conf.wavefield_path
+        else:
+            dir = os.path.join(all_conf.config['project_path'], 'greens')
+
         wf1 = glob(os.path.join(dir, sta1 + '.h5'))[0]
         wf2 = glob(os.path.join(dir, sta2 + '.h5'))[0]
     else:
