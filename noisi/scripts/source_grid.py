@@ -199,8 +199,6 @@ def setup_sourcegrid(args, comm, size, rank):
 
     grid_filename = os.path.join(config['project_path'], 'sourcegrid.npy')
 
-    print(args.stationlist_init)
-
     if args.stationlist_init is None:
         sourcegrid = create_sourcegrid(config)
     else:

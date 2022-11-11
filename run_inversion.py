@@ -100,8 +100,14 @@ else:
     
     
 # stationlist absolute path
-inv_args.stationlist = os.path.abspath(inv_args.stationlist)
-inv_args.stationlist_init = os.path.abspath(inv_args.stationlist)
+
+if inv_args.stationlist is not None:
+    inv_args.stationlist = os.path.abspath(inv_args.stationlist)
+    inv_args.stationlist_init = os.path.abspath(inv_args.stationlist)
+
+elif inv_args.stationlist is None:
+    inv_args.stationlist_init = None
+
 
 # get noisi folder
 noisi_inv_path = os.path.dirname(os.path.dirname(noisi.__file__))
