@@ -58,4 +58,7 @@ We have added a jupyter notebook to help you setup a config file for an inversio
 
 It is recommended to download a pre-computed wavefield if you want to do proper inversions (http://ds.iris.edu/ds/products/syngine/). These are then easily implemented in the config file. 
 
+### Documentation
+You can find more information about the code and the parameters for the inversion in the noisi_inv_doc.pdf. This package is a mix of various different codes to allow the automatic downloading, processing, correlating, and inverting of seismic ambient noise data.  
+
 
