@@ -121,6 +121,38 @@ def smooth(inputfile, outputfile, coordfile, sigma, cap, thresh, comm, size,
             return(smoothed_values)
 
 
+def smooth_values(values,  coords, sigma, cap, thresh, comm, size,
+           rank):
+
+    for ixs in range(len(sigma)):
+        sigma[ixs] = float(sigma[ixs])
+
+    #coords = np.load(coordfile)
+    values = np.array(values, ndmin=2)
+    if values.shape[0] > values.shape[-1]:
+        values = np.transpose(values)
+    smoothed_values = np.zeros(values.shape)
+    for i in range(values.shape[0]):
+        array_in = values[i, :]
+        try:
+            sig = sigma[i]
+        except IndexError:
+            sig = sigma[-1]
+
+        v = apply_smoothing_sphere(rank, size, array_in,
+                                   coords, sig, cap, threshold=thresh,
+                                   comm=comm)
+        comm.barrier()
+
+        if rank == 0:
+            smoothed_values[i, :] = v
+
+    comm.barrier()
+
+
+    return(smoothed_values)
+
+
 if __name__ == '__main__':
 
     # pass in: input_file, output_file, coord_file, sigma

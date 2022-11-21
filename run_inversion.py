@@ -91,6 +91,11 @@ for conf in ['main', 'data_download', 'inversion_config', 'project_config', 'gri
     for key in inv_config[conf]:
         setattr(inv_args,key,inv_config[conf][key]) 
         
+
+inv_args.comm = comm
+inv_args.size = size
+inv_args.rank = rank
+
 config = inv_config["project_config"]
 
 if inv_args.svp_grid:
