@@ -414,6 +414,9 @@ def output_plot(args,output_path,only_ocean=False,triangulation=False):
 
 
     try:
+
+        print('Smoothing sensitivity...')
+
         # smooth the sensitivity
         stat_sensitivity_smoothed = smooth_values(stat_sensitivity,grid,sigma=[111000*1],cap=95,thresh=1e-10,comm=args.comm,size=args.size,rank=args.rank)
         stat_sensitivity_norm_smoothed = stat_sensitivity_smoothed[0]/np.max(np.abs(stat_sensitivity_smoothed[0]))
@@ -472,7 +475,7 @@ def output_plot(args,output_path,only_ocean=False,triangulation=False):
         
         
     except:
-        print("Could not plot station sensitivity.")    
+        print("Could not plot smoothed station sensitivity.")    
         
         
         

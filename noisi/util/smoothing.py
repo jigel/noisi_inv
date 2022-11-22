@@ -121,6 +121,61 @@ def smooth(inputfile, outputfile, coordfile, sigma, cap, thresh, comm, size,
             return(smoothed_values)
 
 
+################# FOR DIRECT SMOOTHING ###################
+
+
+def smooth_gaussian_values(values, coords, rank, size, sigma, r=6371000.,
+                    threshold=1e-16):
+    # coords format: (lon,lat)
+
+    v_smooth = np.zeros(values.shape)
+
+    a = 1. / (sigma * sqrt(2. * pi))
+
+    for i in range(len(values)):
+
+        lat1 = coords[1][i]
+        lon1 = coords[0][i]
+        lat2 = coords[1]
+        lon2 = coords[0]
+        
+        dist = get_distance(lat1,lon1,lat2,lon2)
+        
+        weight = a * np.exp(-(dist) ** 2 / (2 * sigma ** 2))
+        idx = weight >= threshold
+        v_smooth[i] = np.sum(np.multiply(weight[idx], values[idx])) / idx.sum()
+    
+    return v_smooth
+
+def apply_smoothing_sphere_values(rank, size, values, coords, sigma, cap,
+                           threshold, comm):
+
+    sigma = float(sigma)
+    cap = float(cap)
+    threshold = float(threshold)
+
+    # clip
+    perc_up = np.percentile(values, cap, overwrite_input=False)
+    perc_dw = np.percentile(values, 100 - cap, overwrite_input=False)
+    values = np.clip(values, perc_dw, perc_up)
+
+    # get the smoothed map; could use other functions than Gaussian here
+    v_s = smooth_gaussian_values(values, coords, rank, size, sigma,
+                          threshold=threshold)
+
+    # collect the values
+    #v_s_all = v_s
+
+    # rank 0: save the values
+    #if rank == 0:
+        #print('Gathered.')
+    #    v_s = np.zeros(v_s.shape)
+    #    for i in range(size):
+    #        v_s += v_s_all[i]
+
+    return(v_s)
+
+
 def smooth_values(values,  coords, sigma, cap, thresh, comm, size,
            rank):
 
@@ -139,16 +194,13 @@ def smooth_values(values,  coords, sigma, cap, thresh, comm, size,
         except IndexError:
             sig = sigma[-1]
 
-        v = apply_smoothing_sphere(rank, size, array_in,
+        v = apply_smoothing_sphere_values(rank, size, array_in,
                                    coords, sig, cap, threshold=thresh,
                                    comm=comm)
-        comm.barrier()
+        
 
         if rank == 0:
             smoothed_values[i, :] = v
-
-    comm.barrier()
-
 
     return(smoothed_values)
 
