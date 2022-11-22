@@ -309,7 +309,7 @@ def output_plot(args,output_path,only_ocean=False,triangulation=False):
             cbar = plt.colorbar(pad=0.01)
             cbar.formatter.set_powerlimits((0, 0))
             cbar.ax.tick_params(labelsize=30) 
-            cbar.set_label('Power Spectral Density',rotation=270,labelpad=40,fontsize=40)
+            cbar.set_label('Power Spectral Density',rotation=90,labelpad=50,fontsize=50)
 
             try:
                 plt.title(f'Gradient for iteration {step} with misfit {np.around(misfit_dict[int(step)],2)}',pad=30,fontsize=50)
@@ -356,7 +356,7 @@ def output_plot(args,output_path,only_ocean=False,triangulation=False):
             cbar = plt.colorbar(pad=0.01)
             cbar.formatter.set_powerlimits((0, 0))
             cbar.ax.tick_params(labelsize=30) 
-            cbar.set_label('Power Spectral Density',rotation=270,labelpad=40,fontsize=40)
+            cbar.set_label('Power Spectral Density',rotation=90,labelpad=50,fontsize=50)
 
             try:
                 plt.title(f'Smoothed gradient for iteration {step} with misfit {np.around(misfit_dict[int(step)],2)} and {grad_smoothing_dict[str(step)]}° smoothing',pad=30,fontsize=50)
@@ -417,7 +417,7 @@ def output_plot(args,output_path,only_ocean=False,triangulation=False):
 
             cbar = plt.colorbar(pad=0.01)
             cbar.ax.tick_params(labelsize=30) 
-            cbar.set_label('Normalised Sensitivity',rotation=270,labelpad=40,fontsize=40)
+            cbar.set_label('Normalised Sensitivity',rotation=90,labelpad=50,fontsize=50)
 
             #cbar.set_label('Power Spectral Density',rotation=270,labelpad=10)
             plt.title(f'Station Sensitivity with vmax = {v}',pad=30,fontsize=50)
@@ -493,7 +493,7 @@ def output_plot(args,output_path,only_ocean=False,triangulation=False):
                         
             cbar = plt.colorbar(pad=0.01)
             cbar.ax.tick_params(labelsize=30) 
-            cbar.set_label(f'Normalised Sensitivity',rotation=270,labelpad=40,fontsize=40)
+            cbar.set_label(f'Normalised Sensitivity',rotation=90,labelpad=50,fontsize=50)
 
             #cbar.set_label('Power Spectral Density',rotation=270,labelpad=10)
             plt.title(f'Station Sensitivity capped between {sense_min*100}% and {sense_max*100}%',pad=30,fontsize=50)
