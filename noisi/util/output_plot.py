@@ -45,7 +45,8 @@ def output_plot(args,output_path,only_ocean=False,triangulation=False):
     Plot files in output folder
     """
 
-    print("Plotting..")
+    if args.rank == 0:
+        print("Plotting..")
 
     stationlist_path = glob(os.path.join(output_path,'stationlist*'))[0]
     #print(stationlist_path)
@@ -62,12 +63,14 @@ def output_plot(args,output_path,only_ocean=False,triangulation=False):
     lat = list(stationlist['lat'])
     lon = list(stationlist['lon'])
 
-    # make plot folder
-    if not os.path.exists(os.path.join(output_path,'output_plots')):
-        os.makedirs(os.path.join(output_path,'output_plots'))
+    if args.rank == 0:
+        # make plot folder
+        if not os.path.exists(os.path.join(output_path,'output_plots')):
+            os.makedirs(os.path.join(output_path,'output_plots'))
+
+    args.comm.barrier()
 
     output_plots = os.path.join(output_path,'output_plots')
-
 
     # plot misfit
     # misfit
@@ -104,27 +107,32 @@ def output_plot(args,output_path,only_ocean=False,triangulation=False):
 
     mf_reduc = (1-misfit[-1]/misfit[0])*100
 
-    #### MISFIT PLOTS
-    plt.figure(figsize=(15,8))
-    plt.plot(step,misfit,'k',marker='o',markerfacecolor='b',markersize=20)
-    plt.grid()
-    plt.xlabel('Iterations',fontsize=25)
-    plt.ylabel('Misfit',fontsize=25)
-    plt.xticks(fontsize=25)
-    plt.yticks(fontsize=25)
-    plt.title(f'Misfit reduced by {np.around(mf_reduc,2)}%',pad=20,fontsize=30)
-    plt.savefig(os.path.join(output_plots,'misfit_vs_iterations.png'),bbox_inches='tight',facecolor='white',dpi=72)
-    #plt.show()
-    plt.close()
+    if args.rank == 0:
+        #### MISFIT PLOT
+        plt.figure(figsize=(15,8))
+        plt.plot(step,misfit,'k',marker='o',markerfacecolor='b',markersize=20)
+        plt.grid()
+        plt.xlabel('Iterations',fontsize=25)
+        plt.ylabel('Misfit',fontsize=25)
+        plt.xticks(fontsize=25)
+        plt.yticks(fontsize=25)
+        plt.title(f'Misfit reduced by {np.around(mf_reduc,2)}%',pad=20,fontsize=30)
+        plt.savefig(os.path.join(output_plots,'misfit_vs_iterations.png'),bbox_inches='tight',facecolor='white',dpi=72)
+        #plt.show()
+        plt.close()
+
+
+    args.comm.barrier()
 
 
     ## plot steplength tests
     steplength_files = [os.path.join(i,'misfit_step_test.npy') for i in steps_avail_path if os.path.isfile(os.path.join(i,'misfit_step_test.npy'))]
     steplength_fit_files = [os.path.join(i,'misfit_step_test_fit.npy') for i in steps_avail_path if os.path.isfile(os.path.join(i,'misfit_step_test_fit.npy'))]
+    
+    if args.rank == 0:
+        print("Plotting steplength tests..")
 
-    print("Plotting steplength tests..")
-
-    for i in range(np.size(steplength_files)):
+    for i in range(args.comm.rank,np.size(steplength_files),args.comm.size):
 
         step = steplength_files[i].split('/')[-2].split('_')[1]
 
@@ -151,6 +159,9 @@ def output_plot(args,output_path,only_ocean=False,triangulation=False):
         plt.savefig(os.path.join(output_plots,f'iteration_{step}_0_slt.png'),bbox_inches='tight',facecolor='white',dpi=72)
         #plt.show()
         plt.close()
+
+
+    args.comm.barrier()
 
         
     # plot distributions
@@ -192,10 +203,14 @@ def output_plot(args,output_path,only_ocean=False,triangulation=False):
             #print('fail')
             pass
 
-
-    print("Plotting sourcemodels..")
+    if args.rank == 0:
+        print("Plotting sourcemodels..")
         
-    for model in sourcemodel_paths:
+
+
+    for i in range(args.rank,np.shape(sourcemodel_paths)[0],args.size):
+
+        model = sourcemodel_paths[i]
         step = os.path.basename(model).split('_')[-1].split('.')[0]    
         if step == 'sourcemodel':
             step = 0
@@ -259,13 +274,18 @@ def output_plot(args,output_path,only_ocean=False,triangulation=False):
         plt.close()
 
 
-    print("Plotting gradients..")
+    args.comm.barrier()
+
+    if args.rank == 0:
+        print("Plotting gradients..")
         
     grid = np.load(sourcegrid_path)
     if triangulation:
         triangles = tri.Triangulation(grid[0],grid[1])
 
-    for file in grad_paths:
+    for i in range(args.rank,np.shape(grad_paths)[0],args.size):
+        file = grad_paths[i]
+
         try:
             grad = np.load(file,allow_pickle=True)[0]
             v = np.max(np.abs(grad))
@@ -304,8 +324,13 @@ def output_plot(args,output_path,only_ocean=False,triangulation=False):
         except:
             pass
 
+    args.comm.barrier()
 
-    for file in grad_smooth_paths:
+    for i in range(args.rank,np.shape(grad_smooth_paths)[0],args.size):
+
+        file = grad_smooth_paths[i]
+
+
         if file == []:
             continue
         else:
@@ -343,218 +368,226 @@ def output_plot(args,output_path,only_ocean=False,triangulation=False):
             #plt.show()
             plt.close()
 
-    print("Plotting station sensitivity..")    
-        
-    # station sensitivity
-    try:
-        stat_sensitivity_path = os.path.join(output_path,'station_sensitivity.npy')
-        stat_sensitivity = np.load(stat_sensitivity_path)
 
-        stat_sensitivity_norm = stat_sensitivity/np.max(np.abs(stat_sensitivity))
 
-        v = 0.2
+    args.comm.barrier()
 
-        plt.figure(figsize=(50,20))
-        ax = plt.axes(projection=ccrs.Robinson(central_longitude=0))
-        ax.set_global()
+    if args.rank == 0:
 
-        if only_ocean:
-            ax.add_feature(cfeature.NaturalEarthFeature('cultural', 'admin_0_countries', '50m', edgecolor='black', facecolor=cfeature.COLORS['land']),zorder=2)
-        else:
-            ax.coastlines()
-        
-        #if triangulation:
-        #    plt.tripcolor(triangles,stat_sensitivity_norm,cmap=plt.get_cmap('RdBu_r'),linewidth=0.0,edgecolor='none',vmax=v,zorder=1,transform=ccrs.Geodetic())
-        #else:
-        #    plt.scatter(grid[0],grid[1],s=20,c=stat_sensitivity_norm,transform=ccrs.Geodetic(),cmap='RdBu_r',vmax=v,zorder=3)
-        
-        if triangulation:
-            triangles = tri.Triangulation(source_grid[0],source_grid[1])
-            
-            if cmash_import:
-                plt.tripcolor(triangles,stat_sensitivity_norm,cmap=cmap,linewidth=0.0,edgecolor='none',vmin=0,vmax=v,zorder=1,transform=ccrs.Geodetic())
+        print("Plotting station sensitivity..")    
+
+        # station sensitivity
+        try:
+            stat_sensitivity_path = os.path.join(output_path,'station_sensitivity.npy')
+            stat_sensitivity = np.load(stat_sensitivity_path)
+
+            stat_sensitivity_norm = stat_sensitivity/np.max(np.abs(stat_sensitivity))
+
+            v = 0.2
+
+            plt.figure(figsize=(50,20))
+            ax = plt.axes(projection=ccrs.Robinson(central_longitude=0))
+            ax.set_global()
+
+            if only_ocean:
+                ax.add_feature(cfeature.NaturalEarthFeature('cultural', 'admin_0_countries', '50m', edgecolor='black', facecolor=cfeature.COLORS['land']),zorder=2)
             else:
-                plt.tripcolor(triangles,stat_sensitivity_norm,cmap=plt.get_cmap('Blues_r'),linewidth=0.0,edgecolor='none',vmin=0,vmax=v,zorder=1,transform=ccrs.Geodetic())
-
-        else:
+                ax.coastlines()
             
-            if cmash_import:
-                plt.scatter(source_grid[0],source_grid[1],s=20,c=stat_sensitivity_norm,vmin=0,vmax=v,transform=ccrs.PlateCarree(),cmap=cmap,zorder=3)
-            else:
-                plt.scatter(source_grid[0],source_grid[1],s=20,c=stat_sensitivity_norm,vmin=0,vmax=v,transform=ccrs.PlateCarree(),cmap=plt.get_cmap('Blues_r'),zorder=3)
-
-
-        cbar = plt.colorbar(pad=0.01)
-        cbar.ax.tick_params(labelsize=30) 
-        cbar.set_label('Normalised Sensitivity',rotation=270,labelpad=40,fontsize=40)
-
-        #cbar.set_label('Power Spectral Density',rotation=270,labelpad=10)
-        plt.title(f'Station Sensitivity with vmax = {v}',pad=30,fontsize=50)
-        plt.scatter(lon,lat,s=150,c='lawngreen',marker='^',edgecolor='k',linewidth=1,transform=ccrs.PlateCarree(),zorder=3)
-        plt.savefig(os.path.join(output_plots,f'station_sensitivity.png'),bbox_inches='tight',facecolor='white',dpi=50)
-        #plt.show()
-        plt.close()
-        
-        
-        plt.figure(figsize=(50,20))
-        ax = plt.axes(projection=ccrs.Robinson(central_longitude=0))
-        ax.set_global()
-
-        ax.add_feature(cfeature.NaturalEarthFeature('cultural', 'admin_0_countries', '50m', edgecolor='black', facecolor=cfeature.COLORS['land']),zorder=2)
-        plt.scatter(grid[0],grid[1],s=20,c='k',transform=ccrs.PlateCarree(),zorder=3)
-        #cbar.set_label('Power Spectral Density',rotation=270,labelpad=10)
-        plt.title(f'Sourcegrid',pad=30,fontsize=50)
-        plt.scatter(lon,lat,s=150,c='lawngreen',marker='^',edgecolor='k',linewidth=1,transform=ccrs.PlateCarree(),zorder=3)
-        plt.savefig(os.path.join(output_plots,f'sourcegrid.png'),bbox_inches='tight',facecolor='white',dpi=50)
-        #plt.show()
-        plt.close()
-        
-    except:
-        print("Could not plot station sensitivity.")    
-
-
-    try:
-
-        print('Smoothing sensitivity...')
-
-        # smooth the sensitivity
-        stat_sensitivity_smoothed = smooth_values(stat_sensitivity,grid,sigma=[111000*1],cap=95,thresh=1e-10,comm=args.comm,size=args.size,rank=args.rank)
-        stat_sensitivity_norm_smoothed = stat_sensitivity_smoothed[0]/np.max(np.abs(stat_sensitivity_smoothed[0]))
-
-        sense_min = 0.01
-        sense_max = 0.3
-        
-        # plot final model with sensitivity below 1% set to nan
-
-        stat_sensitivity_cap = stat_sensitivity_norm_smoothed.copy()
-        stat_sensitivity_cap[stat_sensitivity_cap<sense_min] = np.nan
-        #stat_sensitivity_cap[stat_sensitivity_norm>sense_min] = 1
-
-        plt.figure(figsize=(50,20))
-        ax = plt.axes(projection=ccrs.Robinson(central_longitude=0))
-        ax.set_global()
-
-        if only_ocean:
-            ax.add_feature(cfeature.NaturalEarthFeature('cultural', 'admin_0_countries', '50m', edgecolor='black', facecolor=cfeature.COLORS['land']),zorder=2)
-        else:
-            ax.coastlines()
-        
-        #if triangulation:
-        #    plt.tripcolor(triangles,stat_sensitivity_norm,cmap=plt.get_cmap('RdBu_r'),linewidth=0.0,edgecolor='none',vmax=v,zorder=1,transform=ccrs.Geodetic())
-        #else:
-        #    plt.scatter(grid[0],grid[1],s=20,c=stat_sensitivity_norm,transform=ccrs.Geodetic(),cmap='RdBu_r',vmax=v,zorder=3)
-        
-        if triangulation:
-            triangles = tri.Triangulation(source_grid[0],source_grid[1])
+            #if triangulation:
+            #    plt.tripcolor(triangles,stat_sensitivity_norm,cmap=plt.get_cmap('RdBu_r'),linewidth=0.0,edgecolor='none',vmax=v,zorder=1,transform=ccrs.Geodetic())
+            #else:
+            #    plt.scatter(grid[0],grid[1],s=20,c=stat_sensitivity_norm,transform=ccrs.Geodetic(),cmap='RdBu_r',vmax=v,zorder=3)
             
-            if cmash_import:
-                plt.tripcolor(triangles,stat_sensitivity_cap,cmap=cmap,linewidth=0.0,edgecolor='none',vmin=0,vmax=sense_max,zorder=1,transform=ccrs.Geodetic())
-            else:
-                plt.tripcolor(triangles,stat_sensitivity_cap,cmap=plt.get_cmap('Blues_r'),linewidth=0.0,edgecolor='none',vmin=0,vmax=sense_max,zorder=1,transform=ccrs.Geodetic())
-
-        else:
-            
-            if cmash_import:
-                plt.scatter(source_grid[0],source_grid[1],s=20,c=stat_sensitivity_cap,vmin=0,vmax=sense_max,transform=ccrs.PlateCarree(),cmap=cmap,zorder=3)
-            else:
-                plt.scatter(source_grid[0],source_grid[1],s=20,c=stat_sensitivity_cap,vmin=0,vmax=sense_max,transform=ccrs.PlateCarree(),cmap=plt.get_cmap('Blues_r'),zorder=3)
+            if triangulation:
+                triangles = tri.Triangulation(source_grid[0],source_grid[1])
                 
-                    
-        cbar = plt.colorbar(pad=0.01)
-        cbar.ax.tick_params(labelsize=30) 
-        cbar.set_label(f'Normalised Sensitivity',rotation=270,labelpad=40,fontsize=40)
-
-        #cbar.set_label('Power Spectral Density',rotation=270,labelpad=10)
-        plt.title(f'Station Sensitivity capped between {sense_min*100}% and {sense_max*100}%',pad=30,fontsize=50)
-        plt.scatter(lon,lat,s=150,c='lawngreen',marker='^',edgecolor='k',linewidth=1,transform=ccrs.PlateCarree(),zorder=3)
-        plt.savefig(os.path.join(output_plots,f'station_sensitivity_capped.png'),bbox_inches='tight',facecolor='white',dpi=50)
-        #plt.show()
-        plt.close()
-        
-        
-        
-        
-    except:
-        print("Could not plot smoothed station sensitivity.")    
-        
-        
-        
-    print("Plotting ray coverage for kernels..")
-    
-    try:
-        kern_path = os.path.join(args.project_path,'source_1/iteration_0/kern')
-        kern_files = glob(os.path.join(kern_path,'*.npy'))
-
-        # if kern_files empty, try getting used_obs_corr_list.csv
-        if kern_files == []:
-            sta_pair_used_file = glob(os.path.join(output_path,'used_obs_corr_list.csv'))
-
-            if sta_pair_used_file != []:
-
-                sta_pair = read_csv(sta_pair_used_file[0],header=None)
-
-                kern_pairs = [f"{i[1][0].split('--')[0].split('.')[0]}.{i[1][0].split('--')[0].split('.')[1]}--{i[1][0].split('--')[1].split('.')[0]}.{i[1][0].split('--')[1].split('.')[1]}" for i in sta_pair.iterrows()]
+                if cmash_import:
+                    plt.tripcolor(triangles,stat_sensitivity_norm,cmap=cmap,linewidth=0.0,edgecolor='none',vmin=0,vmax=v,zorder=1,transform=ccrs.Geodetic())
+                else:
+                    plt.tripcolor(triangles,stat_sensitivity_norm,cmap=plt.get_cmap('Blues_r'),linewidth=0.0,edgecolor='none',vmin=0,vmax=v,zorder=1,transform=ccrs.Geodetic())
 
             else:
-                pass
-
-        else:
-            kern_pairs = [f"{os.path.basename(i).split('--')[0].split('.')[0]}.{os.path.basename(i).split('--')[0].split('.')[1]}--{os.path.basename(i).split('--')[1].split('.')[0]}.{os.path.basename(i).split('--')[1].split('.')[1]}" for i in kern_files]
-
-
-        station_dict = dict()
-        station_anti_dict = dict()
-
-        for sta_i in stationlist.iterrows():
-            sta = sta_i[1]
-            station_dict.update({f"{sta['net']}.{sta['sta']}":[sta['lat'],sta['lon']]})
-
-            if sta['lon'] < 0:
-                station_anti_dict.update({f"{sta['net']}.{sta['sta']}":[-sta['lat'],sta['lon']+180]})
-            elif sta['lon'] >= 0:
-                station_anti_dict.update({f"{sta['net']}.{sta['sta']}":[-sta['lat'],sta['lon']-180]})
+                
+                if cmash_import:
+                    plt.scatter(source_grid[0],source_grid[1],s=20,c=stat_sensitivity_norm,vmin=0,vmax=v,transform=ccrs.PlateCarree(),cmap=cmap,zorder=3)
+                else:
+                    plt.scatter(source_grid[0],source_grid[1],s=20,c=stat_sensitivity_norm,vmin=0,vmax=v,transform=ccrs.PlateCarree(),cmap=plt.get_cmap('Blues_r'),zorder=3)
 
 
-        kern_stat_dict = {}
-        n_rays = 0
+            cbar = plt.colorbar(pad=0.01)
+            cbar.ax.tick_params(labelsize=30) 
+            cbar.set_label('Normalised Sensitivity',rotation=270,labelpad=40,fontsize=40)
 
-        plt.figure(figsize=(50,20))
-        ax = plt.axes(projection=ccrs.Robinson())
-        ax.add_feature(cfeature.NaturalEarthFeature('cultural', 'admin_0_countries', '50m', edgecolor='black', facecolor=cfeature.COLORS['land']),zorder=1)
-        #ax.coastlines()
-        ax.set_global()
-
-        for stat_pair in kern_pairs:
-            i = stat_pair.split('--')[0]
-            j = stat_pair.split('--')[1]
-
-
-            kern_stat_dict.update({i:[station_dict[i][0],station_dict[i][1]]})
-            kern_stat_dict.update({j:[station_dict[j][0],station_dict[j][1]]})
-
-            alpha_var = 4/np.size(list(station_dict.keys()))
-
-            if alpha_var > 1:
-                alpha_var = 1
-
-            plt.plot([station_dict[i][1],station_anti_dict[j][1]],[station_dict[i][0],station_anti_dict[j][0]], color='k',zorder=2, transform=ccrs.Geodetic(),alpha=alpha_var)
-            plt.plot([station_anti_dict[i][1],station_dict[j][1]],[station_anti_dict[i][0],station_dict[j][0]], color='k',zorder=2, transform=ccrs.Geodetic(),alpha=alpha_var)
-
-            n_rays += 1
-
-        stat_lat = np.asarray(list(kern_stat_dict.values())).T[0]
-        stat_lon = np.asarray(list(kern_stat_dict.values())).T[1]
-
-        plt.scatter(stat_lon,stat_lat,s=150,c='lawngreen',marker='^',edgecolor='k',linewidth=1,transform=ccrs.PlateCarree(),zorder=3)
-
-        plt.title(f"Ray coverage with {n_rays} rays",pad=30,fontsize=50)
-        plt.savefig(os.path.join(output_plots,f'kernel_ray_coverage.png'),bbox_inches='tight',facecolor='white',dpi=50)
-
-        plt.close()
+            #cbar.set_label('Power Spectral Density',rotation=270,labelpad=10)
+            plt.title(f'Station Sensitivity with vmax = {v}',pad=30,fontsize=50)
+            plt.scatter(lon,lat,s=150,c='lawngreen',marker='^',edgecolor='k',linewidth=1,transform=ccrs.PlateCarree(),zorder=3)
+            plt.savefig(os.path.join(output_plots,f'station_sensitivity.png'),bbox_inches='tight',facecolor='white',dpi=50)
+            #plt.show()
+            plt.close()
             
-    except Exception as e:
-        print(e)
-        print("Could not plot ray coverage.")
+            
+            plt.figure(figsize=(50,20))
+            ax = plt.axes(projection=ccrs.Robinson(central_longitude=0))
+            ax.set_global()
+
+            ax.add_feature(cfeature.NaturalEarthFeature('cultural', 'admin_0_countries', '50m', edgecolor='black', facecolor=cfeature.COLORS['land']),zorder=2)
+            plt.scatter(grid[0],grid[1],s=20,c='k',transform=ccrs.PlateCarree(),zorder=3)
+            #cbar.set_label('Power Spectral Density',rotation=270,labelpad=10)
+            plt.title(f'Sourcegrid',pad=30,fontsize=50)
+            plt.scatter(lon,lat,s=150,c='lawngreen',marker='^',edgecolor='k',linewidth=1,transform=ccrs.PlateCarree(),zorder=3)
+            plt.savefig(os.path.join(output_plots,f'sourcegrid.png'),bbox_inches='tight',facecolor='white',dpi=50)
+            #plt.show()
+            plt.close()
+            
+        except:
+            print("Could not plot station sensitivity.")    
 
 
-    print(f"Plots can be found in {output_plots}")
+        try:
+
+            print('Smoothing sensitivity...')
+
+            # smooth the sensitivity
+            stat_sensitivity_smoothed = smooth_values(stat_sensitivity,grid,sigma=[111000*1],cap=95,thresh=1e-10,comm=args.comm,size=args.size,rank=args.rank)
+            stat_sensitivity_norm_smoothed = stat_sensitivity_smoothed[0]/np.max(np.abs(stat_sensitivity_smoothed[0]))
+
+            sense_min = 0.01
+            sense_max = 0.3
+            
+            # plot final model with sensitivity below 1% set to nan
+
+            stat_sensitivity_cap = stat_sensitivity_norm_smoothed.copy()
+            stat_sensitivity_cap[stat_sensitivity_cap<sense_min] = np.nan
+            #stat_sensitivity_cap[stat_sensitivity_norm>sense_min] = 1
+
+            plt.figure(figsize=(50,20))
+            ax = plt.axes(projection=ccrs.Robinson(central_longitude=0))
+            ax.set_global()
+
+            if only_ocean:
+                ax.add_feature(cfeature.NaturalEarthFeature('cultural', 'admin_0_countries', '50m', edgecolor='black', facecolor=cfeature.COLORS['land']),zorder=2)
+            else:
+                ax.coastlines()
+            
+            #if triangulation:
+            #    plt.tripcolor(triangles,stat_sensitivity_norm,cmap=plt.get_cmap('RdBu_r'),linewidth=0.0,edgecolor='none',vmax=v,zorder=1,transform=ccrs.Geodetic())
+            #else:
+            #    plt.scatter(grid[0],grid[1],s=20,c=stat_sensitivity_norm,transform=ccrs.Geodetic(),cmap='RdBu_r',vmax=v,zorder=3)
+            
+            if triangulation:
+                triangles = tri.Triangulation(source_grid[0],source_grid[1])
+                
+                if cmash_import:
+                    plt.tripcolor(triangles,stat_sensitivity_cap,cmap=cmap,linewidth=0.0,edgecolor='none',vmin=0,vmax=sense_max,zorder=1,transform=ccrs.Geodetic())
+                else:
+                    plt.tripcolor(triangles,stat_sensitivity_cap,cmap=plt.get_cmap('Blues_r'),linewidth=0.0,edgecolor='none',vmin=0,vmax=sense_max,zorder=1,transform=ccrs.Geodetic())
+
+            else:
+                
+                if cmash_import:
+                    plt.scatter(source_grid[0],source_grid[1],s=20,c=stat_sensitivity_cap,vmin=0,vmax=sense_max,transform=ccrs.PlateCarree(),cmap=cmap,zorder=3)
+                else:
+                    plt.scatter(source_grid[0],source_grid[1],s=20,c=stat_sensitivity_cap,vmin=0,vmax=sense_max,transform=ccrs.PlateCarree(),cmap=plt.get_cmap('Blues_r'),zorder=3)
+                    
+                        
+            cbar = plt.colorbar(pad=0.01)
+            cbar.ax.tick_params(labelsize=30) 
+            cbar.set_label(f'Normalised Sensitivity',rotation=270,labelpad=40,fontsize=40)
+
+            #cbar.set_label('Power Spectral Density',rotation=270,labelpad=10)
+            plt.title(f'Station Sensitivity capped between {sense_min*100}% and {sense_max*100}%',pad=30,fontsize=50)
+            plt.scatter(lon,lat,s=150,c='lawngreen',marker='^',edgecolor='k',linewidth=1,transform=ccrs.PlateCarree(),zorder=3)
+            plt.savefig(os.path.join(output_plots,f'station_sensitivity_capped.png'),bbox_inches='tight',facecolor='white',dpi=50)
+            #plt.show()
+            plt.close()
+            
+            
+            
+            
+        except:
+            print("Could not plot smoothed station sensitivity.")    
+            
+            
+            
+        print("Plotting ray coverage for kernels..")
+        
+        try:
+            kern_path = os.path.join(args.project_path,'source_1/iteration_0/kern')
+            kern_files = glob(os.path.join(kern_path,'*.npy'))
+
+            # if kern_files empty, try getting used_obs_corr_list.csv
+            if kern_files == []:
+                sta_pair_used_file = glob(os.path.join(output_path,'used_obs_corr_list.csv'))
+
+                if sta_pair_used_file != []:
+
+                    sta_pair = read_csv(sta_pair_used_file[0],header=None)
+
+                    kern_pairs = [f"{i[1][0].split('--')[0].split('.')[0]}.{i[1][0].split('--')[0].split('.')[1]}--{i[1][0].split('--')[1].split('.')[0]}.{i[1][0].split('--')[1].split('.')[1]}" for i in sta_pair.iterrows()]
+
+                else:
+                    pass
+
+            else:
+                kern_pairs = [f"{os.path.basename(i).split('--')[0].split('.')[0]}.{os.path.basename(i).split('--')[0].split('.')[1]}--{os.path.basename(i).split('--')[1].split('.')[0]}.{os.path.basename(i).split('--')[1].split('.')[1]}" for i in kern_files]
+
+
+            station_dict = dict()
+            station_anti_dict = dict()
+
+            for sta_i in stationlist.iterrows():
+                sta = sta_i[1]
+                station_dict.update({f"{sta['net']}.{sta['sta']}":[sta['lat'],sta['lon']]})
+
+                if sta['lon'] < 0:
+                    station_anti_dict.update({f"{sta['net']}.{sta['sta']}":[-sta['lat'],sta['lon']+180]})
+                elif sta['lon'] >= 0:
+                    station_anti_dict.update({f"{sta['net']}.{sta['sta']}":[-sta['lat'],sta['lon']-180]})
+
+
+            kern_stat_dict = {}
+            n_rays = 0
+
+            plt.figure(figsize=(50,20))
+            ax = plt.axes(projection=ccrs.Robinson())
+            ax.add_feature(cfeature.NaturalEarthFeature('cultural', 'admin_0_countries', '50m', edgecolor='black', facecolor=cfeature.COLORS['land']),zorder=1)
+            #ax.coastlines()
+            ax.set_global()
+
+            for stat_pair in kern_pairs:
+                i = stat_pair.split('--')[0]
+                j = stat_pair.split('--')[1]
+
+
+                kern_stat_dict.update({i:[station_dict[i][0],station_dict[i][1]]})
+                kern_stat_dict.update({j:[station_dict[j][0],station_dict[j][1]]})
+
+                alpha_var = 4/np.size(list(station_dict.keys()))
+
+                if alpha_var > 1:
+                    alpha_var = 1
+
+                plt.plot([station_dict[i][1],station_anti_dict[j][1]],[station_dict[i][0],station_anti_dict[j][0]], color='k',zorder=2, transform=ccrs.Geodetic(),alpha=alpha_var)
+                plt.plot([station_anti_dict[i][1],station_dict[j][1]],[station_anti_dict[i][0],station_dict[j][0]], color='k',zorder=2, transform=ccrs.Geodetic(),alpha=alpha_var)
+
+                n_rays += 1
+
+            stat_lat = np.asarray(list(kern_stat_dict.values())).T[0]
+            stat_lon = np.asarray(list(kern_stat_dict.values())).T[1]
+
+            plt.scatter(stat_lon,stat_lat,s=150,c='lawngreen',marker='^',edgecolor='k',linewidth=1,transform=ccrs.PlateCarree(),zorder=3)
+
+            plt.title(f"Ray coverage with {n_rays} rays",pad=30,fontsize=50)
+            plt.savefig(os.path.join(output_plots,f'kernel_ray_coverage.png'),bbox_inches='tight',facecolor='white',dpi=50)
+
+            plt.close()
+                
+        except Exception as e:
+            print(e)
+            print("Could not plot ray coverage.")
+
+    args.comm.barrier()
+
+    if args.rank == 0:
+        print(f"Plots can be found in {output_plots}")

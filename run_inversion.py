@@ -1306,10 +1306,15 @@ if rank == 0:
     output_copy(inv_args.project_path)
     print("Files copied to output folder.")
 
-    if inv_args.output_plot:
-        output_plot(inv_args,os.path.join(inv_args.project_path,"output"),only_ocean=only_ocean,triangulation=True)
+comm.barrier()
+
+if inv_args.output_plot:
+    output_plot(inv_args,os.path.join(inv_args.project_path,"output"),only_ocean=only_ocean,triangulation=True)
+    
+comm.barrier()
         
-        
+if rank == 0:
+
     # make a csv file with names of observed correlations
     corr_name_file = os.path.join(inv_args.project_path,"output/used_obs_corr_list.csv")
     
