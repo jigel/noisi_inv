@@ -148,7 +148,14 @@ def measurement(comm,size,rank,source_config, mtype, step, ignore_net,
                         zerophase=True)
 
         # Weight observed stack by nstack
-        tr_o.data /= tr_o.stats.sac.user0
+            
+        if 'user0' in tr_o.stats.sac:
+            tr_o.data /= tr_o.stats.sac.user0
+        else:
+            tr_o.stats.sac.user0 = 1
+            tr_o.data /= tr_o.stats.sac.user0
+
+        #tr_o.data /= tr_o.stats.sac.user0
 
         # Take the measurement
         func = rm.get_measure_func(mtype)
