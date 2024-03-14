@@ -134,7 +134,7 @@ class CorrTrace(object):
             n_trace_max = int(ceil(n_trace_max) + 1)
             self.interm_data = self.corr_windows.create_dataset("data",
                                                                 shape=(n_trace_max, self.nlag),
-                                                                dtype=np.float)
+                                                                dtype=np.float64)
             dtp = h5py.string_dtype()
             self.data_keys = self.corr_windows.create_dataset("timestamps",
                                                               shape=(n_trace_max,),

@@ -262,11 +262,11 @@ precompute_wavefield first.')
                                         'starting_model.h5'), 'w') as fh:
                 fh.create_dataset('coordinates', data=grd)
                 fh.create_dataset('frequencies', data=freq)
-                fh.create_dataset('model', data=coeffs.astype(np.float))
+                fh.create_dataset('model', data=coeffs.astype(np.float64))
                 fh.create_dataset('spectral_basis',
-                                  data=spectra.astype(np.float))
+                                  data=spectra.astype(np.float64))
                 fh.create_dataset('surface_areas',
-                                  data=surf_el.astype(np.float))
+                                  data=surf_el.astype(np.float64))
 
             # Save to an hdf5 file
             with h5py.File(os.path.join(args.source_model,
@@ -274,11 +274,11 @@ precompute_wavefield first.')
                 uniform_spatial = np.ones(coeffs.shape) * 1.0
                 fh.create_dataset('coordinates', data=grd)
                 fh.create_dataset('frequencies', data=freq)
-                fh.create_dataset('model', data=uniform_spatial.astype(np.float))
+                fh.create_dataset('model', data=uniform_spatial.astype(np.float64))
                 fh.create_dataset('spectral_basis',
-                                  data=spectra.astype(np.float))
+                                  data=spectra.astype(np.float64))
                 fh.create_dataset('surface_areas',
-                                  data=surf_el.astype(np.float))
+                                  data=surf_el.astype(np.float64))
                 
         comm.barrier()
 

@@ -109,7 +109,7 @@ def steplengthtest(args,comm,size,rank,mf_dict,gradient_path,grad_smooth_path,so
     
             with h5py.File(sourcemodel_new,'r+') as fh:
                 del fh['model']
-                fh.create_dataset('model',data=distr_update.astype(np.float32))
+                fh.create_dataset('model',data=distr_update.astype(np.float64))
                 fh.close() 
                 
 
@@ -231,7 +231,7 @@ def steplengthtest(args,comm,size,rank,mf_dict,gradient_path,grad_smooth_path,so
         x = np.linspace(-np.max(sl) * 2, np.max(sl) * 2.5, 5000)
         y = p[0] * x ** 2 + p[1] * x + p[2]
 
-        misfit_step_test_fit = [x,y]
+        misfit_step_test_fit = np.asarray([x,y])
 
         # make sure it doesn't do weird stuff
         # only positive step lengths permitted
@@ -257,7 +257,8 @@ def steplengthtest(args,comm,size,rank,mf_dict,gradient_path,grad_smooth_path,so
             print(f'Optimal step length: {np.around(step_length,2)}')
             print(f'Misfit value predicted at optimal step length: {np.around(mf_pred,2)}')
 
-            misfit_step_test = [misfit_step_test,[step_length,mf_pred]]
+            misfit_step_test.append([step_length,mf_pred])
+            misfit_step_test = np.asarray(misfit_step_test)
 
             # save misfit_step_test array
             np.save(os.path.join(args.source_model,f'iteration_{args.step}','misfit_step_test.npy'),misfit_step_test)

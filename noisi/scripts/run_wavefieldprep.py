@@ -207,7 +207,7 @@ class precomp_wavefield(object):
                                               dtype=np.complex64)
                 else:
                     traces = f.create_dataset('data', (self.ntraces, self.npts),
-                                              dtype=np.float32)
+                                              dtype=np.float64)
 
                 for i in range(self.ntraces):
                     if i % 1000 == 0 and i > 0 and self.config['verbose']:
@@ -320,7 +320,7 @@ invalid for horizontal components; set channel to \"Z\" or use instaseis.")
                                      dtype=np.complex)
                 else:
                     f.create_dataset('data', (self.ntraces, self.npts),
-                                     dtype=np.float)
+                                     dtype=np.float64)
 
                 # loop over source locations
                 for i in range(self.ntraces):

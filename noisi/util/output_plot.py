@@ -136,7 +136,7 @@ def output_plot(args,output_path,only_ocean=False,triangulation=False):
 
         step = steplength_files[i].split('/')[-2].split('_')[1]
 
-        mf_step = np.asarray(np.load(steplength_files[i],allow_pickle=True)[0])
+        mf_step = np.asarray(np.load(steplength_files[i],allow_pickle=True))
         mf_final_step = np.load(steplength_files[i],allow_pickle=True)[1]
         mf_step_fit = np.load(steplength_fit_files[i],allow_pickle=True)
 
@@ -188,6 +188,7 @@ def output_plot(args,output_path,only_ocean=False,triangulation=False):
     grad_smoothing_paths = []
 
     for path in steps_avail_path:
+        
         grad_paths.append(os.path.join(path,'grad_all.npy'))
         grad_smooth_paths.append(glob(os.path.join(path,'grad_all_smooth.npy')))
         grad_smoothing_paths.append(glob(os.path.join(path,'smoothing*')))
@@ -326,9 +327,12 @@ def output_plot(args,output_path,only_ocean=False,triangulation=False):
 
     args.comm.barrier()
 
-    for i in range(args.rank,np.shape(grad_smooth_paths)[0],args.size):
+    # removing empty lists within list
+    grad_smooth_paths_new = [x for x in grad_smooth_paths if x]
 
-        file = grad_smooth_paths[i]
+    for i in range(args.rank,np.shape(grad_smooth_paths_new)[0],args.size):
+
+        file = grad_smooth_paths_new[i]
 
 
         if file == []:
