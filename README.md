@@ -31,11 +31,11 @@ Clone the repository with git:
 `git clone https://github.com/jigel/noisi_inv.git`
 
 Create a new environment and activate it:  
-`conda create -n noisi_inv`  
+`conda create -n noisi_inv python=3.8`  
 `conda activate noisi_inv`
 
 Install a few necessary packages:  
-`conda install proj geos mpi4py h5py instaseis --yes`  
+`conda install proj geos shapely mpi4py h5py instaseis --yes`  
 
 Install noisi_inv (in the noisi_inv directory) which should install all other packages.
 Change into the `noisi_inv/` directory. Call `pip install .` here, or call `pip install -v -e .` if you intend to modify the code.

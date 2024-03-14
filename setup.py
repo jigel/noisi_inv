@@ -28,9 +28,9 @@ setup(
                   'config/data_sac_headers.txt',
                   'config/source_config_comments.txt']},
     install_requires = [
-        "numpy==1.21.0",
+        "numpy==1.24.0",
         "scipy",
-        "obspy==1.2.2",
+        "obspy==1.4.0",
         "geographiclib",
         "mpi4py>=2.0.0",
         "geos",
@@ -42,7 +42,8 @@ setup(
         "jupyter",
         "pytest",
         "pyasdf",
-        "psutil"],
+        "psutil",
+	"shapely==2.0.3"],
     entry_points = {
         'console_scripts': [
             'noisi = noisi.main:run'
