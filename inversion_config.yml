@@ -14,7 +14,7 @@ project_config:
 
 data_download:
     download_data: true
-    download_data_date: yesterday
+    download_data_date: 2023-03-30
     download_data_days: 1
     download_data_channels: ['BHZ']
     

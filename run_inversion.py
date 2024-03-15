@@ -275,7 +275,8 @@ if inv_args.download_data:
             
             data_var = st[0].data
             
-            # delete
+            # delete files with amplitudes above 5e-6
+            # threshold chosen by look at some data but should be checked
             if np.max(data_var) > 5e-6:
                 os.remove(file)
                 proc_delete_count += 1
@@ -358,6 +359,13 @@ if inv_args.download_data:
         # time for data cross-correlating
         t_102 = time.time()
         run_time.write(f"Data Cross-correlating: {np.around((t_102-t_101)/60,4)} \n")
+
+    # check if there are any stations in stationlist after data download
+    stationlist_check = read_csv(inv_args.stationlist)
+
+    if stationlist_check.shape[0]<=2:
+        print("Not enough data available for inversion.")
+        sys.exit()
 
     # change path to observed cross-correlations
     inv_args.observed_corr = os.path.join(inv_args.project_path,'data','correlations')

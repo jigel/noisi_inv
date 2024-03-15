@@ -19,7 +19,7 @@ Install requirements (easiest done with anaconda)
 - pyasdf
 - psutil
 
-Additionally, install [instaseis](http://instaseis.net/), if you plan to use it for Green's functions (`conda install instaseis`).
+Additionally, install [instaseis](http://instaseis.net/), if you plan to use it for Green's functions (`conda install instaseis`). If there are issues installing instaseis with conda, cloning the github repository and installing that usually works: https://github.com/krischer/instaseis. 
 
 Install jupyter notebook if you intend to run the tutorial (see below).
 
