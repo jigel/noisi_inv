@@ -43,6 +43,7 @@ setup(
         "pytest",
         "pyasdf",
         "psutil",
+	"cmasher",
 	"shapely==2.0.3"],
     entry_points = {
         'console_scripts': [

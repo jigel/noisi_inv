@@ -140,7 +140,7 @@ def run_noisi_mfp(args,comm,size,rank):
 
             sourcegrid = np.load(mfp_args.sourcegrid_path)
 
-            plot_grid(mfp_args,grid=sourcegrid,
+            plot_grid(mfp_args,grid=[sourcegrid[1],sourcegrid[0]],
                       output_file=os.path.join(mfp_args.project_path,'sourcegrid.png'),
                       only_ocean=False,
                       title=f'Sourcegrid with {np.size(sourcegrid[0])} gridpoints',
@@ -160,7 +160,7 @@ def run_noisi_mfp(args,comm,size,rank):
             mfp_args.sourcegrid_path = os.path.join(mfp_args.project_path,'sourcegrid.npy')
 
             # plot sourcegrid
-            plot_grid(mfp_args,grid=sourcegrid,
+            plot_grid(mfp_args,grid=[sourcegrid[1],sourcegrid[0]],
                       data=None,
                       output_file=os.path.join(mfp_args.project_path,'sourcegrid.png'),
                       only_ocean=False,title=f'Sourcegrid with {np.size(sourcegrid[0])} gridpoints',
