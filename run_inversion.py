@@ -363,16 +363,19 @@ if inv_args.download_data:
     # check if there are any stations in stationlist after data download
     stationlist_check = read_csv(inv_args.stationlist)
 
-    if stationlist_check.shape[0]<=2:
-        print("Not enough data available for inversion.")
-        sys.exit()
-
     # change path to observed cross-correlations
     inv_args.observed_corr = os.path.join(inv_args.project_path,'data','correlations')
     inv_config['inversion_config']['observed_corr'] = inv_args.observed_corr
     
     comm.barrier()
-    
+
+    # Stop the inversion if there is no data
+    if stationlist_check.shape[0]<=2:
+        if rank == 0:
+            print("Not enough data available for inversion.")
+        # exit
+        sys.exit()
+
     t_1 = time.time()
 
     if rank == 0:
