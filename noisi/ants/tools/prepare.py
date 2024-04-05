@@ -12,7 +12,7 @@ This code is from the ants package: https://github.com/lermert/ants_2.
 from __future__ import print_function
 import numpy as np
 from obspy import Stream, Trace
-from scipy.signal import hann, tukey
+from scipy.signal.windows import hann, tukey
 from math import ceil
 from sys import float_info
 
