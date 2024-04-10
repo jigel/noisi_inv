@@ -107,7 +107,7 @@ def plot_grid(args,grid,data=None,output_file=None,triangulate=False,cbar=False,
     
     # save file? Only plot it if output_file is None
     if output_file is not None:
-        plt.savefig(output_file,bbox_inches='tight')
+        plt.savefig(output_file,bbox_inches='tight',dpi=40)
         plt.close()
     else:
         plt.show()
